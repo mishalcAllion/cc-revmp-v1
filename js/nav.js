@@ -98,6 +98,10 @@
             <span class="avatar avatar-sm" style="background:#D4AF37;color:#000;font-size:9px;width:24px;height:24px;">AU</span>
             <span class="nav-label text-xs">Angua von Uberwald</span>
           </div>
+          <a href="../index.html" class="nav-item" title="Back to prototype directory" style="opacity:0.55;">
+            <span class="nav-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></span>
+            <span class="nav-label text-xs">Directory</span>
+          </a>
         </div>
       </div>
     `;
