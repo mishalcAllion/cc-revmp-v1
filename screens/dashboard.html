@@ -386,7 +386,6 @@
                 <span class="text-xs" style="color: var(--text-muted);">Today</span>
               </div>
               <div id="activity-feed"></div>
-              <a href="#" class="text-xs mt-3 block" style="color: var(--gold);">View all activity →</a>
             </div>
 
             <!-- Critical Tasks -->
@@ -476,12 +475,12 @@
     };
 
     const ACTIVITY_ITEMS = [
-      { type: 'trip',  dot: '',    time: '2:35 PM', text: 'Angua added internal note on Vimes Greece trip', href: 'trip-detail.html' },
-      { type: 'conv',  dot: '',    time: '2:00 PM', text: 'Juliana Ridcully sent message about anniversary dinner', href: 'inbox-compact.html' },
-      { type: 'trip',  dot: '',    time: '11:30 AM', text: 'Carrot followed up on Vetinari Maldives resort upgrade', href: 'trip-detail.html' },
-      { type: 'trip',  dot: '',    time: '11:00 AM', text: 'Jason Ogg requested family activity options for Panama', href: 'trip-detail.html' },
+      { type: 'trip',  dot: '',    time: '2:35 PM', text: 'Angua added internal note on Vimes Greece trip', href: 'trip-detail?id=tr1' },
+      { type: 'conv',  dot: '',    time: '2:00 PM', text: 'Juliana Ridcully sent message about anniversary dinner', href: 'inbox-compact?conv=conv2' },
+      { type: 'trip',  dot: '',    time: '11:30 AM', text: 'Carrot followed up on Vetinari Maldives resort upgrade', href: 'trip-detail?id=tr3' },
+      { type: 'trip',  dot: '',    time: '11:00 AM', text: 'Jason Ogg requested family activity options for Panama', href: 'trip-detail?id=tr5' },
       { type: 'sla',   dot: 'sla', time: '10:15 AM', text: 'SLA breached: Selachii Bali trip — 15m overdue', href: 'inbox-queue.html', urgent: true },
-      { type: 'trip',  dot: 'ok',  time: '9:45 AM', text: 'Mort Sto Helit confirmed Belmond Caruso Ravello', href: 'trip-detail.html' },
+      { type: 'trip',  dot: 'ok',  time: '9:45 AM', text: 'Mort Sto Helit confirmed Belmond Caruso Ravello', href: 'trip-detail?id=tr4' },
       { type: 'alert', dot: 'alert', time: '9:00 AM', text: 'Flight alert triggered: SFO-MLE Business on Singapore KrisFlyer', href: 'alerts.html' },
       { type: 'task',  dot: 'ok',  time: '8:30 AM', text: 'Magrat Garlick completed task: Negotiate Mulia Bali rate', href: 'tasks.html' },
     ];
@@ -747,7 +746,7 @@
     function renderActivityFeed() {
       document.getElementById('activity-feed').innerHTML = ACTIVITY_ITEMS.map(item => {
         const badge = TYPE_BADGE[item.type] || TYPE_BADGE.conv;
-        const rowBg = item.urgent ? 'background:var(--error-bg);border-radius:4px;padding:4px 4px 4px 0;margin:-4px 0;' : '';
+        const rowBg = item.urgent ? 'background:var(--error-bg);border-radius:6px;padding:6px 8px 6px 8px;margin:4px 0 4px -8px;border-left:3px solid var(--error);' : '';
         return `
           <div class="activity-item cursor-pointer" onclick="location.href='${item.href}'" onmouseover="this.style.opacity='.75'" onmouseout="this.style.opacity='1'" style="${rowBg}">
             <div class="activity-dot ${item.dot}"></div>
@@ -880,7 +879,7 @@
             const hh    = getHousehold(t.householdId);
             const stage = PIPELINE_STAGES.find(s => s.id === t.stage);
             return `
-              <div class="trip-card" onclick="location.href='trip-detail.html'">
+              <div class="trip-card" onclick="location.href='trip-detail?id=${t.id}'">
                 <div class="flex items-start justify-between gap-2 mb-2">
                   <div class="text-sm font-semibold leading-tight" style="color:var(--text-primary);">${hh ? hh.name : ''}</div>
                   <span class="badge flex-shrink-0" style="font-size:10px;background:transparent;border:1px solid ${stage ? stage.color : 'var(--border)'};color:${stage ? stage.color : 'var(--text-muted)'};">${stage ? stage.label : t.stage}</span>

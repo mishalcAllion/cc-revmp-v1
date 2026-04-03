@@ -5,7 +5,8 @@
       "name": "cc-revamp",
       "runtimeExecutable": "npx",
       "runtimeArgs": ["serve", "-p", "3464"],
-      "port": 3464
+      "port": 3464,
+      "cwd": "C:\\Users\\MishalChowdhury\\Documents\\Projects\\Maestro\\prototypes\\Command Centre Revamp"
     }
   ]
 }
