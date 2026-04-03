@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flight Alerts -- Maestro Command Centre</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/theme.css">
+  <script src="../js/data.js"></script>
+  <script src="../js/theme.js"></script>
+  <script src="../js/nav.js"></script>
+  <script src="../js/interactions.js"></script>
+</head>
+<body class="antialiased">
+
+<div id="sidebar-root"></div>
+
+<div id="main-wrapper" class="transition-all duration-200" style="margin-left:240px;">
+  <div class="h-screen flex flex-col overflow-hidden" style="background:var(--bg-app);">
+
+    <!-- Header -->
+    <div class="px-6 py-4 border-b transition-theme" style="background:var(--bg-surface);border-color:var(--border);">
+      <div class="flex items-center justify-between mb-3">
+        <h1 class="text-lg font-semibold" style="color:var(--text-primary);">Flight Alerts</h1>
+        <button class="btn-gold" onclick="openAlertModal()">+ New Alert</button>
+      </div>
+
+      <!-- Stats -->
+      <div class="flex items-center gap-3 mb-3">
+        <div class="text-sm" style="color:var(--text-secondary);">
+          <span class="font-semibold" id="stat-active" style="color:var(--text-primary);">–</span> active
+          <span class="mx-2" style="color:var(--border);">|</span>
+          <span class="font-semibold" id="stat-triggered" style="color:var(--success);">–</span> triggered
+          <span class="mx-2" style="color:var(--border);">|</span>
+          <span class="font-semibold" id="stat-paused" style="color:var(--text-primary);">–</span> paused
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="flex items-center gap-2">
+        <select class="select">
+          <option>All Statuses</option>
+          <option>Active</option>
+          <option>Triggered</option>
+          <option>Paused</option>
+          <option>Expired</option>
+        </select>
+        <select id="client-filter" class="select">
+          <option>All Clients</option>
+        </select>
+        <input class="input" placeholder="Search by route..." style="width:200px;font-size:12px;padding:5px 10px;">
+      </div>
+    </div>
+
+    <!-- Alerts table -->
+    <div class="flex-1 overflow-y-auto px-6">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Route</th>
+            <th>Dates</th>
+            <th>Cabin</th>
+            <th>Max Points</th>
+            <th>Program</th>
+            <th>Client</th>
+            <th>Status</th>
+            <th>Triggered</th>
+          </tr>
+        </thead>
+        <tbody id="alerts-body"></tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    MaestroNav.render('sidebar-root');
+    document.getElementById('main-wrapper').style.marginLeft = MaestroNav.getSidebarWidth() + 'px';
+    renderAlerts();
+
+    const observer = new MutationObserver(() => {
+      document.getElementById('main-wrapper').style.marginLeft = MaestroNav.getSidebarWidth() + 'px';
+    });
+    setTimeout(() => {
+      const sb = document.getElementById('sidebar');
+      if (sb) observer.observe(sb, { attributes: true, attributeFilter: ['class'] });
+    }, 100);
+  });
+
+  function renderAlerts() {
+    const statusStyles = {
+      'Active':    { bg: 'var(--success-bg)', color: 'var(--success)' },
+      'Triggered': { bg: 'var(--gold-bg)',    color: 'var(--gold)' },
+      'Paused':    { bg: 'var(--bg-surface-alt)', color: 'var(--text-muted)' },
+      'Expired':   { bg: 'var(--error-bg)',   color: 'var(--error)' },
+    };
+
+    const programAbbreviations = {
+      'Delta SkyMiles': 'Delta SM',
+      'Air France Flying Blue': 'AF Flying Blue',
+      'Singapore KrisFlyer': 'SQ KrisFlyer'
+    };
+
+    document.getElementById('stat-active').textContent    = ALERTS.filter(a => a.status === 'Active').length;
+    document.getElementById('stat-triggered').textContent = ALERTS.filter(a => a.status === 'Triggered').length;
+    document.getElementById('stat-paused').textContent    = ALERTS.filter(a => a.status === 'Paused').length;
+
+    const clientSelect = document.getElementById('client-filter');
+    CLIENTS.forEach(c => {
+      const opt = document.createElement('option');
+      opt.textContent = c.name;
+      clientSelect.appendChild(opt);
+    });
+
+    document.getElementById('alerts-body').innerHTML = ALERTS.map(a => {
+      const client = getClient(a.clientId);
+      const ss = statusStyles[a.status] || statusStyles['Active'];
+      const programDisplay = programAbbreviations[a.program] || a.program;
+      return `
+        <tr style="cursor:pointer;" onclick="openAlertDetailModal('${a.route}','${a.dates}','${a.cabin}','${a.maxPoints}','${programDisplay}','${client?.name}','${a.status}',${a.triggered})">
+          <td><span class="font-semibold" style="color:var(--text-primary);">${a.route}</span></td>
+          <td>${a.dates}</td>
+          <td><span class="badge" style="background:var(--info-bg);color:var(--info);">${a.cabin}</span></td>
+          <td style="font-weight:600;">${a.maxPoints}</td>
+          <td class="text-xs">${programDisplay}</td>
+          <td>
+            <div class="flex items-center gap-2">
+              <span class="avatar avatar-sm" style="background:${client?.avatarColor};color:#fff;font-size:9px;">${client?.initials}</span>
+              <a href="client-detail?id=${client?.id}" class="text-xs hover:underline" style="color:var(--text-primary);" onclick="event.stopPropagation()">${client?.name?.split(' ').slice(0,2).join(' ')}</a>
+            </div>
+          </td>
+          <td><span class="badge" style="background:${ss.bg};color:${ss.color};">${a.status}</span></td>
+          <td>
+            <span class="font-semibold" style="color:${a.triggered > 0 ? 'var(--gold)' : 'var(--text-muted)'};">${a.triggered}</span>
+          </td>
+        </tr>`;
+    }).join('');
+  }
+</script>
+
+</body>
+</html>

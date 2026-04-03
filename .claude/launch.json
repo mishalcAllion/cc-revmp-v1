@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "cc-revamp",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "-p", "3464"],
+      "port": 3464
+    }
+  ]
+}

@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clients -- Maestro Command Centre</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/theme.css">
+  <script src="../js/data.js"></script>
+  <script src="../js/theme.js"></script>
+  <script src="../js/nav.js"></script>
+  <script src="../js/interactions.js"></script>
+</head>
+<body class="antialiased">
+
+<!-- Sidebar -->
+<div id="sidebar-root"></div>
+
+<!-- Main content (shifts right based on sidebar width) -->
+<div id="main-wrapper" class="transition-all duration-200" style="margin-left:240px;">
+  <div class="flex flex-col h-screen overflow-hidden transition-theme" style="background:var(--bg-app);">
+
+    <!-- Page header -->
+    <div class="px-6 py-4 border-b transition-theme" style="background:var(--bg-surface);border-color:var(--border);">
+      <div class="flex items-center justify-between">
+        <div>
+          <h1 class="text-xl font-semibold" style="color:var(--text-primary);">Clients</h1>
+          <p class="text-sm mt-0.5" style="color:var(--text-muted);" id="client-count">12 clients</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <!-- View toggle -->
+          <div class="inline-flex rounded-lg transition-theme" style="background:var(--bg-app);border:1px solid var(--border);">
+            <button id="view-clients-btn" class="px-3 py-1.5 text-xs font-medium rounded-l-lg transition-colors"
+              style="color:var(--text-primary);background:var(--bg-surface);" onclick="switchView('clients')">
+              All Clients
+            </button>
+            <button id="view-households-btn" class="px-3 py-1.5 text-xs font-medium rounded-r-lg transition-colors"
+              style="color:var(--text-muted);" onclick="switchView('households')">
+              Households
+            </button>
+          </div>
+          <a href="onboarding.html" class="btn-gold flex items-center gap-2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            New Client
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters and search -->
+    <div class="px-6 py-3 border-b transition-theme" style="background:var(--bg-surface);border-color:var(--border);">
+      <div class="flex items-center gap-3">
+        <div class="flex-1">
+          <input id="search-input" class="input" placeholder="Search by name, email, phone..." style="font-size:13px;" oninput="filterClients()">
+        </div>
+        <select id="filter-status" class="select" onchange="filterClients()">
+          <option value="all">All Status</option>
+          <option value="Active" selected>Active</option>
+          <option value="Archived">Archived</option>
+        </select>
+        <select id="filter-tier" class="select" onchange="filterClients()">
+          <option value="all">All Tiers</option>
+          <option value="VIP">VIP</option>
+          <option value="Standard">Standard</option>
+        </select>
+        <select id="filter-household" class="select" onchange="filterClients()" style="display:none;">
+          <option value="all">All Households</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="flex-1 overflow-auto px-6 py-4">
+      <table class="data-table" style="background:var(--bg-surface);">
+        <thead id="table-header">
+          <tr>
+            <th>Name</th>
+            <th>Household</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Tier</th>
+            <th>Status</th>
+            <th>Last Activity</th>
+          </tr>
+        </thead>
+        <tbody id="clients-table-body">
+          <!-- Populated by JS -->
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<!-- Command Palette -->
+<div id="cmd-palette-root"></div>
+
+<script>
+  let currentView = 'clients'; // 'clients' or 'households'
+  let expandedHouseholds = new Set(); // Track which households are expanded
+
+  // ---- Render sidebar ----
+  document.addEventListener('DOMContentLoaded', () => {
+    MaestroNav.render('sidebar-root');
+    updateMainMargin();
+    populateHouseholdFilter();
+    renderTable();
+    document.getElementById('cmd-palette-root').innerHTML = renderCommandPalette();
+  });
+
+  // Observe sidebar changes
+  const observer = new MutationObserver(updateMainMargin);
+  setTimeout(() => {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) observer.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
+  }, 100);
+
+  function updateMainMargin() {
+    const w = MaestroNav.getSidebarWidth();
+    document.getElementById('main-wrapper').style.marginLeft = w + 'px';
+  }
+
+  // ---- View switcher ----
+  function switchView(view) {
+    currentView = view;
+    expandedHouseholds.clear();
+
+    // Update button styles
+    const clientsBtn = document.getElementById('view-clients-btn');
+    const householdsBtn = document.getElementById('view-households-btn');
+    const householdFilter = document.getElementById('filter-household');
+
+    if (view === 'clients') {
+      clientsBtn.style.background = 'var(--bg-surface)';
+      clientsBtn.style.color = 'var(--text-primary)';
+      householdsBtn.style.background = 'transparent';
+      householdsBtn.style.color = 'var(--text-muted)';
+      householdFilter.style.display = 'none';
+    } else {
+      clientsBtn.style.background = 'transparent';
+      clientsBtn.style.color = 'var(--text-muted)';
+      householdsBtn.style.background = 'var(--bg-surface)';
+      householdsBtn.style.color = 'var(--text-primary)';
+      householdFilter.style.display = 'block';
+    }
+
+    renderTable();
+  }
+
+  function populateHouseholdFilter() {
+    const filter = document.getElementById('filter-household');
+    const options = HOUSEHOLDS.map(h => `<option value="${h.id}">${h.name}</option>`).join('');
+    filter.innerHTML = `<option value="all">All Households</option>${options}`;
+  }
+
+  // ---- Render table based on current view ----
+  function renderTable() {
+    if (currentView === 'clients') {
+      renderClientsTable();
+    } else {
+      renderHouseholdsTable();
+    }
+  }
+
+  // ---- Render clients table (individual view) ----
+  function renderClientsTable() {
+    const thead = document.getElementById('table-header');
+    const tbody = document.getElementById('clients-table-body');
+    const clients = getFilteredClients();
+
+    // Update header
+    thead.innerHTML = `
+      <tr>
+        <th>Name</th>
+        <th>Household</th>
+        <th>Phone</th>
+        <th>Email</th>
+        <th>Tier</th>
+        <th>Status</th>
+        <th>Last Activity</th>
+      </tr>`;
+
+    if (clients.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" class="text-center" style="padding:40px;color:var(--text-muted);">No clients match your filters</td>
+        </tr>`;
+      document.getElementById('client-count').textContent = '0 clients';
+      return;
+    }
+
+    tbody.innerHTML = clients.map(client => {
+      const household = getHousehold(client.householdId);
+      const statusColors = {
+        Active: { bg: 'var(--success-bg)', color: 'var(--success)' },
+        Archived: { bg: 'var(--bg-surface-alt)', color: 'var(--text-muted)' }
+      };
+      const tierColors = {
+        VIP: { bg: 'var(--gold-bg)', color: 'var(--gold)' },
+        Standard: { bg: 'var(--info-bg)', color: 'var(--info)' }
+      };
+      const sc = statusColors[client.status] || statusColors.Active;
+      const tc = tierColors[client.tier] || tierColors.Standard;
+
+      // Calculate last activity
+      const household_obj = getHouseholdByClient(client.id);
+      const householdConvs = household_obj ? getConversationsByHousehold(household_obj.id) : [];
+      let lastActivity = 'No activity';
+      if (householdConvs.length > 0) {
+        const latest = householdConvs.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))[0];
+        lastActivity = latest.lastActivity;
+      } else {
+        const householdTrips = household_obj ? getTripsByHousehold(household_obj.id) : [];
+        if (householdTrips.length > 0) {
+          lastActivity = 'Active trip';
+        }
+      }
+
+      return `
+        <tr onclick="window.location.href='client-detail?id=${client.id}'" style="cursor:pointer;">
+          <td>
+            <div class="flex items-center gap-2.5">
+              <span class="avatar avatar-sm" style="background:${client.avatarColor};color:#fff;">${client.initials}</span>
+              <span class="font-medium">${client.name}</span>
+            </div>
+          </td>
+          <td style="color:var(--text-secondary);">${household ? household.name : '—'}</td>
+          <td style="color:var(--text-secondary);">${client.phone}</td>
+          <td style="color:var(--text-secondary);">${client.email}</td>
+          <td>
+            <span class="badge" style="background:${tc.bg};color:${tc.color};">${client.tier}</span>
+          </td>
+          <td>
+            <span class="badge" style="background:${sc.bg};color:${sc.color};">${client.status}</span>
+          </td>
+          <td style="color:var(--text-muted);">${lastActivity}</td>
+        </tr>`;
+    }).join('');
+
+    document.getElementById('client-count').textContent = `${clients.length} ${clients.length === 1 ? 'client' : 'clients'}`;
+  }
+
+  // ---- Render households table (grouped view) ----
+  function renderHouseholdsTable() {
+    const thead = document.getElementById('table-header');
+    const tbody = document.getElementById('clients-table-body');
+    const households = getFilteredHouseholds();
+
+    // Update header
+    thead.innerHTML = `
+      <tr>
+        <th>Household</th>
+        <th>Members</th>
+        <th>Active Trips</th>
+        <th>Tier</th>
+        <th>Status</th>
+      </tr>`;
+
+    if (households.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5" class="text-center" style="padding:40px;color:var(--text-muted);">No households match your filters</td>
+        </tr>`;
+      document.getElementById('client-count').textContent = '0 households';
+      return;
+    }
+
+    tbody.innerHTML = households.map(household => {
+      const members = getClientsByHousehold(household.id);
+      const activeTrips = getTripsByHousehold(household.id).filter(t => t.status === 'Active').length;
+      const isExpanded = expandedHouseholds.has(household.id);
+
+      // Determine household tier (use highest tier among members)
+      const hasVIP = members.some(m => m.tier === 'VIP');
+      const householdTier = hasVIP ? 'VIP' : 'Standard';
+      const tierColors = {
+        VIP: { bg: 'var(--gold-bg)', color: 'var(--gold)' },
+        Standard: { bg: 'var(--info-bg)', color: 'var(--info)' }
+      };
+      const tc = tierColors[householdTier];
+
+      // Determine household status (Active if any member is active)
+      const hasActive = members.some(m => m.status === 'Active');
+      const householdStatus = hasActive ? 'Active' : 'Archived';
+      const statusColors = {
+        Active: { bg: 'var(--success-bg)', color: 'var(--success)' },
+        Archived: { bg: 'var(--bg-surface-alt)', color: 'var(--text-muted)' }
+      };
+      const sc = statusColors[householdStatus];
+
+      // Main household row
+      let html = `
+        <tr onclick="toggleHousehold('${household.id}')" style="cursor:pointer;background:var(--bg-surface);">
+          <td>
+            <div class="flex items-center gap-2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                style="transform:rotate(${isExpanded ? '90deg' : '0deg'});transition:transform 0.2s;">
+                <path d="m9 18 6-6-6-6"/>
+              </svg>
+              <span class="font-semibold">${household.name} Household</span>
+            </div>
+          </td>
+          <td>
+            <div class="flex items-center gap-1">
+              ${members.map(m => `<span class="avatar avatar-xs" style="background:${m.avatarColor};color:#fff;" title="${m.name}">${m.initials}</span>`).join('')}
+              ${household.dependents.length > 0 ? `<span class="text-xs" style="color:var(--text-muted);margin-left:4px;">+${household.dependents.length} ${household.dependents.length === 1 ? 'child' : 'children'}</span>` : ''}
+            </div>
+          </td>
+          <td>
+            <span class="font-semibold" style="color:var(--text-primary);">${activeTrips}</span>
+          </td>
+          <td>
+            <span class="badge" style="background:${tc.bg};color:${tc.color};">${householdTier}</span>
+          </td>
+          <td>
+            <span class="badge" style="background:${sc.bg};color:${sc.color};">${householdStatus}</span>
+          </td>
+        </tr>`;
+
+      // Expanded member rows
+      if (isExpanded) {
+        html += members.map(client => {
+          const clientStatusColors = {
+            Active: { bg: 'var(--success-bg)', color: 'var(--success)' },
+            Archived: { bg: 'var(--bg-surface-alt)', color: 'var(--text-muted)' }
+          };
+          const clientTierColors = {
+            VIP: { bg: 'var(--gold-bg)', color: 'var(--gold)' },
+            Standard: { bg: 'var(--info-bg)', color: 'var(--info)' }
+          };
+          const csc = clientStatusColors[client.status] || clientStatusColors.Active;
+          const ctc = clientTierColors[client.tier] || clientTierColors.Standard;
+
+          return `
+            <tr onclick="window.location.href='client-detail?id=${client.id}'" style="cursor:pointer;background:var(--bg-app);">
+              <td colspan="5" style="padding-left:48px;">
+                <div class="flex items-center gap-4">
+                  <div class="flex items-center gap-2.5" style="min-width:200px;">
+                    <span class="avatar avatar-sm" style="background:${client.avatarColor};color:#fff;">${client.initials}</span>
+                    <span class="font-medium">${client.name}</span>
+                  </div>
+                  <span style="color:var(--text-secondary);min-width:140px;">${client.phone}</span>
+                  <span style="color:var(--text-secondary);min-width:200px;">${client.email}</span>
+                  <span class="badge" style="background:${ctc.bg};color:${ctc.color};">${client.tier}</span>
+                  <span class="badge" style="background:${csc.bg};color:${csc.color};">${client.status}</span>
+                </div>
+              </td>
+            </tr>`;
+        }).join('');
+      }
+
+      return html;
+    }).join('');
+
+    document.getElementById('client-count').textContent = `${households.length} ${households.length === 1 ? 'household' : 'households'}`;
+  }
+
+  function toggleHousehold(householdId) {
+    if (expandedHouseholds.has(householdId)) {
+      expandedHouseholds.delete(householdId);
+    } else {
+      expandedHouseholds.add(householdId);
+    }
+    renderTable();
+  }
+
+  function getFilteredClients() {
+    const search = document.getElementById('search-input')?.value.toLowerCase() || '';
+    const statusFilter = document.getElementById('filter-status')?.value || 'all';
+    const tierFilter = document.getElementById('filter-tier')?.value || 'all';
+
+    return CLIENTS.filter(client => {
+      const matchSearch = !search ||
+        client.name.toLowerCase().includes(search) ||
+        client.email.toLowerCase().includes(search) ||
+        client.phone.toLowerCase().includes(search);
+      const matchStatus = statusFilter === 'all' || client.status === statusFilter;
+      const matchTier = tierFilter === 'all' || client.tier === tierFilter;
+      return matchSearch && matchStatus && matchTier;
+    });
+  }
+
+  function getFilteredHouseholds() {
+    const search = document.getElementById('search-input')?.value.toLowerCase() || '';
+    const statusFilter = document.getElementById('filter-status')?.value || 'all';
+    const tierFilter = document.getElementById('filter-tier')?.value || 'all';
+    const householdFilter = document.getElementById('filter-household')?.value || 'all';
+
+    return HOUSEHOLDS.filter(household => {
+      const members = getClientsByHousehold(household.id);
+
+      // Match search
+      const matchSearch = !search ||
+        household.name.toLowerCase().includes(search) ||
+        members.some(m => m.name.toLowerCase().includes(search) || m.email.toLowerCase().includes(search));
+
+      // Match household filter
+      const matchHousehold = householdFilter === 'all' || household.id === householdFilter;
+
+      // Match status (any member matches)
+      const matchStatus = statusFilter === 'all' || members.some(m => m.status === statusFilter);
+
+      // Match tier (any member matches)
+      const matchTier = tierFilter === 'all' || members.some(m => m.tier === tierFilter);
+
+      return matchSearch && matchHousehold && matchStatus && matchTier;
+    });
+  }
+
+  function filterClients() {
+    renderTable();
+  }
+</script>
+
+</body>
+</html>

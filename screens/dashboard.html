@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — Maestro Command Centre</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/theme.css">
+  <script src="../js/data.js"></script>
+  <script src="../js/theme.js"></script>
+  <script src="../js/nav.js"></script>
+  <script src="../js/interactions.js"></script>
+  <style>
+    /* ---- Activity timeline ---- */
+    .activity-item {
+      position: relative;
+      padding-left: 28px;
+      padding-bottom: 16px;
+    }
+    .activity-item:last-child { padding-bottom: 0; }
+    .activity-item::before {
+      content: '';
+      position: absolute;
+      left: 7px; top: 20px; bottom: -4px;
+      width: 1px;
+      background: var(--border);
+    }
+    .activity-item:last-child::before { display: none; }
+    .activity-dot {
+      position: absolute;
+      left: 0; top: 4px;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: var(--bg-surface);
+      border: 2px solid var(--gold);
+      z-index: 1;
+    }
+    .activity-dot.sla  { border-color: var(--error);   background: var(--error); }
+    .activity-dot.ok   { border-color: var(--success);  }
+    .activity-dot.warn { border-color: var(--warning);  }
+    .activity-dot.alert { border-color: var(--warning); background: var(--warning); }
+
+    /* ---- SLA bar ---- */
+    .sla-bar {
+      display: flex;
+      height: 10px;
+      border-radius: 6px;
+      overflow: hidden;
+      background: var(--bg-surface-alt);
+    }
+    .sla-segment {
+      height: 100%;
+      transition: width 0.3s ease;
+    }
+    .sla-segment.healthy  { background: var(--sla-healthy); }
+    .sla-segment.warning  { background: var(--sla-warning); }
+    .sla-segment.critical { background: var(--sla-critical); }
+    .sla-segment.breached { background: var(--sla-breached); }
+
+    /* ---- KPI accent cards ---- */
+    .kpi-card {
+      position: relative;
+      border-left-width: 4px;
+      border-left-style: solid;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .kpi-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+    .kpi-icon {
+      position: absolute;
+      top: 12px; right: 12px;
+      opacity: 0.15;
+      width: 28px; height: 28px;
+    }
+
+    /* ---- Pipeline bars ---- */
+    .pipeline-bar-track {
+      height: 8px;
+      border-radius: 4px;
+      background: var(--bg-surface-alt);
+      overflow: hidden;
+    }
+    .pipeline-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.4s ease;
+    }
+
+    /* ---- Workload table enhancements ---- */
+    .agent-row td:first-child {
+      border-left: 3px solid transparent;
+    }
+
+    /* ---- Alert triage banner ---- */
+    .triage-banner {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      border-left: 4px solid var(--error);
+      background: var(--error-bg);
+      margin-bottom: 20px;
+    }
+
+    /* ---- Member trip cards ---- */
+    .trip-card {
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-surface);
+      padding: 16px;
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .trip-card:hover {
+      border-color: var(--gold);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    }
+
+    /* ---- Performance pill row ---- */
+    .perf-pill {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 12px 20px;
+      border-radius: 8px;
+      background: var(--bg-surface-alt);
+      border: 1px solid var(--border);
+      gap: 2px;
+    }
+
+    /* ---- View fade transition ---- */
+    #manager-view, #member-view {
+      transition: opacity 0.15s ease;
+    }
+
+    /* ---- Agent selector wrapper ---- */
+    .view-control {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-surface-alt);
+    }
+    .view-control select {
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      color: var(--text-primary);
+      padding: 0;
+    }
+    [data-theme="dark"] .view-control select option {
+      background: #1e293b;
+    }
+
+    /* ---- Pulse dot for breached ---- */
+    @keyframes pulse-red {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .pulse-dot {
+      display: inline-block;
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--error);
+      animation: pulse-red 1.5s ease-in-out infinite;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    /* ---- Conversation rows ---- */
+    .conv-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+    .conv-row:hover { background: var(--bg-hover); }
+
+    /* ---- Task rows ---- */
+    .task-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .task-row:last-child { border-bottom: none; }
+    .task-row:hover { opacity: 0.8; }
+  </style>
+</head>
+<body>
+  <div class="flex h-screen" style="background: var(--bg-app);">
+    <div id="sidebar-root"></div>
+
+    <div id="main-wrapper" class="flex-1 flex flex-col overflow-hidden transition-all duration-200" style="margin-left: 240px;">
+
+      <!-- Header -->
+      <div class="border-b px-8 py-4 flex-shrink-0" style="border-color: var(--border); background: var(--bg-surface);">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 id="dashboard-title" class="text-2xl font-bold" style="color: var(--text-primary);">Dashboard</h1>
+            <p class="text-sm mt-0.5" style="color: var(--text-muted);" id="dashboard-subtitle">Overview of operations</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <!-- View As -->
+            <div class="view-control">
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="none" style="color: var(--text-muted); flex-shrink:0;">
+                <path d="M10 4.5C5.5 4.5 1.73 7.61 0 10c1.73 2.39 5.5 5.5 10 5.5s8.27-3.11 10-5.5c-1.73-2.39-5.5-5.5-10-5.5z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                <circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
+              <select id="view-mode-select">
+                <option value="manager">Ops Manager</option>
+                <option value="member">Ops Member</option>
+              </select>
+            </div>
+            <!-- Agent selector (member only) -->
+            <div id="agent-selector" class="view-control" style="display:none;">
+              <div id="agent-avatar" class="w-5 h-5 rounded-full flex items-center justify-center text-white flex-shrink-0" style="font-size:9px; font-weight:700; background:#f97316;">CR</div>
+              <select id="agent-select"></select>
+            </div>
+            <span class="text-sm" style="color: var(--text-muted);">April 2, 2026</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scrollable content -->
+      <div class="flex-1 overflow-y-auto px-8 py-6">
+
+        <!-- ============================================================
+             MANAGER VIEW
+             ============================================================ -->
+        <div id="manager-view">
+
+          <!-- Alert Triage Banner -->
+          <div id="triage-banner" class="triage-banner" style="display:none;">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="var(--error)" flex-shrink="0">
+              <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-3a1 1 0 01-1-1V7a1 1 0 112 0v2a1 1 0 01-1 1z" clip-rule="evenodd"/>
+            </svg>
+            <span class="text-sm font-medium flex-1" id="triage-text" style="color: var(--error);"></span>
+            <a href="inbox-queue.html" class="text-xs font-medium px-3 py-1 rounded" style="background: var(--error); color: #fff;">View SLA Queue</a>
+            <a href="tasks.html" class="text-xs font-medium px-3 py-1 rounded border ml-1" style="border-color: var(--error); color: var(--error);">View Tasks</a>
+          </div>
+
+          <!-- KPI Cards -->
+          <div class="grid gap-4 mb-6" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));">
+
+            <!-- Total Clients -->
+            <div class="card kpi-card p-5 cursor-pointer" style="border-left-color: var(--gold);" onclick="location.href='clients.html'">
+              <svg class="kpi-icon" viewBox="0 0 24 24" fill="currentColor" style="color:var(--text-primary);">
+                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+              </svg>
+              <div class="text-3xl font-bold mb-1" style="color: var(--text-primary);" id="kpi-clients">—</div>
+              <div class="text-xs font-medium mb-1" style="color: var(--text-muted);">Total Clients</div>
+              <div class="text-xs" style="color: var(--success);" id="kpi-clients-delta"></div>
+            </div>
+
+            <!-- Active Trips -->
+            <div class="card kpi-card p-5 cursor-pointer" style="border-left-color: var(--gold);" onclick="location.href='trip-pipeline.html'">
+              <svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-primary);">
+                <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+              <div class="text-3xl font-bold mb-1" style="color: var(--text-primary);" id="kpi-trips">—</div>
+              <div class="text-xs font-medium mb-1" style="color: var(--text-muted);">Active Trips</div>
+              <div class="text-xs" style="color: var(--success);" id="kpi-trips-delta"></div>
+            </div>
+
+            <!-- Open Conversations -->
+            <div class="card kpi-card p-5 cursor-pointer" style="border-left-color: var(--info);" onclick="location.href='inbox-compact.html'">
+              <svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-primary);">
+                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+              </svg>
+              <div class="text-3xl font-bold mb-1" style="color: var(--text-primary);" id="kpi-convs">—</div>
+              <div class="text-xs font-medium mb-1" style="color: var(--text-muted);">Open Convs</div>
+              <div class="text-xs" style="color: var(--text-muted);" id="kpi-convs-delta"></div>
+            </div>
+
+            <!-- SLA Breached -->
+            <div class="card kpi-card p-5 cursor-pointer" style="border-left-color: var(--error);" onclick="location.href='inbox-queue.html'">
+              <svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-primary);">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <div class="text-3xl font-bold mb-1 flex items-center" id="kpi-sla-num" style="color: var(--error);">
+                <span id="kpi-sla">—</span>
+              </div>
+              <div class="text-xs font-medium mb-1" style="color: var(--text-muted);">SLA Breached</div>
+              <div class="text-xs" style="color: var(--error);" id="kpi-sla-delta"></div>
+            </div>
+
+            <!-- Unassigned -->
+            <div class="card kpi-card p-5 cursor-pointer" style="border-left-color: var(--warning);" onclick="location.href='inbox-compact.html'">
+              <svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--warning);">
+                <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              <div class="text-3xl font-bold mb-1" style="color: var(--warning);" id="kpi-unassigned">--</div>
+              <div class="text-xs font-medium mb-1" style="color: var(--text-muted);">Unassigned</div>
+              <div class="text-xs" style="color: var(--warning);" id="kpi-unassigned-delta"></div>
+            </div>
+
+            <!-- Open Tasks -->
+            <div class="card kpi-card p-5 cursor-pointer" style="border-left-color: var(--gold);" onclick="location.href='tasks.html'">
+              <svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-primary);">
+                <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+              </svg>
+              <div class="text-3xl font-bold mb-1" style="color: var(--text-primary);" id="kpi-tasks">—</div>
+              <div class="text-xs font-medium mb-1" style="color: var(--text-muted);">Open Tasks</div>
+              <div class="text-xs" id="kpi-tasks-delta" style="color: var(--text-muted);"></div>
+            </div>
+
+            <!-- Active Alerts -->
+            <div class="card kpi-card p-5 cursor-pointer" style="border-left-color: var(--warning);" onclick="location.href='alerts.html'">
+              <svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-primary);">
+                <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>
+              </svg>
+              <div class="text-3xl font-bold mb-1" style="color: var(--text-primary);" id="kpi-alerts">—</div>
+              <div class="text-xs font-medium mb-1" style="color: var(--text-muted);">Active Alerts</div>
+              <div class="text-xs" id="kpi-alerts-delta" style="color: var(--warning);"></div>
+            </div>
+          </div>
+
+          <!-- Mid section: SLA Health + Pipeline side-by-side -->
+          <div class="grid grid-cols-2 gap-4 mb-4">
+
+            <!-- SLA Health -->
+            <div class="card p-5">
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="text-sm font-semibold" style="color: var(--text-primary);">SLA Health</h3>
+                <div>
+                  <span class="text-2xl font-bold" id="sla-compliance-pct" style="color: var(--success);">—</span>
+                  <span class="text-xs ml-1" style="color: var(--text-muted);">healthy</span>
+                </div>
+              </div>
+              <div class="sla-bar mb-3" id="slaBar"></div>
+              <div class="flex flex-wrap gap-x-4 gap-y-1" id="slaLabels"></div>
+            </div>
+
+            <!-- Trip Pipeline -->
+            <div class="card p-5">
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="text-sm font-semibold" style="color: var(--text-primary);">Trip Pipeline</h3>
+                <a href="trip-pipeline.html" class="text-xs" style="color: var(--gold);">View board →</a>
+              </div>
+              <div class="space-y-2" id="pipeline-bars"></div>
+            </div>
+          </div>
+
+          <!-- Team Workload -->
+          <div class="card p-5 mb-4">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-semibold" style="color: var(--text-primary);">Team Workload</h3>
+              <a href="settings.html" class="text-xs" style="color: var(--gold);">Manage team →</a>
+            </div>
+            <table class="data-table w-full">
+              <thead>
+                <tr>
+                  <th style="width:180px;">Agent</th>
+                  <th>Total</th>
+                  <th>Primary</th>
+                  <th>Collab</th>
+                  <th>Active Tasks</th>
+                  <th>Urgent</th>
+                  <th>Avg Response</th>
+                  <th>SLA Health</th>
+                </tr>
+              </thead>
+              <tbody id="teamWorkloadBody"></tbody>
+            </table>
+          </div>
+
+          <!-- Bottom: Activity Feed + Critical Tasks -->
+          <div style="display:grid; grid-template-columns: 3fr 2fr; gap:16px;">
+
+            <!-- Activity Feed -->
+            <div class="card p-5">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-semibold" style="color: var(--text-primary);">Recent Activity</h3>
+                <span class="text-xs" style="color: var(--text-muted);">Today</span>
+              </div>
+              <div id="activity-feed"></div>
+              <a href="#" class="text-xs mt-3 block" style="color: var(--gold);">View all activity →</a>
+            </div>
+
+            <!-- Critical Tasks -->
+            <div class="card p-5">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-sm font-semibold" style="color: var(--text-primary);">Needs Attention</h3>
+                <a href="tasks.html" class="text-xs" style="color: var(--gold);">All tasks →</a>
+              </div>
+              <div id="critical-tasks"></div>
+            </div>
+
+          </div>
+        </div><!-- /manager-view -->
+
+        <!-- ============================================================
+             MEMBER VIEW
+             ============================================================ -->
+        <div id="member-view" style="display:none;">
+
+          <!-- Personal KPI cards (4) -->
+          <div class="grid grid-cols-4 gap-4 mb-5" id="member-kpis"></div>
+
+          <!-- My Conversations + My Tasks -->
+          <div class="grid mb-4" style="grid-template-columns: 55% 43%; gap:16px;">
+            <div class="card p-5">
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="text-sm font-semibold" style="color: var(--text-primary);">My Conversations</h3>
+                <a href="inbox-compact.html" class="text-xs" style="color: var(--gold);">View inbox →</a>
+              </div>
+              <div id="member-convs"></div>
+            </div>
+            <div class="card p-5">
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="text-sm font-semibold" style="color: var(--text-primary);">My Tasks</h3>
+                <a href="tasks.html" class="text-xs" style="color: var(--gold);">All tasks →</a>
+              </div>
+              <div id="member-tasks"></div>
+            </div>
+          </div>
+
+          <!-- My Trips -->
+          <div class="card p-5 mb-4">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-semibold" style="color: var(--text-primary);">My Trips</h3>
+              <a href="trip-pipeline.html" class="text-xs" style="color: var(--gold);">View pipeline →</a>
+            </div>
+            <div class="grid grid-cols-3 gap-3" id="member-trips"></div>
+          </div>
+
+          <!-- Performance pills -->
+          <div class="flex gap-3" id="member-perf"></div>
+
+        </div><!-- /member-view -->
+
+      </div><!-- /scrollable -->
+    </div><!-- /main-wrapper -->
+  </div>
+
+  <script>
+    // ================================================================
+    //  Constants
+    // ================================================================
+    const MOCK_DELTAS = {
+      clients: { val: '+2', color: 'var(--success)', label: 'vs last week' },
+      trips:   { val: '+1', color: 'var(--success)', label: 'vs yesterday' },
+      convs:   { val: '—',  color: 'var(--text-muted)', label: 'no change' },
+      sla:     { val: '1 breached', color: 'var(--error)', label: 'action needed' },
+      tasks:   { val: '2 overdue', color: 'var(--warning)', label: 'past due date' },
+      alerts:  { val: '1 triggered', color: 'var(--warning)', label: 'SFO-MLE' },
+    };
+
+    const AGENT_PERF = {
+      a1: { avgResponse: '12m', slaCompliance: '94%', resolvedToday: 2 },
+      a2: { avgResponse: '18m', slaCompliance: '88%', resolvedToday: 1 },
+      a3: { avgResponse: '8m',  slaCompliance: '96%', resolvedToday: 3 },
+      a4: { avgResponse: '22m', slaCompliance: '82%', resolvedToday: 0 },
+      a5: { avgResponse: '15m', slaCompliance: '91%', resolvedToday: 1 },
+    };
+
+    const PRIORITY_ORDER = { Urgent: 0, High: 1, Normal: 2, Low: 3 };
+
+    const SLA_DOT = {
+      healthy:  'var(--sla-healthy)',
+      warning:  'var(--sla-warning)',
+      critical: 'var(--sla-critical)',
+      breached: 'var(--sla-breached)',
+    };
+
+    const ACTIVITY_ITEMS = [
+      { type: 'trip',  dot: '',    time: '2:35 PM', text: 'Angua added internal note on Vimes Greece trip', href: 'trip-detail.html' },
+      { type: 'conv',  dot: '',    time: '2:00 PM', text: 'Juliana Ridcully sent message about anniversary dinner', href: 'inbox-compact.html' },
+      { type: 'trip',  dot: '',    time: '11:30 AM', text: 'Carrot followed up on Vetinari Maldives resort upgrade', href: 'trip-detail.html' },
+      { type: 'trip',  dot: '',    time: '11:00 AM', text: 'Jason Ogg requested family activity options for Panama', href: 'trip-detail.html' },
+      { type: 'sla',   dot: 'sla', time: '10:15 AM', text: 'SLA breached: Selachii Bali trip — 15m overdue', href: 'inbox-queue.html', urgent: true },
+      { type: 'trip',  dot: 'ok',  time: '9:45 AM', text: 'Mort Sto Helit confirmed Belmond Caruso Ravello', href: 'trip-detail.html' },
+      { type: 'alert', dot: 'alert', time: '9:00 AM', text: 'Flight alert triggered: SFO-MLE Business on Singapore KrisFlyer', href: 'alerts.html' },
+      { type: 'task',  dot: 'ok',  time: '8:30 AM', text: 'Magrat Garlick completed task: Negotiate Mulia Bali rate', href: 'tasks.html' },
+    ];
+
+    const TYPE_BADGE = {
+      trip:  { label: 'Trip',  bg: 'var(--info-bg,#eff6ff)',   color: 'var(--info)' },
+      conv:  { label: 'Msg',   bg: 'var(--bg-surface-alt)',    color: 'var(--text-secondary)' },
+      sla:   { label: 'SLA',   bg: 'var(--error-bg)',          color: 'var(--error)' },
+      alert: { label: 'Alert', bg: 'var(--warning-bg,#fffbeb)',color: 'var(--warning)' },
+      task:  { label: 'Task',  bg: 'var(--success-bg,#ecfdf5)',color: 'var(--success)' },
+    };
+
+    // ================================================================
+    //  View Switcher
+    // ================================================================
+    const VIEW_KEY  = 'maestro-cc-view-mode';
+    const AGENT_KEY = 'maestro-cc-view-agent';
+    let currentView    = localStorage.getItem(VIEW_KEY)  || 'manager';
+    let currentAgentId = localStorage.getItem(AGENT_KEY) || 'a1';
+
+    function initViewSwitcher() {
+      const agentSelect = document.getElementById('agent-select');
+      AGENTS.forEach(a => {
+        const opt = document.createElement('option');
+        opt.value = a.id;
+        opt.textContent = a.name;
+        agentSelect.appendChild(opt);
+      });
+
+      document.getElementById('view-mode-select').value = currentView;
+      agentSelect.value = currentAgentId;
+      updateAgentAvatar(currentAgentId);
+      applyView(currentView, currentAgentId, false);
+
+      document.getElementById('view-mode-select').addEventListener('change', e => {
+        currentView = e.target.value;
+        localStorage.setItem(VIEW_KEY, currentView);
+        applyView(currentView, currentAgentId, true);
+      });
+
+      agentSelect.addEventListener('change', e => {
+        currentAgentId = e.target.value;
+        localStorage.setItem(AGENT_KEY, currentAgentId);
+        updateAgentAvatar(currentAgentId);
+        renderMemberView(currentAgentId);
+      });
+    }
+
+    function updateAgentAvatar(agentId) {
+      const a = getAgent(agentId);
+      if (!a) return;
+      const av = document.getElementById('agent-avatar');
+      av.textContent  = a.initials;
+      av.style.background = a.color;
+    }
+
+    function applyView(mode, agentId, animate) {
+      const mgr = document.getElementById('manager-view');
+      const mem = document.getElementById('member-view');
+      const sel = document.getElementById('agent-selector');
+
+      sel.style.display = mode === 'member' ? 'flex' : 'none';
+      document.getElementById('dashboard-title').textContent =
+        mode === 'manager' ? 'Dashboard' : 'My Dashboard';
+      document.getElementById('dashboard-subtitle').textContent =
+        mode === 'manager' ? 'Overview of operations' : 'Your personal workload';
+
+      const hiding  = mode === 'manager' ? mem : mgr;
+      const showing = mode === 'manager' ? mgr : mem;
+
+      if (animate) {
+        hiding.style.opacity = '0';
+        setTimeout(() => {
+          hiding.style.display = 'none';
+          showing.style.display = 'block';
+          showing.style.opacity = '0';
+          requestAnimationFrame(() => { showing.style.opacity = '1'; });
+        }, 150);
+      } else {
+        hiding.style.display  = 'none';
+        showing.style.display = 'block';
+      }
+
+      if (mode === 'member') renderMemberView(agentId);
+    }
+
+    // ================================================================
+    //  Manager view renderers
+    // ================================================================
+    function loadManagerView() {
+      const stats = getDashboardStats();
+
+      // KPI values
+      document.getElementById('kpi-clients').textContent = stats.totalClients;
+      document.getElementById('kpi-trips').textContent   = stats.activeTrips;
+      document.getElementById('kpi-convs').textContent   = stats.openConversations;
+      document.getElementById('kpi-sla').textContent     = stats.slaBreached;
+      document.getElementById('kpi-tasks').textContent   = stats.openTasks;
+      document.getElementById('kpi-alerts').textContent  = stats.activeAlerts;
+      document.getElementById('kpi-unassigned').textContent = stats.unassignedConversations;
+
+      // KPI deltas
+      document.getElementById('kpi-clients-delta').innerHTML = `<span style="color:${MOCK_DELTAS.clients.color};">${MOCK_DELTAS.clients.val}</span> ${MOCK_DELTAS.clients.label}`;
+      document.getElementById('kpi-trips-delta').innerHTML   = `<span style="color:${MOCK_DELTAS.trips.color};">${MOCK_DELTAS.trips.val}</span> ${MOCK_DELTAS.trips.label}`;
+      document.getElementById('kpi-convs-delta').innerHTML   = MOCK_DELTAS.convs.val;
+      document.getElementById('kpi-sla-delta').innerHTML     = stats.slaBreached > 0 ? 'Needs immediate action' : 'All clear';
+      document.getElementById('kpi-tasks-delta').innerHTML   = `<span style="color:${MOCK_DELTAS.tasks.color};">${MOCK_DELTAS.tasks.val}</span>`;
+      document.getElementById('kpi-alerts-delta').innerHTML  = `<span style="color:${MOCK_DELTAS.alerts.color};">${MOCK_DELTAS.alerts.val}</span>`;
+      document.getElementById('kpi-unassigned-delta').innerHTML = stats.unassignedConversations > 0 ? 'Needs assignment' : 'All assigned';
+
+      // Pulse dot on SLA
+      if (stats.slaBreached > 0) {
+        document.getElementById('kpi-sla-num').insertAdjacentHTML('beforeend', '<span class="pulse-dot"></span>');
+      }
+
+      // Alert triage banner
+      if (stats.slaBreached > 0 || stats.urgentTasks > 0) {
+        const parts = [];
+        if (stats.slaBreached > 0) parts.push(`${stats.slaBreached} SLA breached`);
+        if (stats.urgentTasks  > 0) parts.push(`${stats.urgentTasks} urgent tasks`);
+        const overdue = TASKS.filter(t => t.dueIn && t.dueIn.includes('overdue')).length;
+        if (overdue > 0) parts.push(`${overdue} tasks overdue`);
+        document.getElementById('triage-text').textContent = parts.join(' · ');
+        document.getElementById('triage-banner').style.display = 'flex';
+      }
+
+      renderSLABar(stats);
+      renderPipeline();
+      renderTeamWorkload();
+      renderActivityFeed();
+      renderCriticalTasks();
+    }
+
+    function renderSLABar(stats) {
+      const total = stats.slaHealthy + stats.slaWarning + stats.slaCritical + stats.slaBreached;
+      if (total === 0) return;
+
+      const hPct = (stats.slaHealthy / total) * 100;
+      const wPct = (stats.slaWarning / total) * 100;
+      const cPct = (stats.slaCritical / total) * 100;
+      const bPct = (stats.slaBreached / total) * 100;
+      const compliancePct = Math.round((stats.slaHealthy / total) * 100);
+
+      const compEl = document.getElementById('sla-compliance-pct');
+      compEl.textContent = compliancePct + '%';
+      compEl.style.color = compliancePct >= 70 ? 'var(--success)' : compliancePct >= 50 ? 'var(--warning)' : 'var(--error)';
+
+      document.getElementById('slaBar').innerHTML = `
+        ${hPct > 0 ? `<div class="sla-segment healthy" style="width:${hPct}%"></div>` : ''}
+        ${wPct > 0 ? `<div class="sla-segment warning" style="width:${wPct}%"></div>` : ''}
+        ${cPct > 0 ? `<div class="sla-segment critical" style="width:${cPct}%"></div>` : ''}
+        ${bPct > 0 ? `<div class="sla-segment breached" style="width:${bPct}%"></div>` : ''}
+      `;
+
+      const labels = [
+        { cls: 'healthy',  label: 'Healthy',  count: stats.slaHealthy,  color: 'var(--sla-healthy)' },
+        { cls: 'warning',  label: 'Warning',  count: stats.slaWarning,  color: 'var(--sla-warning)' },
+        { cls: 'critical', label: 'Critical', count: stats.slaCritical, color: 'var(--sla-critical)' },
+        { cls: 'breached', label: 'Breached', count: stats.slaBreached, color: 'var(--sla-breached)' },
+      ].filter(l => l.count > 0);
+
+      document.getElementById('slaLabels').innerHTML = labels.map(l =>
+        `<span class="text-xs flex items-center gap-1" style="color:var(--text-muted);">
+           <span style="width:8px;height:8px;border-radius:50%;background:${l.color};display:inline-block;flex-shrink:0;"></span>
+           ${l.label} (${l.count})
+         </span>`
+      ).join('');
+    }
+
+    function renderPipeline() {
+      const counts = PIPELINE_STAGES.map(s => ({
+        ...s,
+        count: TRIPS.filter(t => t.stage === s.id).length
+      }));
+      const max = Math.max(...counts.map(c => c.count), 1);
+
+      document.getElementById('pipeline-bars').innerHTML = counts.map(s => {
+        const pct = s.count > 0 ? Math.max((s.count / max) * 100, 8) : 4;
+        const muted = s.count === 0;
+        return `
+          <div class="flex items-center gap-3 cursor-pointer group" onclick="location.href='trip-pipeline.html'">
+            <span class="text-xs w-20 flex-shrink-0 text-right" style="color:${muted ? 'var(--text-muted)' : 'var(--text-secondary)'};">${s.label}</span>
+            <div class="pipeline-bar-track flex-1">
+              <div class="pipeline-bar-fill" style="width:${pct}%; background:${muted ? 'var(--border)' : s.color};"></div>
+            </div>
+            <span class="text-xs font-semibold w-4 text-right" style="color:${muted ? 'var(--text-muted)' : 'var(--text-primary)'};">${s.count}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderTeamWorkload() {
+      const avgResponses = { a1:'12m', a2:'18m', a3:'8m', a4:'22m', a5:'15m' };
+
+      const agentRows = AGENTS.map(agent => {
+        const primaryConvs = CONVERSATIONS.filter(c => c.assignedTo === agent.id);
+        const collabConvs  = CONVERSATIONS.filter(c => (c.collaborators || []).includes(agent.id));
+        const allConvs     = [...new Set([...primaryConvs, ...collabConvs])];
+        const openPrimary  = primaryConvs.filter(c => c.status === 'open').length;
+        const openCollab   = collabConvs.filter(c => c.status === 'open').length;
+        const totalOpen    = openPrimary + openCollab;
+        const breached     = primaryConvs.filter(c => c.slaStatus === 'breached').length;
+        const activeTasks  = TASKS.filter(t => t.assignedTo === agent.id && t.status !== 'Done').length;
+        const urgentCount  = TASKS.filter(t => t.assignedTo === agent.id && t.priority === 'Urgent').length;
+        const slaHealthy   = primaryConvs.filter(c => c.slaStatus === 'healthy').length;
+        const slaTotal     = primaryConvs.length;
+        const slaPct       = slaTotal > 0 ? Math.round((slaHealthy / slaTotal) * 100) : 100;
+        const barColor     = slaPct >= 85 ? 'var(--success)' : slaPct >= 70 ? 'var(--warning)' : 'var(--error)';
+
+        return `
+          <tr class="agent-row" style="border-left: 3px solid ${agent.color};">
+            <td>
+              <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-full flex items-center justify-center text-white flex-shrink-0" style="font-size:10px;font-weight:700;background:${agent.color};">${agent.initials}</div>
+                <span class="text-sm font-medium" style="color:var(--text-primary);">${agent.name}</span>
+              </div>
+            </td>
+            <td>
+              <div class="flex items-center gap-1">
+                <span class="text-sm font-semibold" style="color:var(--text-primary);">${totalOpen}</span>
+                ${breached > 0 ? `<span class="pulse-dot" style="width:6px;height:6px;margin-left:2px;"></span>` : ''}
+              </div>
+            </td>
+            <td><span class="text-sm" style="color:var(--text-primary);">${openPrimary}</span></td>
+            <td><span class="text-sm" style="color:${openCollab > 0 ? 'var(--text-primary)' : 'var(--text-muted)'};">${openCollab > 0 ? openCollab : '—'}</span></td>
+            <td><span class="text-sm" style="color:var(--text-primary);">${activeTasks}</span></td>
+            <td>${urgentCount > 0
+              ? `<span class="badge" style="background:var(--error-bg);color:var(--error);font-size:11px;">${urgentCount} urgent</span>`
+              : `<span class="text-sm" style="color:var(--text-muted);">—</span>`
+            }</td>
+            <td><span class="text-sm" style="color:var(--text-muted);">${avgResponses[agent.id] || '—'}</span></td>
+            <td>
+              <div class="flex items-center gap-2">
+                <div style="flex:1;height:8px;border-radius:4px;background:var(--bg-surface-alt);overflow:hidden;">
+                  <div style="height:100%;border-radius:4px;width:${slaPct}%;background:${barColor};transition:width 0.3s;"></div>
+                </div>
+                <span class="text-xs" style="min-width:36px;text-align:right;color:var(--text-muted);">${slaPct}%</span>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      // Unassigned row
+      const unassigned = CONVERSATIONS.filter(c => !c.assignedTo);
+      const unassignedOpen = unassigned.filter(c => c.status === 'open').length;
+      const unassignedRow = unassignedOpen > 0 ? `
+        <tr class="agent-row cursor-pointer" style="border-left: 3px solid var(--warning);background:var(--warning-bg);" onclick="location.href='inbox-compact.html?filter=unassigned'">
+          <td>
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0" style="font-size:12px;font-weight:700;border:2px dashed var(--warning);color:var(--warning);">?</div>
+              <span class="text-sm font-semibold" style="color:var(--warning);">Unassigned</span>
+            </div>
+          </td>
+          <td><span class="text-sm font-semibold" style="color:var(--warning);">${unassignedOpen}</span></td>
+          <td colspan="6"><span class="text-xs" style="color:var(--warning);">These conversations need to be assigned to an agent</span></td>
+        </tr>
+      ` : '';
+
+      document.getElementById('teamWorkloadBody').innerHTML = unassignedRow + agentRows;
+    }
+
+    function renderActivityFeed() {
+      document.getElementById('activity-feed').innerHTML = ACTIVITY_ITEMS.map(item => {
+        const badge = TYPE_BADGE[item.type] || TYPE_BADGE.conv;
+        const rowBg = item.urgent ? 'background:var(--error-bg);border-radius:4px;padding:4px 4px 4px 0;margin:-4px 0;' : '';
+        return `
+          <div class="activity-item cursor-pointer" onclick="location.href='${item.href}'" onmouseover="this.style.opacity='.75'" onmouseout="this.style.opacity='1'" style="${rowBg}">
+            <div class="activity-dot ${item.dot}"></div>
+            <div class="flex items-center gap-2 mb-0.5">
+              <span class="text-xs px-1.5 py-0.5 rounded" style="background:${badge.bg};color:${badge.color};font-weight:600;font-size:10px;">${badge.label}</span>
+              <span class="text-xs" style="color:var(--text-muted);">${item.time}</span>
+            </div>
+            <div class="text-sm ${item.urgent ? 'font-semibold' : ''}" style="color:${item.urgent ? 'var(--error)' : 'var(--text-primary)'};">${item.text}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderCriticalTasks() {
+      const critical = TASKS.filter(t =>
+        t.priority === 'Urgent' || (t.dueIn && t.dueIn.includes('overdue')) || t.status === 'Blocked'
+      ).slice(0, 6);
+
+      if (critical.length === 0) {
+        document.getElementById('critical-tasks').innerHTML = `<p class="text-sm text-center py-4" style="color:var(--text-muted);">No critical tasks</p>`;
+        return;
+      }
+
+      document.getElementById('critical-tasks').innerHTML = critical.map(t => {
+        const hh = getHousehold(t.householdId);
+        const priorityColor = t.priority === 'Urgent' ? 'var(--error)' : t.status === 'Blocked' ? 'var(--warning)' : 'var(--text-muted)';
+        const priorityLabel = t.status === 'Blocked' ? 'Blocked' : t.priority;
+        const dueColor = t.dueIn && t.dueIn.includes('overdue') ? 'var(--error)' : 'var(--text-muted)';
+        return `
+          <div class="task-row" onclick="location.href='tasks.html'">
+            <div>
+              <span class="badge" style="font-size:10px;background:${t.priority==='Urgent'?'var(--error-bg)':t.status==='Blocked'?'var(--warning-bg,#fffbeb)':'var(--bg-surface-alt)'};color:${priorityColor};">${priorityLabel}</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="text-sm font-medium truncate" style="color:var(--text-primary);">${t.title}</div>
+              <div class="text-xs mt-0.5" style="color:var(--text-muted);">${hh ? hh.name : ''}</div>
+            </div>
+            <div class="text-xs flex-shrink-0" style="color:${dueColor};">${t.dueIn}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ================================================================
+    //  Member view renderer
+    // ================================================================
+    function getMemberData(agentId) {
+      const myConvs  = CONVERSATIONS.filter(c => c.assignedTo === agentId);
+      const myTrips  = TRIPS.filter(t => t.agentId === agentId);
+      const myTasks  = [...TASKS.filter(t => t.assignedTo === agentId)]
+                        .sort((a,b) => PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority]);
+      const openConvs = myConvs.filter(c => c.status === 'open');
+      const tasksDueToday = myTasks.filter(t => t.dueIn === 'Due today' || t.dueIn === '1d');
+      const slaHealthy    = myConvs.filter(c => c.slaStatus === 'healthy').length;
+      const slaPercent    = myConvs.length > 0 ? Math.round((slaHealthy / myConvs.length) * 100) : 100;
+      const activeTrips   = myTrips.filter(t => !['completed','archived'].includes(t.stage));
+      return { myConvs, myTrips, myTasks, openConvs, tasksDueToday, slaPercent, activeTrips };
+    }
+
+    function renderMemberView(agentId) {
+      const d    = getMemberData(agentId);
+      const agent = getAgent(agentId);
+      const perf  = AGENT_PERF[agentId] || AGENT_PERF.a1;
+
+      // Personal KPI cards
+      const kpiData = [
+        { label: 'My Open Convs',     val: d.openConvs.length,      accent: 'var(--info)',    link: 'inbox-compact.html', delta: `${d.myConvs.filter(c=>c.slaStatus==='warning'||c.slaStatus==='critical').length} need attention`, deltaColor: 'var(--warning)' },
+        { label: 'Tasks Due Today',   val: d.tasksDueToday.length,  accent: 'var(--warning)', link: 'tasks.html',          delta: `${d.myTasks.filter(t=>t.dueIn&&t.dueIn.includes('overdue')).length} overdue`, deltaColor: 'var(--error)' },
+        { label: 'My SLA Health',     val: d.slaPercent + '%',      accent: d.slaPercent>=85?'var(--success)':d.slaPercent>=70?'var(--warning)':'var(--error)', link: 'inbox-queue.html', delta: `${d.myConvs.filter(c=>c.slaStatus==='breached').length} breached`, deltaColor:'var(--error)' },
+        { label: 'My Active Trips',   val: d.activeTrips.length,    accent: 'var(--gold)',    link: 'trip-pipeline.html',  delta: `${d.myTrips.length} total assigned`, deltaColor: 'var(--text-muted)' },
+      ];
+
+      document.getElementById('member-kpis').innerHTML = kpiData.map(k => `
+        <div class="card kpi-card p-5 cursor-pointer" style="border-left-color:${k.accent};" onclick="location.href='${k.link}'">
+          <div class="text-3xl font-bold mb-1" style="color:${k.accent};">${k.val}</div>
+          <div class="text-xs font-medium mb-1" style="color:var(--text-muted);">${k.label}</div>
+          <div class="text-xs" style="color:${k.deltaColor};">${k.delta}</div>
+        </div>
+      `).join('');
+
+      // My Conversations
+      document.getElementById('member-convs').innerHTML = d.openConvs.length === 0
+        ? `<p class="text-sm py-4 text-center" style="color:var(--text-muted);">No open conversations</p>`
+        : d.openConvs.map(c => {
+            const hh = getHousehold(c.householdId);
+            const dotColor = SLA_DOT[c.slaStatus] || 'var(--text-muted)';
+            const channelColor = c.channel === 'whatsapp' ? 'var(--whatsapp)' : c.channel === 'stream' ? 'var(--stream)' : 'var(--email)';
+            return `
+              <div class="conv-row" onclick="location.href='inbox-compact.html'">
+                <span style="width:8px;height:8px;border-radius:50%;background:${dotColor};display:inline-block;flex-shrink:0;"></span>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm font-medium" style="color:var(--text-primary);">${hh ? hh.name : c.householdId}</span>
+                    <span class="text-xs px-1.5 py-0.5 rounded" style="background:var(--bg-surface-alt);color:${channelColor};font-size:10px;text-transform:capitalize;">${c.channel}</span>
+                  </div>
+                  <div class="text-xs truncate mt-0.5" style="color:var(--text-muted);">${c.lastMessage}</div>
+                </div>
+                <div class="flex flex-col items-end gap-1 flex-shrink-0">
+                  <span class="text-xs" style="color:var(--text-muted);">${c.lastActivity}</span>
+                  ${c.unread > 0 ? `<span class="badge" style="background:var(--gold);color:#000;font-size:10px;min-width:16px;text-align:center;">${c.unread}</span>` : ''}
+                </div>
+              </div>
+            `;
+          }).join('');
+
+      // My Tasks
+      document.getElementById('member-tasks').innerHTML = d.myTasks.length === 0
+        ? `<p class="text-sm py-4 text-center" style="color:var(--text-muted);">No tasks assigned</p>`
+        : d.myTasks.slice(0, 6).map(t => {
+            const hh = getHousehold(t.householdId);
+            const pColor = t.priority === 'Urgent' ? 'var(--error)' : t.priority === 'High' ? 'var(--warning)' : 'var(--text-muted)';
+            const pBg    = t.priority === 'Urgent' ? 'var(--error-bg)' : t.priority === 'High' ? 'var(--warning-bg,#fffbeb)' : 'var(--bg-surface-alt)';
+            const dueColor = t.dueIn && t.dueIn.includes('overdue') ? 'var(--error)' : t.dueIn === 'Due today' ? 'var(--warning)' : 'var(--text-muted)';
+            return `
+              <div class="task-row" onclick="location.href='tasks.html'">
+                <span class="badge flex-shrink-0" style="font-size:10px;background:${pBg};color:${pColor};">${t.priority}</span>
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm truncate" style="color:var(--text-primary);">${t.title}</div>
+                  <div class="text-xs mt-0.5" style="color:var(--text-muted);">${hh ? hh.name : ''}</div>
+                </div>
+                <span class="text-xs flex-shrink-0" style="color:${dueColor};">${t.dueIn}</span>
+              </div>
+            `;
+          }).join('');
+
+      // My Trips
+      document.getElementById('member-trips').innerHTML = d.activeTrips.length === 0
+        ? `<p class="text-sm py-4 text-center col-span-3" style="color:var(--text-muted);">No active trips assigned</p>`
+        : d.activeTrips.map(t => {
+            const hh    = getHousehold(t.householdId);
+            const stage = PIPELINE_STAGES.find(s => s.id === t.stage);
+            return `
+              <div class="trip-card" onclick="location.href='trip-detail.html'">
+                <div class="flex items-start justify-between gap-2 mb-2">
+                  <div class="text-sm font-semibold leading-tight" style="color:var(--text-primary);">${hh ? hh.name : ''}</div>
+                  <span class="badge flex-shrink-0" style="font-size:10px;background:transparent;border:1px solid ${stage ? stage.color : 'var(--border)'};color:${stage ? stage.color : 'var(--text-muted)'};">${stage ? stage.label : t.stage}</span>
+                </div>
+                <div class="text-xs mb-1 truncate" style="color:var(--text-secondary);">${t.name}</div>
+                <div class="text-xs" style="color:var(--text-muted);">${t.dates}</div>
+                <div class="text-xs mt-1" style="color:var(--text-muted);">${t.budget}</div>
+              </div>
+            `;
+          }).join('');
+
+      // Performance
+      document.getElementById('member-perf').innerHTML = [
+        { label: 'Avg Response',    val: perf.avgResponse,    color: 'var(--text-primary)' },
+        { label: 'SLA Compliance',  val: perf.slaCompliance,  color: parseInt(perf.slaCompliance) >= 90 ? 'var(--success)' : 'var(--warning)' },
+        { label: 'Resolved Today',  val: perf.resolvedToday,  color: 'var(--text-primary)' },
+        { label: 'Total Assigned',  val: d.myConvs.length + ' convs', color: 'var(--text-primary)' },
+      ].map(p => `
+        <div class="perf-pill flex-1">
+          <span class="text-xl font-bold" style="color:${p.color};">${p.val}</span>
+          <span class="text-xs" style="color:var(--text-muted);">${p.label}</span>
+        </div>
+      `).join('');
+    }
+
+    // ================================================================
+    //  Sidebar margin sync
+    // ================================================================
+    function updateMainMargin() {
+      document.getElementById('main-wrapper').style.marginLeft = MaestroNav.getSidebarWidth() + 'px';
+    }
+    const _observer = new MutationObserver(updateMainMargin);
+    setTimeout(() => {
+      const sb = document.getElementById('sidebar');
+      if (sb) _observer.observe(sb, { attributes: true, attributeFilter: ['class'] });
+    }, 100);
+    updateMainMargin();
+
+    // ================================================================
+    //  Boot
+    // ================================================================
+    MaestroNav.render('sidebar-root');
+    loadManagerView();
+    initViewSwitcher();
+  </script>
+</body>
+</html>

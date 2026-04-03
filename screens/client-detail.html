@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Client Detail -- Maestro Command Centre</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/theme.css">
+  <script src="../js/data.js"></script>
+  <script src="../js/theme.js"></script>
+  <script src="../js/nav.js"></script>
+  <script src="../js/interactions.js"></script>
+</head>
+<body class="antialiased">
+
+<!-- Sidebar -->
+<div id="sidebar-root"></div>
+
+<!-- Main content (shifts right based on sidebar width) -->
+<div id="main-wrapper" class="transition-all duration-200" style="margin-left:240px;">
+  <div class="flex flex-col h-screen overflow-hidden transition-theme" style="background:var(--bg-app);">
+
+    <!-- Client header -->
+    <div class="px-6 py-5 border-b transition-theme" style="background:var(--bg-surface);border-color:var(--border);">
+      <div class="flex items-center justify-between mb-4">
+        <a href="clients.html" class="flex items-center gap-2 text-sm font-medium hover:underline" style="color:var(--text-muted);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+          Back to Clients
+        </a>
+      </div>
+      <div class="flex items-start gap-4">
+        <span class="avatar avatar-lg" id="client-avatar" style="background:#6366f1;color:#fff;">SV</span>
+        <div class="flex-1">
+          <div class="flex items-center gap-3 mb-2">
+            <h1 class="text-2xl font-semibold" style="color:var(--text-primary);" id="client-name">Samuel Vimes</h1>
+            <span class="badge" id="client-status-badge" style="background:var(--success-bg);color:var(--success);">Active</span>
+            <span class="badge" id="client-tier-badge" style="background:var(--gold-bg);color:var(--gold);">VIP</span>
+          </div>
+          <div class="flex items-center gap-6 text-sm" style="color:var(--text-secondary);">
+            <div class="flex items-center gap-2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              <span id="client-phone">+1 (720) 555-0411</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+              <span id="client-email">samuel.vimes@yahoo.com</span>
+            </div>
+          </div>
+          <!-- Household section -->
+          <div id="household-section" class="mt-3 pt-3" style="border-top:1px solid var(--border);">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <button class="btn-ghost flex items-center gap-1.5" id="client-message-btn" onclick="navigateToInbox()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+            Message
+          </button>
+          <button class="btn-gold flex items-center gap-1.5" id="client-newtrip-btn" onclick="openTripModal()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            New Trip
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tab-bar transition-theme" style="background:var(--bg-surface);border-color:var(--border);position:sticky;top:0;z-index:10;">
+      <div class="tab-item active" data-tab="overview">Overview</div>
+      <div class="tab-item" data-tab="trips">Trips</div>
+      <div class="tab-item" data-tab="conversations">Conversations</div>
+      <div class="tab-item" data-tab="preferences">Preferences</div>
+      <div class="tab-item" data-tab="points">Points & Loyalty</div>
+      <div class="tab-item" data-tab="activity">Activity</div>
+    </div>
+
+    <!-- Tab content container -->
+    <div class="flex-1 overflow-auto px-6 py-5" data-tab-container>
+
+      <!-- OVERVIEW TAB -->
+      <div data-tab-content="overview">
+        <div class="grid grid-cols-4 gap-4 mb-6">
+          <!-- Summary cards -->
+          <div class="card p-4">
+            <div class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:var(--text-muted);">Active Trips</div>
+            <div class="text-3xl font-bold mb-1" style="color:var(--text-primary);" id="overview-trips">1</div>
+            <div class="text-xs" style="color:var(--text-secondary);">1 in planning</div>
+          </div>
+          <div class="card p-4">
+            <div class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:var(--text-muted);">Open Tasks</div>
+            <div class="text-3xl font-bold mb-1" style="color:var(--warning);" id="overview-tasks">2</div>
+            <div class="text-xs" style="color:var(--text-secondary);">1 urgent</div>
+          </div>
+          <div class="card p-4">
+            <div class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:var(--text-muted);">Total Points</div>
+            <div class="text-3xl font-bold mb-1" style="color:var(--gold);" id="overview-points">599K</div>
+            <div class="text-xs" style="color:var(--text-secondary);">Across 3 programs</div>
+          </div>
+          <div class="card p-4">
+            <div class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:var(--text-muted);">SLA Health</div>
+            <div class="text-3xl font-bold mb-1" style="color:var(--success);">100%</div>
+            <div class="text-xs" style="color:var(--text-secondary);">No breaches</div>
+          </div>
+        </div>
+
+        <!-- Recent activity timeline -->
+        <div class="card p-5">
+          <div class="text-sm font-semibold mb-4" style="color:var(--text-primary);">Recent Activity</div>
+          <div class="space-y-4" id="overview-activity">
+            <div class="flex gap-3">
+              <div class="flex flex-col items-center flex-shrink-0">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background:var(--success-bg);">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--success);"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                </div>
+                <div class="flex-1 w-px" style="background:var(--border);margin-top:4px;margin-bottom:4px;min-height:32px;"></div>
+              </div>
+              <div class="flex-1 pb-4">
+                <div class="text-sm font-medium" style="color:var(--text-primary);">Yacht booking confirmed</div>
+                <div class="text-xs" style="color:var(--text-muted);">2 hours ago · Athens, Mykonos & Santorini</div>
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <div class="flex flex-col items-center flex-shrink-0">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background:var(--info-bg);">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--info);"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+                </div>
+                <div class="flex-1 w-px" style="background:var(--border);margin-top:4px;margin-bottom:4px;min-height:32px;"></div>
+              </div>
+              <div class="flex-1 pb-4">
+                <div class="text-sm font-medium" style="color:var(--text-primary);">Client requested helicopter transfer</div>
+                <div class="text-xs" style="color:var(--text-muted);">5 hours ago · Conversation via WhatsApp</div>
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <div class="flex flex-col items-center flex-shrink-0">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background:var(--warning-bg);">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--warning);"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 12 2 2 4-4"/></svg>
+                </div>
+                <div class="flex-1 w-px" style="background:var(--border);margin-top:4px;margin-bottom:4px;min-height:32px;"></div>
+              </div>
+              <div class="flex-1 pb-4">
+                <div class="text-sm font-medium" style="color:var(--text-primary);">Task created: Resolve Canaves Oia waitlist</div>
+                <div class="text-xs" style="color:var(--text-muted);">Yesterday · Assigned to Angua von Uberwald</div>
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <div class="flex flex-col items-center flex-shrink-0">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background:var(--success-bg);">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--success);"><path d="M18 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Z"/><path d="m9 16 .348-.24c1.465-1.013 3.84-1.013 5.304 0L15 16"/><path d="M8 7h.01"/><path d="M16 7h.01"/></svg>
+                </div>
+                <div class="flex-1 w-px" style="background:var(--border);margin-top:4px;margin-bottom:4px;min-height:32px;"></div>
+              </div>
+              <div class="flex-1 pb-4">
+                <div class="text-sm font-medium" style="color:var(--text-primary);">Hotel Grande Bretagne confirmed</div>
+                <div class="text-xs" style="color:var(--text-muted);">Mar 25 · Athens 3 nights</div>
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <div class="flex flex-col items-center flex-shrink-0">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background:var(--info-bg);">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--info);"><path d="m3 7 6-3 6 3 6-3v13l-6 3-6-3-6 3Z"/><path d="m9 4v13"/><path d="m15 7v13"/></svg>
+                </div>
+              </div>
+              <div class="flex-1">
+                <div class="text-sm font-medium" style="color:var(--text-primary);">Trip created: Athens, Mykonos & Santorini</div>
+                <div class="text-xs" style="color:var(--text-muted);">Mar 20 · May 10-24, 2026</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRIPS TAB -->
+      <div data-tab-content="trips" style="display:none;">
+        <table class="data-table" style="background:var(--bg-surface);">
+          <thead>
+            <tr>
+              <th>Trip Name</th>
+              <th>Destinations</th>
+              <th>Dates</th>
+              <th>Status</th>
+              <th>Stage</th>
+              <th>Agent</th>
+            </tr>
+          </thead>
+          <tbody id="trips-table-body">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- CONVERSATIONS TAB -->
+      <div data-tab-content="conversations" style="display:none;">
+        <table class="data-table" style="background:var(--bg-surface);">
+          <thead>
+            <tr>
+              <th>Trip</th>
+              <th>Last Message</th>
+              <th>Channel</th>
+              <th>Status</th>
+              <th>SLA</th>
+            </tr>
+          </thead>
+          <tbody id="conversations-table-body">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- PREFERENCES TAB -->
+      <div data-tab-content="preferences" style="display:none;">
+        <div class="card p-5">
+          <div class="flex items-center justify-between mb-6">
+            <h2 class="text-lg font-semibold" style="color:var(--text-primary);">Travel Preferences</h2>
+            <button class="btn-ghost" onclick="openPreferencesModal()">Edit Preferences</button>
+          </div>
+          <div class="grid grid-cols-2 gap-6" id="preferences-grid">
+            <!-- Populated by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- POINTS & LOYALTY TAB -->
+      <div data-tab-content="points" style="display:none;">
+        <div class="grid grid-cols-3 gap-4" id="points-grid">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- ACTIVITY TAB -->
+      <div data-tab-content="activity" style="display:none;">
+        <div class="card p-5">
+          <div class="text-sm font-semibold mb-4" style="color:var(--text-primary);">Full Activity Timeline</div>
+          <div class="space-y-4" id="full-activity-timeline">
+            <!-- Extended timeline -->
+            <div class="flex gap-3">
+              <div class="flex flex-col items-center flex-shrink-0">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background:var(--success-bg);">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--success);"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                </div>
+                <div class="flex-1 w-px" style="background:var(--border);margin-top:4px;margin-bottom:4px;min-height:32px;"></div>
+              </div>
+              <div class="flex-1 pb-4">
+                <div class="text-sm font-medium" style="color:var(--text-primary);">Yacht booking confirmed</div>
+                <div class="text-xs" style="color:var(--text-muted);">2 hours ago · Private Yacht Day - Mykonos</div>
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <div class="flex flex-col items-center flex-shrink-0">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background:var(--info-bg);">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--info);"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+                </div>
+                <div class="flex-1 w-px" style="background:var(--border);margin-top:4px;margin-bottom:4px;min-height:32px;"></div>
+              </div>
+              <div class="flex-1 pb-4">
+                <div class="text-sm font-medium" style="color:var(--text-primary);">Message sent via WhatsApp</div>
+                <div class="text-xs" style="color:var(--text-muted);">5 hours ago · "Nobby is sold on the helicopter..."</div>
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <div class="flex flex-col items-center flex-shrink-0">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background:var(--warning-bg);">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--warning);"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 12 2 2 4-4"/></svg>
+                </div>
+                <div class="flex-1 w-px" style="background:var(--border);margin-top:4px;margin-bottom:4px;min-height:32px;"></div>
+              </div>
+              <div class="flex-1 pb-4">
+                <div class="text-sm font-medium" style="color:var(--text-primary);">Task assigned: Resolve Canaves Oia waitlist</div>
+                <div class="text-xs" style="color:var(--text-muted);">Yesterday · Due in 1 day</div>
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <div class="flex flex-col items-center flex-shrink-0">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background:var(--success-bg);">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--success);"><path d="M18 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Z"/><path d="m9 16 .348-.24c1.465-1.013 3.84-1.013 5.304 0L15 16"/><path d="M8 7h.01"/><path d="M16 7h.01"/></svg>
+                </div>
+                <div class="flex-1 w-px" style="background:var(--border);margin-top:4px;margin-bottom:4px;min-height:32px;"></div>
+              </div>
+              <div class="flex-1 pb-4">
+                <div class="text-sm font-medium" style="color:var(--text-primary);">Cavo Tagoo Mykonos confirmed</div>
+                <div class="text-xs" style="color:var(--text-muted);">Mar 23 · 5 nights, $1,200/night</div>
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <div class="flex flex-col items-center flex-shrink-0">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background:var(--success-bg);">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--success);"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
+                </div>
+                <div class="flex-1 w-px" style="background:var(--border);margin-top:4px;margin-bottom:4px;min-height:32px;"></div>
+              </div>
+              <div class="flex-1 pb-4">
+                <div class="text-sm font-medium" style="color:var(--text-primary);">Flight booking confirmed</div>
+                <div class="text-xs" style="color:var(--text-muted);">Mar 22 · Delta DL-401, 86K points</div>
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <div class="flex flex-col items-center flex-shrink-0">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background:var(--success-bg);">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--success);"><path d="M18 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Z"/><path d="m9 16 .348-.24c1.465-1.013 3.84-1.013 5.304 0L15 16"/><path d="M8 7h.01"/><path d="M16 7h.01"/></svg>
+                </div>
+                <div class="flex-1 w-px" style="background:var(--border);margin-top:4px;margin-bottom:4px;min-height:32px;"></div>
+              </div>
+              <div class="flex-1 pb-4">
+                <div class="text-sm font-medium" style="color:var(--text-primary);">Hotel Grande Bretagne confirmed</div>
+                <div class="text-xs" style="color:var(--text-muted);">Mar 25 · 3 nights, $850/night</div>
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <div class="flex flex-col items-center flex-shrink-0">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background:var(--info-bg);">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--info);"><path d="m3 7 6-3 6 3 6-3v13l-6 3-6-3-6 3Z"/><path d="m9 4v13"/><path d="m15 7v13"/></svg>
+                </div>
+                <div class="flex-1 w-px" style="background:var(--border);margin-top:4px;margin-bottom:4px;min-height:32px;"></div>
+              </div>
+              <div class="flex-1 pb-4">
+                <div class="text-sm font-medium" style="color:var(--text-primary);">Trip created: Athens, Mykonos & Santorini</div>
+                <div class="text-xs" style="color:var(--text-muted);">Mar 20 · May 10-24, 2026, 4 travelers</div>
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <div class="flex flex-col items-center flex-shrink-0">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background:var(--gold-bg);">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--gold);"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
+              </div>
+              <div class="flex-1">
+                <div class="text-sm font-medium" style="color:var(--text-primary);">Client onboarded</div>
+                <div class="text-xs" style="color:var(--text-muted);">Nov 12, 2025 · VIP tier</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- Command Palette -->
+<div id="cmd-palette-root"></div>
+
+<script>
+  let currentClient = null;
+
+  // ---- Render sidebar ----
+  document.addEventListener('DOMContentLoaded', () => {
+    MaestroNav.render('sidebar-root');
+    updateMainMargin();
+    loadClientData();
+    document.getElementById('cmd-palette-root').innerHTML = renderCommandPalette();
+  });
+
+  // Observe sidebar changes
+  const observer = new MutationObserver(updateMainMargin);
+  setTimeout(() => {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) observer.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
+  }, 100);
+
+  function updateMainMargin() {
+    const w = MaestroNav.getSidebarWidth();
+    document.getElementById('main-wrapper').style.marginLeft = w + 'px';
+  }
+
+  // ---- Load client data ----
+  function loadClientData() {
+    const params = new URLSearchParams(window.location.search);
+    const clientId = params.get('id') || 'c1';
+    currentClient = getClient(clientId);
+
+    if (!currentClient) {
+      document.body.innerHTML = '<div style="padding:40px;text-align:center;">Client not found</div>';
+      return;
+    }
+
+    // Populate header
+    document.getElementById('client-avatar').textContent = currentClient.initials;
+    document.getElementById('client-avatar').style.background = currentClient.avatarColor;
+    document.getElementById('client-name').textContent = currentClient.name;
+    document.getElementById('client-phone').textContent = currentClient.phone;
+    document.getElementById('client-email').textContent = currentClient.email;
+
+    const statusColors = {
+      Active: { bg: 'var(--success-bg)', color: 'var(--success)' },
+      Archived: { bg: 'var(--bg-surface-alt)', color: 'var(--text-muted)' }
+    };
+    const tierColors = {
+      VIP: { bg: 'var(--gold-bg)', color: 'var(--gold)' },
+      Standard: { bg: 'var(--info-bg)', color: 'var(--info)' }
+    };
+    const sc = statusColors[currentClient.status] || statusColors.Active;
+    const tc = tierColors[currentClient.tier] || tierColors.Standard;
+    document.getElementById('client-status-badge').textContent = currentClient.status;
+    document.getElementById('client-status-badge').style.background = sc.bg;
+    document.getElementById('client-status-badge').style.color = sc.color;
+    document.getElementById('client-tier-badge').textContent = currentClient.tier;
+    document.getElementById('client-tier-badge').style.background = tc.bg;
+    document.getElementById('client-tier-badge').style.color = tc.color;
+
+    // Populate household section
+    renderHouseholdSection();
+
+    // Populate overview stats
+    const household = getHouseholdByClient(clientId);
+    const householdTrips = household ? getTripsByHousehold(household.id) : [];
+    const activeTrips = householdTrips.filter(t => t.status === 'Active' && t.travelers.includes(clientId));
+    const tasks = household ? TASKS.filter(t => t.householdId === household.id) : [];
+    const totalPoints = Object.values(currentClient.points || {}).reduce((sum, p) => sum + p, 0);
+    document.getElementById('overview-trips').textContent = activeTrips.length;
+    document.getElementById('overview-tasks').textContent = tasks.length;
+    document.getElementById('overview-points').textContent = (totalPoints / 1000).toFixed(0) + 'K';
+
+    // Wire Message button to correct conversation
+    const clientConvs = household ? getConversationsByHousehold(household.id) : [];
+    if (clientConvs.length > 0) {
+      document.getElementById('client-message-btn').onclick = () => navigateToInbox(clientConvs[0].id);
+    }
+
+    // Wire New Trip button with household
+    if (household) {
+      document.getElementById('client-newtrip-btn').onclick = () => openTripModal(household.id);
+    }
+
+    // Populate tabs
+    renderTripsTab();
+    renderConversationsTab();
+    renderPreferencesTab();
+    renderPointsTab();
+  }
+
+  // ---- Household section ----
+  function renderHouseholdSection() {
+    const section = document.getElementById('household-section');
+    const household = getHouseholdByClient(currentClient.id);
+
+    if (!household) {
+      section.style.display = 'none';
+      return;
+    }
+
+    const members = getClientsByHousehold(household.id).filter(m => m.id !== currentClient.id);
+
+    let html = `
+      <div class="flex items-center gap-2 mb-2">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted);">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        <span class="text-xs font-semibold uppercase tracking-wide" style="color:var(--text-muted);">Household</span>
+        <span class="text-xs font-medium" style="color:var(--text-secondary);">${household.name}</span>
+      </div>`;
+
+    if (members.length > 0) {
+      html += `
+        <div class="flex items-center gap-2 flex-wrap">
+          ${members.map(m => `
+            <a href="client-detail?id=${m.id}" class="flex items-center gap-1.5 px-2 py-1 rounded-lg transition-colors hover:bg-gray-100" style="background:var(--bg-app);border:1px solid var(--border);" onclick="event.stopPropagation();">
+              <span class="avatar avatar-xs" style="background:${m.avatarColor};color:#fff;">${m.initials}</span>
+              <span class="text-xs font-medium" style="color:var(--text-primary);">${m.name}</span>
+            </a>
+          `).join('')}
+        </div>`;
+    }
+
+    if (household.dependents && household.dependents.length > 0) {
+      html += `
+        <div class="flex items-center gap-2 mt-2">
+          <span class="text-xs" style="color:var(--text-muted);">Dependents:</span>
+          ${household.dependents.map(d => `<span class="text-xs" style="color:var(--text-secondary);">${d.name}, ${d.age}</span>`).join(' • ')}
+        </div>`;
+    }
+
+    section.innerHTML = html;
+  }
+
+  // ---- Trips tab ----
+  function renderTripsTab() {
+    const tbody = document.getElementById('trips-table-body');
+    const household = getHouseholdByClient(currentClient.id);
+    const trips = household ? getTripsByHousehold(household.id) : [];
+
+    if (trips.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding:40px;color:var(--text-muted);">No trips for this household</td></tr>';
+      return;
+    }
+
+    const stageColors = {
+      lead: '#94a3b8', planning: '#6366f1', booking: '#f59e0b',
+      confirmed: '#10b981', active: '#06b6d4', completed: '#8b5cf6'
+    };
+
+    tbody.innerHTML = trips.map(trip => {
+      const agent = getAgent(trip.agentId);
+      const statusColors = {
+        Active: { bg: 'var(--success-bg)', color: 'var(--success)' },
+        Confirmed: { bg: 'var(--info-bg)', color: 'var(--info)' }
+      };
+      const sc = statusColors[trip.status] || statusColors.Active;
+      const stageLabel = trip.stage.charAt(0).toUpperCase() + trip.stage.slice(1);
+
+      // Highlight if this client is a traveler
+      const isClientTraveler = trip.travelers.includes(currentClient.id);
+      const rowStyle = isClientTraveler ? 'cursor:pointer;' : 'cursor:pointer;opacity:0.7;';
+
+      return `
+        <tr onclick="window.location.href='trip-detail?id=${trip.id}'" style="${rowStyle}">
+          <td class="font-medium" style="color:var(--text-primary);">
+            ${trip.name}
+            ${isClientTraveler ? '<span class="text-xs ml-2" style="color:var(--success);">●</span>' : ''}
+          </td>
+          <td style="color:var(--text-secondary);">${trip.destinations}</td>
+          <td style="color:var(--text-secondary);">${trip.dates}</td>
+          <td><span class="badge" style="background:${sc.bg};color:${sc.color};">${trip.status}</span></td>
+          <td><span class="badge" style="background:${stageColors[trip.stage]}20;color:${stageColors[trip.stage]};">${stageLabel}</span></td>
+          <td style="color:var(--text-secondary);">${agent ? agent.name : 'Unassigned'}</td>
+        </tr>`;
+    }).join('');
+  }
+
+  // ---- Conversations tab ----
+  function renderConversationsTab() {
+    const tbody = document.getElementById('conversations-table-body');
+    const household = getHouseholdByClient(currentClient.id);
+    const convs = household ? getConversationsByHousehold(household.id) : [];
+
+    if (convs.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="text-center" style="padding:40px;color:var(--text-muted);">No conversations for this household</td></tr>';
+      return;
+    }
+
+    const slaColors = { healthy: 'var(--sla-healthy)', warning: 'var(--sla-warning)', critical: 'var(--sla-critical)', breached: 'var(--sla-breached)' };
+    const statusColors = {
+      open: { bg: 'var(--success-bg)', color: 'var(--success)' },
+      snoozed: { bg: 'var(--warning-bg)', color: 'var(--warning)' },
+      closed: { bg: 'var(--bg-surface-alt)', color: 'var(--text-muted)' }
+    };
+
+    tbody.innerHTML = convs.map(conv => {
+      const trip = getTrip(conv.tripId);
+      const sc = statusColors[conv.status] || statusColors.open;
+      const channelBadge = conv.channel === 'whatsapp' ? 'WhatsApp' : 'Stream';
+      const channelColor = conv.channel === 'whatsapp' ? '#25D366' : '#6366f1';
+
+      return `
+        <tr onclick="window.location.href='inbox-compact?conv=${conv.id}'" style="cursor:pointer;">
+          <td class="font-medium" style="color:var(--text-primary);">${trip ? trip.name : 'General'}</td>
+          <td style="color:var(--text-secondary);">${conv.lastMessage}</td>
+          <td><span class="badge" style="background:${channelColor}20;color:${channelColor};">${channelBadge}</span></td>
+          <td><span class="badge" style="background:${sc.bg};color:${sc.color};">${conv.status.charAt(0).toUpperCase() + conv.status.slice(1)}</span></td>
+          <td>
+            <div class="flex items-center gap-1.5">
+              <div class="w-2 h-2 rounded-full" style="background:${slaColors[conv.slaStatus]};"></div>
+              <span class="text-xs" style="color:var(--text-secondary);">${conv.slaMinutes >= 0 ? conv.slaMinutes + 'm remaining' : 'Breached'}</span>
+            </div>
+          </td>
+        </tr>`;
+    }).join('');
+  }
+
+  // ---- Preferences tab ----
+  function renderPreferencesTab() {
+    const grid = document.getElementById('preferences-grid');
+    const prefs = currentClient.preferences || {};
+
+    const prefFields = [
+      { key: 'travelStyle', label: 'Travel Style' },
+      { key: 'airlines', label: 'Preferred Airlines' },
+      { key: 'hotels', label: 'Preferred Hotels' },
+      { key: 'seating', label: 'Seating Preferences' },
+      { key: 'dining', label: 'Dining Preferences' },
+      { key: 'budget', label: 'Budget' },
+      { key: 'pace', label: 'Travel Pace' },
+    ];
+
+    grid.innerHTML = prefFields.map(field => {
+      const value = prefs[field.key] || 'Not specified';
+      return `
+        <div>
+          <div class="text-xs font-semibold uppercase tracking-wide mb-1.5" style="color:var(--text-muted);">${field.label}</div>
+          <div class="text-sm" style="color:var(--text-primary);">${value}</div>
+        </div>`;
+    }).join('');
+  }
+
+  // ---- Points tab ----
+  function renderPointsTab() {
+    const grid = document.getElementById('points-grid');
+    const points = currentClient.points || {};
+
+    const programColors = {
+      amex: '#006FCF', chase: '#1A4296', marriott: '#C41E3A',
+      united: '#0033A0', hyatt: '#A00C38', hilton: '#003A70', delta: '#003A70'
+    };
+    const programLabels = {
+      amex: 'Amex Membership Rewards', chase: 'Chase Ultimate Rewards',
+      marriott: 'Marriott Bonvoy', united: 'United MileagePlus',
+      hyatt: 'World of Hyatt', hilton: 'Hilton Honors', delta: 'Delta SkyMiles'
+    };
+
+    grid.innerHTML = Object.keys(points).map(program => {
+      const balance = points[program];
+      const color = programColors[program] || '#6366f1';
+      const label = programLabels[program] || program.toUpperCase();
+      return `
+        <div class="card p-4" style="background:${color}20;border-color:${color}40;">
+          <div class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:${color};">${label}</div>
+          <div class="text-3xl font-bold" style="color:${color};">${balance.toLocaleString()}</div>
+        </div>`;
+    }).join('');
+  }
+</script>
+
+</body>
+</html>

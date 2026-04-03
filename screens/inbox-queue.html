@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inbox (Queue View) — Maestro Command Centre</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/theme.css">
+  <script src="../js/data.js"></script>
+  <script src="../js/theme.js"></script>
+  <script src="../js/nav.js"></script>
+  <script src="../js/interactions.js"></script>
+</head>
+<body class="antialiased">
+
+<!-- Sidebar -->
+<div id="sidebar-root"></div>
+
+<!-- Main content (shifts right based on sidebar width) -->
+<div id="main-wrapper" class="transition-all duration-200" style="margin-left:240px;">
+  <div class="flex h-screen overflow-hidden">
+
+    <!-- ============ LEFT: SLA QUEUE (320px) ============ -->
+    <div class="flex flex-col border-r transition-theme" style="width:320px;min-width:320px;background:var(--bg-surface);border-color:var(--border);">
+      <!-- List header -->
+      <div class="px-4 py-3 border-b transition-theme" style="border-color:var(--border);">
+        <div class="flex items-center justify-between mb-3">
+          <h1 class="text-base font-semibold" style="color:var(--text-primary);">Inbox</h1>
+          <div class="flex items-center gap-2">
+            <!-- View toggle: compact / cards / queue -->
+            <div class="flex items-center border rounded-md overflow-hidden" style="border-color:var(--border);">
+              <a href="inbox-compact.html" class="view-toggle px-2 py-1" title="Compact list" style="color:var(--text-muted);">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+              </a>
+              <a href="inbox-cards.html" class="view-toggle px-2 py-1" title="Card view" style="color:var(--text-muted);">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+              </a>
+              <button class="view-toggle active px-2 py-1" data-view="queue" title="Queue view" style="background:var(--bg-active);">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5"/><path d="M8 3H3v5"/><path d="M12 22v-8.3a4 4 0 0 0-1.172-2.872L3 3"/><path d="m15 9 6-6"/></svg>
+              </button>
+            </div>
+            <a href="onboarding.html" class="btn-gold" style="padding:5px 10px;font-size:11px;">+ Client</a>
+          </div>
+        </div>
+        <!-- Search -->
+        <input class="input" placeholder="Search conversations..." style="font-size:12px;padding:6px 10px;">
+        <!-- Filters -->
+        <div class="flex gap-2 mt-2">
+          <select id="filter-type" class="input text-xs" style="padding:4px 8px;" onchange="renderQueue()">
+            <option value="">All Threads</option>
+            <option value="trip">Trip Threads</option>
+            <option value="general">General Threads</option>
+          </select>
+          <select id="filter-assigned" class="input text-xs" style="padding:4px 8px;" onchange="renderQueue()">
+            <option value="">All Assigned</option>
+            <option value="unassigned">Unassigned Only</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Swim lanes (scrollable) -->
+      <div id="queue-container" class="flex-1 overflow-y-auto" style="background:var(--bg-surface);"></div>
+    </div>
+
+    <!-- ============ CENTER: Conversation Thread ============ -->
+    <div class="flex flex-col flex-1" style="background:var(--bg-app);">
+      <!-- Conversation header -->
+      <div class="flex items-center justify-between px-6 py-3 border-b transition-theme" style="border-color:var(--border);background:var(--bg-surface);">
+        <div class="flex items-center gap-3">
+          <div id="header-agents" class="flex items-center" style="margin-right:4px;">
+            <!-- Agent avatars rendered dynamically -->
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span id="header-name" class="text-sm font-semibold" style="color:var(--text-primary);">Twoflower Lao</span>
+              <span class="badge badge-gold">VIP</span>
+              <span id="header-sla-badge" class="text-xs px-2 py-0.5 rounded" style="background:var(--error);color:#fff;">BREACHED -15m</span>
+            </div>
+            <div class="flex items-center gap-2 mt-0.5">
+              <span id="header-trip" class="text-xs" style="color:var(--text-secondary);">Paris Anniversary Trip · WhatsApp</span>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="btn-ghost text-xs">Assign</button>
+          <button class="btn-ghost text-xs">Resolve</button>
+          <button id="toggle-context" class="btn-ghost text-xs">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <div id="messages-container" class="flex-1 overflow-y-auto px-6 py-4"></div>
+
+      <!-- Message composer -->
+      <div class="px-6 py-3 border-t transition-theme" style="border-color:var(--border);background:var(--bg-surface);">
+        <!-- Rich text toolbar -->
+        <div class="rounded-lg overflow-hidden" style="border:1px solid var(--border);">
+          <div class="flex items-center gap-1 px-2 border-b" style="height:36px;background:var(--bg-surface-alt);border-color:var(--border);">
+            <!-- Left: formatting buttons -->
+            <button type="button" class="p-1 rounded transition-colors" style="color:var(--text-secondary);" title="Bold">
+              <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M15.6 10.79c.97-.67 1.65-1.77 1.65-2.79 0-2.26-1.75-4-4-4H7v14h7.04c2.09 0 3.71-1.7 3.71-3.79 0-1.52-.86-2.82-2.15-3.42zM10 6.5h3c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-3v-3zm3.5 9H10v-3h3.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5z"/></svg>
+            </button>
+            <button type="button" class="p-1 rounded transition-colors" style="color:var(--text-secondary);" title="Italic">
+              <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M10 4v3h2.21l-3.42 8H6v3h8v-3h-2.21l3.42-8H18V4z"/></svg>
+            </button>
+            <button type="button" class="p-1 rounded transition-colors" style="color:var(--text-secondary);" title="Strikethrough">
+              <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M10 19h4v-3h-4v3zM5 4v3h6v3h2V7h6V4H5zM3 14h18v-2H3v2z"/></svg>
+            </button>
+            <div class="w-px h-4 mx-0.5" style="background:var(--border);"></div>
+            <button type="button" class="p-1 rounded transition-colors" style="color:var(--text-secondary);" title="Bullet list">
+              <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M4 10.5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zm0-6c-.83 0-1.5.67-1.5 1.5S3.17 7.5 4 7.5 5.5 6.83 5.5 6 4.83 4.5 4 4.5zm0 12c-.83 0-1.5.68-1.5 1.5s.68 1.5 1.5 1.5 1.5-.68 1.5-1.5-.67-1.5-1.5-1.5zM7 19h14v-2H7v2zm0-6h14v-2H7v2zm0-8v2h14V5H7z"/></svg>
+            </button>
+            <!-- Right: utility buttons -->
+            <div class="ml-auto flex items-center gap-0.5">
+              <button type="button" class="p-1.5 rounded transition-colors" style="color:var(--text-muted);" title="Attach file">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.586-6.586a4 4 0 00-5.656-5.656l-6.586 6.586a6 6 0 008.484 8.484l6.586-6.586"/></svg>
+              </button>
+              <button type="button" class="p-1.5 rounded transition-colors" style="color:var(--text-muted);" title="Emoji">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" d="M8 13s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg>
+              </button>
+            </div>
+          </div>
+          <textarea id="composer-textarea" rows="3"
+            class="w-full text-sm px-3 py-2.5 focus:outline-none resize-none leading-relaxed"
+            style="background:var(--bg-surface);color:var(--text-primary);"
+            placeholder="Type your message..."></textarea>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="flex items-center justify-between mt-2">
+          <div class="flex items-center gap-2">
+            <button class="btn-ghost text-xs flex items-center justify-center gap-1" onclick="openTaskModal()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 12 2 2 4-4"/></svg>
+              Create Task
+            </button>
+            <button class="btn-ghost text-xs flex items-center justify-center gap-1" onclick="openFlightSearchModal()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
+              Search Flights
+            </button>
+            <button class="btn-ghost text-xs flex items-center justify-center gap-1" onclick="openHotelSearchModal()">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Z"/><path d="m9 16 .348-.24c1.465-1.013 3.84-1.013 5.304 0L15 16"/><path d="M8 7h.01"/><path d="M16 7h.01"/></svg>
+              Search Hotels
+            </button>
+            <button class="btn-ghost text-xs flex items-center justify-center gap-1" onclick="if(currentPrimaryClientId)window.location.href='client-detail?id='+currentPrimaryClientId">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+              View Profile
+            </button>
+          </div>
+          <button class="btn-primary text-xs px-4 py-1.5" onclick="simulateSend('composer-textarea')">Send</button>
+        </div>
+      </div>
+
+      <!-- AI Copilot -->
+      <div class="p-4">
+        <div class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:var(--text-muted);">AI COPILOT</div>
+        <div class="relative">
+          <input class="input" placeholder="/search-flights, /draft-reply, or ask anything..." style="font-size:12px;padding:8px 12px;padding-right:36px;">
+          <button class="absolute right-2 top-1/2 -translate-y-1/2" style="color:var(--gold);" onclick="showToast('AI copilot processing your request...','info')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+          </button>
+        </div>
+        <div class="text-xs mt-1.5" style="color:var(--text-muted);">Try: /search-flights SFO-ATH May 8-12</div>
+      </div>
+    </div>
+
+    <!-- ============ RIGHT: Context Panel ============ -->
+    <div id="context-panel" class="flex flex-col border-l transition-theme" style="width:340px;min-width:340px;background:var(--bg-surface);border-color:var(--border);">
+      <!-- Header -->
+      <div class="px-4 py-3 border-b transition-theme" style="border-color:var(--border);">
+        <h2 class="text-sm font-semibold" style="color:var(--text-primary);">Trip Context</h2>
+      </div>
+
+      <!-- Scrollable content -->
+      <div class="flex-1 overflow-y-auto px-4 py-4" id="context-content">
+        <!-- Travelers section -->
+        <div class="mb-4">
+          <button class="flex items-center justify-between w-full text-left" onclick="toggleSection('travelers-section')">
+            <span class="text-xs font-semibold uppercase tracking-wide" style="color:var(--text-muted);">TRAVELERS (2)</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div id="travelers-section" class="mt-2 space-y-2">
+            <div class="flex items-center gap-2 p-2 rounded transition-theme" style="background:var(--bg-surface-alt);">
+              <span class="avatar" style="background:var(--gold);color:#fff;font-size:10px;">TL</span>
+              <div class="flex-1 min-w-0">
+                <div class="text-xs font-medium" style="color:var(--text-primary);">Twoflower Lao</div>
+                <div class="text-xs" style="color:var(--text-muted);">Primary</div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 p-2 rounded transition-theme" style="background:var(--bg-surface-alt);">
+              <span class="avatar" style="background:#9333ea;color:#fff;font-size:10px;">BL</span>
+              <div class="flex-1 min-w-0">
+                <div class="text-xs font-medium" style="color:var(--text-primary);">Butterfly Lao</div>
+                <div class="text-xs" style="color:var(--text-muted);">Companion</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bookings section -->
+        <div class="mb-4">
+          <button class="flex items-center justify-between w-full text-left" onclick="toggleSection('bookings-section')">
+            <span class="text-xs font-semibold uppercase tracking-wide" style="color:var(--text-muted);">BOOKINGS (3)</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div id="bookings-section" class="mt-2 space-y-2"></div>
+        </div>
+
+        <!-- Tasks section -->
+        <div class="mb-4">
+          <button class="flex items-center justify-between w-full text-left" onclick="toggleSection('tasks-section')">
+            <span class="text-xs font-semibold uppercase tracking-wide" style="color:var(--text-muted);">TASKS (2)</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div id="tasks-section" class="mt-2 space-y-2">
+            <div class="p-2 rounded transition-theme" style="background:var(--bg-surface-alt);">
+              <div class="text-xs font-medium mb-1" style="color:var(--text-primary);">Confirm restaurant reservation</div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs px-1.5 py-0.5 rounded" style="background:var(--warning);color:#fff;">In Progress</span>
+                <span class="text-xs" style="color:var(--text-muted);">Due Mar 15</span>
+              </div>
+            </div>
+            <div class="p-2 rounded transition-theme" style="background:var(--bg-surface-alt);">
+              <div class="text-xs font-medium mb-1" style="color:var(--text-primary);">Send visa requirements</div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs px-1.5 py-0.5 rounded" style="background:var(--success);color:#fff;">Done</span>
+                <span class="text-xs" style="color:var(--text-muted);">Mar 10</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Command Palette -->
+<div id="cmd-palette-root"></div>
+
+<script>
+  // ---- State ----
+  let selectedConvId = null;
+  let currentPrimaryClientId = null;
+
+  // ---- Render sidebar ----
+  document.addEventListener('DOMContentLoaded', () => {
+    MaestroNav.render('sidebar-root');
+    updateMainMargin();
+    renderQueue();
+    renderMessages();
+    renderBookingCards();
+    document.getElementById('cmd-palette-root').innerHTML = renderCommandPalette();
+
+    // Context panel toggle
+    document.getElementById('toggle-context').addEventListener('click', () => {
+      const panel = document.getElementById('context-panel');
+      if (panel.style.display === 'none') {
+        panel.style.display = '';
+      } else {
+        panel.style.display = 'none';
+      }
+    });
+  });
+
+  // Observe sidebar changes
+  const observer = new MutationObserver(updateMainMargin);
+  setTimeout(() => {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) observer.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
+  }, 100);
+
+  function updateMainMargin() {
+    const w = MaestroNav.getSidebarWidth();
+    document.getElementById('main-wrapper').style.marginLeft = w + 'px';
+  }
+
+  // ---- Queue rendering (swim lanes by SLA status) ----
+  function renderQueue(skipAutoSelect) {
+    // Apply filters
+    const filterType = document.getElementById('filter-type')?.value || '';
+    const filterAssigned = document.getElementById('filter-assigned')?.value || '';
+
+    let filtered = CONVERSATIONS;
+    if (filterType) filtered = filtered.filter(c => c.threadType === filterType);
+    if (filterAssigned === 'unassigned') filtered = filtered.filter(c => !c.assignedTo);
+
+    // Split into unassigned and assigned conversations
+    const unassigned = filtered.filter(c => !c.assignedTo);
+    const assigned = filtered.filter(c => c.assignedTo);
+
+    // Group assigned by SLA status
+    const breached = assigned.filter(c => c.slaStatus === 'breached' || c.slaStatus === 'critical');
+    const warning = assigned.filter(c => c.slaStatus === 'warning');
+    const healthy = assigned.filter(c => c.slaStatus === 'healthy');
+
+    const container = document.getElementById('queue-container');
+    container.innerHTML = `
+      ${unassigned.length > 0 ? renderSwimLane('Unassigned', unassigned, 'var(--warning)', 'unassigned') : ''}
+      ${renderSwimLane('Needs Response', breached, 'var(--error)', 'error')}
+      ${renderSwimLane('Warning', warning, 'var(--warning)', 'warning')}
+      ${renderSwimLane('On Track', healthy, 'var(--success)', 'success')}
+    `;
+
+    // Auto-select from URL param or most urgent on first render
+    if (!skipAutoSelect && !selectedConvId) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const convParam = urlParams.get('conv');
+      if (convParam && CONVERSATIONS.find(c => c.id === convParam)) {
+        selectConversation(convParam);
+      } else {
+        const first = unassigned[0] || breached[0] || warning[0] || healthy[0];
+        if (first) selectConversation(first.id);
+      }
+    }
+  }
+
+  function renderSwimLane(title, conversations, color, type) {
+    const count = conversations.length;
+    const badgeBg = type === 'error' ? 'var(--error)' : type === 'warning' ? 'var(--warning)' : 'var(--success)';
+
+    return `
+      <div class="mb-4">
+        <!-- Lane header -->
+        <div class="flex items-center gap-2 px-4 py-2 border-b transition-theme" style="border-color:var(--border);">
+          <div class="w-2 h-2 rounded-full" style="background:${color};"></div>
+          <span class="text-xs font-semibold uppercase tracking-wide flex-1" style="color:var(--text-primary);">${title}</span>
+          <span class="text-xs px-2 py-0.5 rounded-full font-medium" style="background:${badgeBg};color:#fff;">${count}</span>
+        </div>
+        <!-- Lane items -->
+        <div class="space-y-0">
+          ${conversations.map(conv => renderQueueItem(conv, type)).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderQueueItem(conv, type) {
+    const household = getHousehold(conv.householdId);
+    const primaryClient = getClient(household.primaryClientId);
+    const trip = getTrip(conv.tripId);
+    const isActive = selectedConvId === conv.id;
+    const agents = getConversationAgents(conv.id);
+
+    // Format countdown
+    let countdownText = '';
+    let countdownColor = '';
+    let pulseClass = '';
+
+    if (conv.slaStatus === 'breached') {
+      countdownText = `BREACHED -${Math.abs(conv.slaMinutes)}m`;
+      countdownColor = 'var(--error)';
+      pulseClass = 'sla-breached';
+    } else if (conv.slaStatus === 'critical') {
+      countdownText = `${conv.slaMinutes}m`;
+      countdownColor = 'var(--error)';
+    } else if (conv.slaStatus === 'warning') {
+      countdownText = `${conv.slaMinutes}m left`;
+      countdownColor = 'var(--warning)';
+    } else {
+      countdownText = conv.slaMinutes >= 120 ? '2h+' : `${conv.slaMinutes}m`;
+      countdownColor = 'var(--success)';
+    }
+
+    const borderColor = type === 'unassigned' ? 'var(--warning)' : type === 'error' ? 'var(--error)' : type === 'warning' ? 'var(--warning)' : 'var(--success)';
+    const unassignedClass = type === 'unassigned' ? 'conv-unassigned' : '';
+
+    // Render agent avatars (overlapping cluster)
+    let agentAvatarsHtml = '';
+    if (agents.length === 0) {
+      // Unassigned: dashed circle with ?
+      agentAvatarsHtml = `<div class="flex items-center justify-center" style="width:20px;height:20px;border:1.5px dashed var(--warning);border-radius:50%;color:var(--warning);font-size:11px;font-weight:600;">?</div>`;
+    } else {
+      agentAvatarsHtml = `<div class="flex items-center" style="margin-left:-4px;">` +
+        agents.slice(0, 3).map((agent, idx) =>
+          `<span class="avatar" style="background:${agent.color};color:#fff;font-size:8px;width:20px;height:20px;margin-left:${idx > 0 ? '-6px' : '0'};border:1.5px solid var(--bg-surface);z-index:${10 - idx};" title="${agent.name}">${agent.initials}</span>`
+        ).join('') +
+        (agents.length > 3 ? `<span class="text-xs font-medium" style="color:var(--text-muted);margin-left:4px;">+${agents.length - 3}</span>` : '') +
+        `</div>`;
+    }
+
+    // Thread type indicator
+    let threadTypeHtml = '';
+    if (conv.threadType === 'general') {
+      threadTypeHtml = `<span class="badge" style="background:var(--info-bg);color:var(--info);font-size:9px;">General</span>`;
+    } else if (trip) {
+      threadTypeHtml = `<span class="text-xs truncate" style="color:var(--text-muted);">${trip.destinations}</span>`;
+    }
+
+    return `
+      <div class="conv-item flex items-center gap-2 px-4 py-2.5 cursor-pointer border-b border-l-4 transition-all duration-100 ${pulseClass} ${unassignedClass} ${isActive ? 'conv-active' : ''}"
+           style="border-color:var(--border);border-left-color:${borderColor};"
+           onclick="selectConversation('${conv.id}')">
+        <!-- Agent avatars -->
+        <div class="flex-shrink-0">
+          ${agentAvatarsHtml}
+        </div>
+        <!-- Content -->
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center justify-between mb-0.5">
+            <span class="text-xs font-semibold truncate" style="color:var(--text-primary);">${household.name}</span>
+            <span class="text-sm font-bold ml-2 flex-shrink-0 ${pulseClass}" style="color:${countdownColor};">${countdownText}</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            ${threadTypeHtml}
+            <span class="text-xs" style="color:var(--text-muted);">· ${conv.channel === 'whatsapp' ? 'WhatsApp' : 'SMS'}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // ---- Conversation selection ----
+  function selectConversation(convId) {
+    selectedConvId = convId;
+    // Re-render queue items to update active highlight (without re-triggering auto-select)
+    renderQueue(true);
+    renderMessages();
+    renderBookingCards();
+  }
+
+  // ---- Messages rendering ----
+  function renderMessages() {
+    if (!selectedConvId) return;
+
+    const conv = CONVERSATIONS.find(c => c.id === selectedConvId);
+    if (!conv) return;
+
+    const household = getHousehold(conv.householdId);
+    const primaryClient = getClient(household.primaryClientId);
+    const trip = getTrip(conv.tripId);
+    const agents = getConversationAgents(conv.id);
+
+    // Track current client for View Profile button
+    currentPrimaryClientId = primaryClient ? primaryClient.id : null;
+
+    // Update header agent avatars
+    const headerAgentsContainer = document.getElementById('header-agents');
+    if (agents.length === 0) {
+      // Unassigned
+      headerAgentsContainer.innerHTML = `<span class="badge" style="background:var(--warning-bg);color:var(--warning);font-size:10px;padding:3px 8px;">Unassigned</span>`;
+    } else {
+      headerAgentsContainer.innerHTML = `<div class="flex items-center">` +
+        agents.slice(0, 3).map((agent, idx) =>
+          `<span class="avatar" style="background:${agent.color};color:#fff;font-size:10px;width:28px;height:28px;margin-left:${idx > 0 ? '-8px' : '0'};border:2px solid var(--bg-surface);z-index:${10 - idx};" title="${agent.name}">${agent.initials}</span>`
+        ).join('') +
+        (agents.length > 3 ? `<span class="text-xs font-medium" style="color:var(--text-muted);margin-left:6px;">+${agents.length - 3}</span>` : '') +
+        `</div>`;
+    }
+
+    // Update header household name
+    document.getElementById('header-name').textContent = household.name;
+
+    // Update header trip/thread type
+    let tripText = '';
+    if (conv.threadType === 'general') {
+      tripText = 'General Inquiry';
+    } else if (trip) {
+      tripText = trip.destinations;
+    }
+    document.getElementById('header-trip').textContent = `${tripText} · ${conv.channel === 'whatsapp' ? 'WhatsApp' : 'SMS'}`;
+
+    // Update SLA badge
+    const slaBadge = document.getElementById('header-sla-badge');
+    let slaBadgeText = '';
+    let slaBadgeBg = '';
+
+    if (conv.slaStatus === 'breached') {
+      slaBadgeText = `BREACHED -${Math.abs(conv.slaMinutes)}m`;
+      slaBadgeBg = 'var(--error)';
+    } else if (conv.slaStatus === 'critical') {
+      slaBadgeText = `${conv.slaMinutes}m left`;
+      slaBadgeBg = 'var(--error)';
+    } else if (conv.slaStatus === 'warning') {
+      slaBadgeText = `${conv.slaMinutes}m left`;
+      slaBadgeBg = 'var(--warning)';
+    } else {
+      slaBadgeText = conv.slaMinutes >= 120 ? '2h+' : `${conv.slaMinutes}m`;
+      slaBadgeBg = 'var(--success)';
+    }
+
+    slaBadge.textContent = slaBadgeText;
+    slaBadge.style.background = slaBadgeBg;
+
+    // Render messages — use MESSAGES object from data.js, fall back to conv1
+    const msgs = MESSAGES[conv.id] || MESSAGES.conv1 || [];
+    const container = document.getElementById('messages-container');
+    container.innerHTML = msgs.map(msg => {
+      if (msg.sender === 'client') {
+        return `
+          <div class="flex gap-3 max-w-[75%] mb-3">
+            <span class="avatar avatar-sm flex-shrink-0" style="background:${primaryClient.avatarColor};color:#fff;margin-top:2px;">${msg.senderName ? msg.senderName[0] : primaryClient.initials}</span>
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-xs font-semibold" style="color:var(--text-primary);">${msg.senderName || household.name}</span>
+                <span class="badge" style="background:var(--info-bg);color:var(--info);font-size:9px;">Client</span>
+                <span class="text-xs" style="color:var(--text-muted);">${msg.time}</span>
+              </div>
+              <div class="msg-client px-3 py-2 text-sm" style="color:var(--text-primary);">${msg.text}</div>
+            </div>
+          </div>`;
+      }
+      if (msg.sender === 'ops') {
+        const msgAgent = msg.agentId ? getAgent(msg.agentId) : (agents.length > 0 ? agents[0] : null);
+        return `
+          <div class="flex gap-3 justify-end mb-3">
+            <div class="text-right">
+              <div class="flex items-center gap-2 mb-1 justify-end">
+                <span class="text-xs" style="color:var(--text-muted);">${msg.time}</span>
+                <span class="text-xs font-semibold" style="color:var(--text-primary);">${msg.senderName}</span>
+                <span class="badge" style="background:var(--gold-bg);color:var(--gold);font-size:9px;">Concierge</span>
+              </div>
+              <div class="msg-ops px-3 py-2 text-sm" style="color:var(--text-primary);">${msg.text}</div>
+            </div>
+            <span class="avatar avatar-sm flex-shrink-0" style="background:${msgAgent ? msgAgent.color : '#f97316'};color:#fff;margin-top:2px;">${msgAgent ? msgAgent.initials : 'CR'}</span>
+          </div>`;
+      }
+      if (msg.sender === 'internal') {
+        return `
+          <div class="msg-internal px-3 py-2 text-sm mb-3">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="badge" style="background:var(--note-bg);color:var(--note-border);font-size:9px;border:1px solid var(--note-border);">Internal Note</span>
+              <span class="text-xs font-semibold" style="color:var(--text-secondary);">${msg.senderName}</span>
+              <span class="text-xs" style="color:var(--text-muted);">${msg.time}</span>
+            </div>
+            <div style="color:var(--text-secondary);">${msg.text}</div>
+          </div>`;
+      }
+      if (msg.sender === 'ai-draft') {
+        return `
+          <div class="flex gap-3 justify-end mb-3">
+            <div class="text-right" style="max-width:75%;">
+              <div class="flex items-center gap-2 mb-1 justify-end">
+                <span class="badge" style="background:var(--gold-bg);color:var(--gold);font-size:9px;">AI Draft</span>
+                <span class="badge" style="background:var(--success-bg);color:var(--success);font-size:9px;">${msg.confidence} confidence</span>
+              </div>
+              <div class="msg-ai-draft px-3 py-2 text-sm text-left" style="color:var(--text-primary);">${msg.text}</div>
+              <div class="flex items-center gap-2 mt-2 justify-end">
+                <button class="btn-gold" style="padding:4px 12px;font-size:11px;" onclick="this.closest('.flex.gap-3').remove();showToast('Message approved and sent!','success')">Approve & Send</button>
+                <button class="btn-ghost" style="padding:4px 10px;font-size:11px;">Edit</button>
+                <button class="btn-ghost" style="padding:4px 10px;font-size:11px;color:var(--error);">Dismiss</button>
+              </div>
+            </div>
+            <span class="avatar avatar-sm flex-shrink-0" style="background:var(--gold);color:#000;margin-top:2px;">AI</span>
+          </div>`;
+      }
+      return '';
+    }).join('');
+
+    // Scroll to bottom
+    container.scrollTop = container.scrollHeight;
+  }
+
+  // ---- Booking cards rendering ----
+  function renderBookingCards() {
+    if (!selectedConvId) return;
+
+    const conv = CONVERSATIONS.find(c => c.id === selectedConvId);
+    if (!conv) return;
+
+    const bookings = getBookingsByTrip(conv.tripId);
+    const container = document.getElementById('bookings-section');
+
+    const statusColors = {
+      'Confirmed': { bg: 'var(--success-bg)', color: 'var(--success)' },
+      'Waitlisted': { bg: 'var(--warning-bg)', color: 'var(--warning)' },
+      'On Hold': { bg: 'var(--info-bg)', color: 'var(--info)' },
+    };
+    const typeIcons = {
+      hotel: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
+      flight: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>',
+      experience: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+    };
+
+    container.innerHTML = bookings.slice(0, 5).map(b => {
+      const sc = statusColors[b.status] || statusColors['Confirmed'];
+      return `
+        <div class="card p-2 flex items-start gap-2 cursor-pointer" style="font-size:11px;">
+          <div class="mt-0.5" style="color:var(--text-muted);">${typeIcons[b.type] || typeIcons.hotel}</div>
+          <div class="flex-1 min-w-0">
+            <div class="font-medium truncate" style="color:var(--text-primary);">${b.name}</div>
+            <div style="color:var(--text-muted);">${b.dates}</div>
+            <div class="flex items-center gap-2 mt-1">
+              <span class="badge" style="background:${sc.bg};color:${sc.color};font-size:9px;">${b.status}</span>
+              <span style="color:var(--text-secondary);font-weight:600;">${b.price}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // ---- Collapsible sections ----
+  function toggleSection(sectionId) {
+    const section = document.getElementById(sectionId);
+    if (section.style.display === 'none') {
+      section.style.display = '';
+    } else {
+      section.style.display = 'none';
+    }
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trip Detail -- Maestro Command Centre</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/theme.css">
+  <script src="../js/data.js"></script>
+  <script src="../js/theme.js"></script>
+  <script src="../js/nav.js"></script>
+  <script src="../js/interactions.js"></script>
+</head>
+<body class="antialiased">
+
+<div id="sidebar-root"></div>
+
+<div id="main-wrapper" class="transition-all duration-200" style="margin-left:240px;">
+  <div class="flex flex-col h-screen overflow-hidden" style="background:var(--bg-app);">
+
+    <!-- Trip header -->
+    <div class="px-6 py-5 border-b transition-theme flex-shrink-0" style="background:var(--bg-surface);border-color:var(--border);">
+      <div class="flex items-center gap-2 mb-4">
+        <a href="trip-pipeline.html" class="flex items-center gap-1.5 text-sm font-medium hover:underline" style="color:var(--text-muted);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+          Back to Pipeline
+        </a>
+      </div>
+
+      <div class="flex items-start gap-4">
+        <!-- Destination icon -->
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style="background:var(--gold-bg);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21 4 19.5 2.5c-1.5-1.5-3.5-1.5-5 0L11 6 2.8 4.2C2.3 4.1 1.8 4.4 1.6 4.9l-.5 1.7c-.2.6.1 1.2.7 1.5L8 11l-2 3H4l-1 1 3 2 2 3 1-1v-2l3-2 3.5 6.2c.3.6.9.9 1.5.7l1.7-.5c.6-.2.9-.7.8-1.2z"/></svg>
+        </div>
+
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-3 mb-1.5 flex-wrap">
+            <h1 class="text-xl font-semibold truncate" style="color:var(--text-primary);" id="trip-name">Loading...</h1>
+            <span class="badge flex-shrink-0" id="trip-stage-badge">Lead</span>
+          </div>
+          <div class="flex items-center gap-5 text-sm flex-wrap" style="color:var(--text-secondary);">
+            <div class="flex items-center gap-1.5">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+              <span id="trip-dates">-</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+              <span id="trip-destinations">-</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <span id="trip-travelers">-</span>
+            </div>
+            <div class="flex items-center gap-1.5" style="color:var(--gold);">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              <span id="trip-budget" class="font-semibold">-</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: client + agent + actions -->
+        <div class="flex items-center gap-3 flex-shrink-0">
+          <div class="text-right">
+            <div class="text-xs font-medium mb-0.5" style="color:var(--text-muted);">Client</div>
+            <a id="trip-client-link" href="#" class="flex items-center gap-2 hover:underline">
+              <span class="text-sm font-semibold" id="trip-client-name" style="color:var(--text-primary);">-</span>
+              <span class="avatar avatar-sm" id="trip-client-avatar" style="background:#6366f1;color:#fff;">BF</span>
+            </a>
+          </div>
+          <div class="w-px h-8" style="background:var(--border);"></div>
+          <div class="text-right">
+            <div class="text-xs font-medium mb-0.5" style="color:var(--text-muted);">Agent</div>
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-semibold" id="trip-agent-name" style="color:var(--text-primary);">-</span>
+              <span class="avatar avatar-sm" id="trip-agent-avatar" style="background:#f97316;color:#fff;">CR</span>
+            </div>
+          </div>
+          <div class="w-px h-8" style="background:var(--border);"></div>
+          <div class="flex gap-2">
+            <button class="btn-ghost flex items-center gap-1.5 text-xs" id="trip-chat-btn" onclick="navigateToInbox()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+              Chat
+            </button>
+            <button class="btn-ghost flex items-center gap-1.5 text-xs" onclick="openTaskModal()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+              Add Task
+            </button>
+            <button class="btn-gold flex items-center gap-1.5 text-xs" onclick="openBookingTypeModal()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+              Add Booking
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats row -->
+      <div class="flex items-center gap-3 mt-4">
+        <span class="stat-pill" id="stat-bookings">0 bookings</span>
+        <span class="stat-pill" id="stat-pending" style="background:var(--warning-bg);color:var(--warning);">0 pending</span>
+        <span class="stat-pill" id="stat-tasks">0 tasks</span>
+        <span class="stat-pill" id="stat-alerts">0 alerts</span>
+      </div>
+    </div>
+
+    <!-- Tab bar + content -->
+    <div class="flex flex-col flex-1 overflow-hidden">
+      <!-- Tabs -->
+      <div class="px-6 border-b flex-shrink-0 transition-theme" style="background:var(--bg-surface);border-color:var(--border);">
+        <div class="tab-bar" style="border:none;padding:0;">
+          <div class="tab-item active" data-tab="overview" onclick="switchTab('overview')">Overview</div>
+          <div class="tab-item" data-tab="bookings" onclick="switchTab('bookings')">Bookings</div>
+          <div class="tab-item" data-tab="travelers" onclick="switchTab('travelers')">Travelers</div>
+          <div class="tab-item" data-tab="tasks" onclick="switchTab('tasks')">Tasks</div>
+          <div class="tab-item" data-tab="activity" onclick="switchTab('activity')">Activity</div>
+        </div>
+      </div>
+
+      <!-- Tab content -->
+      <div class="flex-1 overflow-y-auto">
+
+        <!-- ============================================================
+             OVERVIEW TAB
+             ============================================================ -->
+        <div id="tab-overview" class="p-6">
+          <div class="grid grid-cols-3 gap-5">
+
+            <!-- Left: AI summary + itinerary -->
+            <div class="col-span-2 space-y-4">
+
+              <!-- AI Trip Summary -->
+              <div class="card p-5" style="border-left:3px solid var(--gold);">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-2">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                    <span class="text-xs font-semibold" style="color:var(--gold);">AI TRIP SUMMARY</span>
+                  </div>
+                  <button class="text-xs px-2 py-1 rounded" style="background:var(--bg-surface-alt);color:var(--text-muted);" onclick="this.textContent='Regenerating...';setTimeout(()=>{this.textContent='Regenerate';showToast('Summary regenerated','success')},1500)">
+                    Regenerate
+                  </button>
+                </div>
+                <p class="text-sm leading-relaxed" style="color:var(--text-secondary);" id="ai-summary">
+                  14-night Greece itinerary for 4 travelers (2 couples). Anchors in Athens (3n, Grande Bretagne), Mykonos (5n, Cavo Tagoo), and Santorini (4n, pending Canaves Oia confirmation). Key highlight: private yacht day on May 15 around Delos/Rhenia. Waitlist risk on primary Santorini hotel — Grace Hotel held as backup. Helicopter transfer Mykonos-Santorini being arranged. Budget tracking at $22,000 against $22,000 target.
+                </p>
+              </div>
+
+              <!-- Itinerary timeline -->
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-4">
+                  <div class="text-sm font-semibold" style="color:var(--text-primary);">Itinerary</div>
+                  <button class="text-xs" style="color:var(--gold);" onclick="buildAndOpenModal({title:'Edit Itinerary',width:500,bodyHTML:'<textarea class=\'input\' rows=\'8\' placeholder=\'Edit itinerary details...\'>Day 1-3: Athens - Acropolis, Plaka district\\nDay 4-6: Mykonos - Beach clubs, Little Venice\\nDay 7-10: Santorini - Oia sunset, wine tour</textarea>',buttons:[{label:'Cancel',className:'btn-ghost',onclick:\"closeDynamicModal(\'dynamic-modal-itin\')\"},{label:'Save',className:'btn-gold',onclick:\"closeDynamicModal(\'dynamic-modal-itin\');showToast(\'Itinerary updated\',\'success\')\"}],id:'dynamic-modal-itin'})">Edit</button>
+                </div>
+                <div id="itinerary-timeline" class="space-y-0"></div>
+              </div>
+
+              <!-- Notes -->
+              <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="text-sm font-semibold" style="color:var(--text-primary);">Internal Notes</div>
+                  <button class="text-xs" style="color:var(--gold);" onclick="openNoteModal()">+ Note</button>
+                </div>
+                <div class="space-y-3">
+                  <div class="p-3 rounded-lg" style="background:var(--note-bg);border:1px dashed var(--note-border);">
+                    <div class="flex items-center justify-between mb-1">
+                      <span class="text-xs font-semibold" style="color:var(--warning);">Angua von Uberwald</span>
+                      <span class="text-xs" style="color:var(--text-muted);">Mar 30, 2:35 PM</span>
+                    </div>
+                    <p class="text-sm" style="color:var(--text-secondary);">Canaves Oia is priority. If not resolved by May 1, escalate to Grace Hotel as confirmed option and notify clients. Do not leave them without Santorini accommodation.</p>
+                  </div>
+                  <div class="p-3 rounded-lg" style="background:var(--note-bg);border:1px dashed var(--note-border);">
+                    <div class="flex items-center justify-between mb-1">
+                      <span class="text-xs font-semibold" style="color:var(--warning);">Angua von Uberwald</span>
+                      <span class="text-xs" style="color:var(--text-muted);">Mar 28, 3:00 PM</span>
+                    </div>
+                    <p class="text-sm" style="color:var(--text-secondary);">Client mentioned Scorpios Mykonos from screenshot — add reservation request for May 14 (backup May 16). High-end beach club, sunset dinner experience.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Quick stats + pending items -->
+            <div class="space-y-4">
+
+              <!-- Trip status card -->
+              <div class="card p-4">
+                <div class="text-xs font-semibold uppercase tracking-wide mb-3" style="color:var(--text-muted);">Trip Status</div>
+                <div class="space-y-2.5" id="status-checklist">
+                  <!-- rendered by JS -->
+                </div>
+              </div>
+
+              <!-- Open tasks -->
+              <div class="card p-4">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="text-xs font-semibold uppercase tracking-wide" style="color:var(--text-muted);">Open Tasks</div>
+                  <a href="#" class="text-xs" style="color:var(--gold);" onclick="switchTab('tasks');return false;">View all</a>
+                </div>
+                <div class="space-y-2" id="overview-tasks"></div>
+              </div>
+
+              <!-- Client preferences snapshot -->
+              <div class="card p-4">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="text-xs font-semibold uppercase tracking-wide" style="color:var(--text-muted);">Client Preferences</div>
+                  <a id="client-profile-link" href="#" class="text-xs" style="color:var(--gold);">Full Profile</a>
+                </div>
+                <div class="space-y-2" id="pref-snapshot"></div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- ============================================================
+             BOOKINGS TAB
+             ============================================================ -->
+        <div id="tab-bookings" class="p-6" style="display:none;">
+          <div class="flex items-center justify-between mb-4">
+            <div class="text-sm font-semibold" style="color:var(--text-primary);">All Bookings</div>
+            <button class="btn-gold text-xs" onclick="openBookingTypeModal()">+ Add Booking</button>
+          </div>
+
+          <!-- Booking type filter -->
+          <div class="flex gap-2 mb-4">
+            <button class="booking-filter-btn active" data-type="all" onclick="filterBookings('all',this)">All</button>
+            <button class="booking-filter-btn" data-type="flight" onclick="filterBookings('flight',this)">Flights</button>
+            <button class="booking-filter-btn" data-type="hotel" onclick="filterBookings('hotel',this)">Hotels</button>
+            <button class="booking-filter-btn" data-type="experience" onclick="filterBookings('experience',this)">Experiences</button>
+            <button class="booking-filter-btn" data-type="transfer" onclick="filterBookings('transfer',this)">Transfers</button>
+          </div>
+
+          <div id="bookings-list" class="space-y-3"></div>
+
+          <!-- Empty placeholder for no additional bookings types -->
+          <div class="mt-6 p-6 rounded-xl border-2 border-dashed text-center" style="border-color:var(--border);" id="add-booking-placeholder">
+            <div class="text-sm font-medium mb-1" style="color:var(--text-muted);">Add a transfer, experience, or insurance</div>
+            <button class="text-xs mt-2" style="color:var(--gold);" onclick="openBookingTypeModal()">+ New booking component</button>
+          </div>
+        </div>
+
+        <!-- ============================================================
+             TRAVELERS TAB
+             ============================================================ -->
+        <div id="tab-travelers" class="p-6" style="display:none;">
+          <div class="flex items-center justify-between mb-4">
+            <div class="text-sm font-semibold" style="color:var(--text-primary);">Travelers</div>
+            <button class="btn-ghost text-xs" onclick="openTravelerModal()">+ Add Traveler</button>
+          </div>
+          <div id="travelers-list" class="grid grid-cols-2 gap-4"></div>
+        </div>
+
+        <!-- ============================================================
+             TASKS TAB
+             ============================================================ -->
+        <div id="tab-tasks" class="p-6" style="display:none;">
+          <div class="flex items-center justify-between mb-4">
+            <div class="text-sm font-semibold" style="color:var(--text-primary);">Trip Tasks</div>
+            <button class="btn-gold text-xs" onclick="openTaskModal()">+ Create Task</button>
+          </div>
+          <table class="data-table" id="tasks-table">
+            <thead>
+              <tr>
+                <th>Task</th>
+                <th>Priority</th>
+                <th>Status</th>
+                <th>Assigned</th>
+                <th>Due</th>
+                <th>Source</th>
+              </tr>
+            </thead>
+            <tbody id="tasks-body"></tbody>
+          </table>
+        </div>
+
+        <!-- ============================================================
+             ACTIVITY TAB
+             ============================================================ -->
+        <div id="tab-activity" class="p-6" style="display:none;">
+          <div class="text-sm font-semibold mb-4" style="color:var(--text-primary);">Activity Log</div>
+          <div id="activity-log" class="space-y-0"></div>
+        </div>
+
+      </div><!-- end tab content -->
+    </div>
+
+  </div>
+</div>
+
+<!-- Booking detail modal -->
+<div id="booking-modal" class="modal-backdrop" style="display:none;" onclick="if(event.target===this)closeModal('booking-modal')">
+  <div class="modal-panel" style="max-width:500px;width:100%;" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-base font-semibold" style="color:var(--text-primary);" id="modal-booking-title">Booking Detail</h2>
+      <button onclick="closeModal('booking-modal')" style="color:var(--text-muted);">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div id="modal-booking-body"></div>
+    <div class="flex gap-2 mt-5 pt-4 border-t" style="border-color:var(--border);">
+      <button class="btn-ghost flex-1 text-sm" onclick="closeModal('booking-modal')">Close</button>
+      <button class="btn-gold flex-1 text-sm" onclick="closeModal('booking-modal');showToast('Booking updated','success')">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .booking-filter-btn {
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: transparent;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .booking-filter-btn.active, .booking-filter-btn:hover {
+    background: var(--bg-active);
+    color: var(--text-primary);
+    border-color: var(--border);
+  }
+  .itinerary-day {
+    display: flex;
+    gap: 12px;
+    padding-bottom: 20px;
+    position: relative;
+  }
+  .itinerary-day:last-child { padding-bottom: 0; }
+  .itinerary-day:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 28px;
+    bottom: 0;
+    width: 2px;
+    background: var(--border);
+  }
+  .itinerary-dot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    background: var(--bg-surface-alt);
+    color: var(--text-muted);
+    position: relative;
+    z-index: 1;
+  }
+  .activity-item {
+    display: flex;
+    gap: 12px;
+    padding-bottom: 18px;
+    position: relative;
+  }
+  .activity-item:last-child { padding-bottom: 0; }
+  .activity-item:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 28px;
+    bottom: 0;
+    width: 2px;
+    background: var(--border);
+  }
+  .activity-dot {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: var(--bg-surface-alt);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+  }
+</style>
+
+<script>
+  let currentTrip = null;
+  let currentClient = null;
+  let allBookings = [];
+
+  document.addEventListener('DOMContentLoaded', () => {
+    MaestroNav.render('sidebar-root');
+    document.getElementById('main-wrapper').style.marginLeft = MaestroNav.getSidebarWidth() + 'px';
+
+    const params = new URLSearchParams(window.location.search);
+    const tripId = params.get('id') || 'tr1';
+    loadTrip(tripId);
+
+    const observer = new MutationObserver(() => {
+      document.getElementById('main-wrapper').style.marginLeft = MaestroNav.getSidebarWidth() + 'px';
+    });
+    setTimeout(() => {
+      const sb = document.getElementById('sidebar');
+      if (sb) observer.observe(sb, { attributes: true, attributeFilter: ['class'] });
+    }, 100);
+  });
+
+  function loadTrip(tripId) {
+    currentTrip = getTrip(tripId);
+    if (!currentTrip) { document.getElementById('trip-name').textContent = 'Trip not found'; return; }
+    const household = getHousehold(currentTrip.householdId);
+    currentClient = getClient(household.primaryClientId);
+    const agent = getAgent(currentTrip.agentId);
+    allBookings = getBookingsByTrip(tripId);
+    const tasks = getTasksByTrip(tripId);
+    const travelers = currentTrip.travelers.map(id => getClient(id)).filter(c => c);
+
+    document.title = currentTrip.name + ' -- Maestro Command Centre';
+    document.getElementById('trip-name').textContent = currentTrip.name;
+    document.getElementById('trip-dates').textContent = currentTrip.dates;
+    document.getElementById('trip-destinations').textContent = currentTrip.destinations;
+    document.getElementById('trip-travelers').textContent = travelers.length + ' travelers';
+    document.getElementById('trip-budget').textContent = currentTrip.budget || '—';
+
+    // Stage badge
+    const stageInfo = PIPELINE_STAGES.find(s => s.id === currentTrip.stage) || { label: currentTrip.stage, color: '#94a3b8' };
+    const stageBadge = document.getElementById('trip-stage-badge');
+    stageBadge.textContent = stageInfo.label;
+    stageBadge.style.background = stageInfo.color + '22';
+    stageBadge.style.color = stageInfo.color;
+
+    // Client (household)
+    if (currentClient) {
+      document.getElementById('trip-client-name').textContent = household.name;
+      const cavatar = document.getElementById('trip-client-avatar');
+      cavatar.textContent = currentClient.initials;
+      cavatar.style.background = currentClient.avatarColor;
+      document.getElementById('trip-client-link').href = 'client-detail?id=' + currentClient.id;
+      document.getElementById('client-profile-link').href = 'client-detail?id=' + currentClient.id;
+    }
+
+    // Wire Chat button to correct conversation
+    if (household) {
+      const tripConvs = CONVERSATIONS.filter(c => c.householdId === household.id);
+      if (tripConvs.length > 0) {
+        document.getElementById('trip-chat-btn').onclick = () => navigateToInbox(tripConvs[0].id);
+      }
+    }
+
+    // Agent
+    if (agent) {
+      document.getElementById('trip-agent-name').textContent = agent.name.split(' ')[0];
+      const aavatar = document.getElementById('trip-agent-avatar');
+      aavatar.textContent = agent.initials;
+      aavatar.style.background = agent.color;
+    }
+
+    // Stats
+    const pending = allBookings.filter(b => b.status !== 'Confirmed').length;
+    const openTasks = tasks.filter(t => t.status !== 'Done').length;
+    document.getElementById('stat-bookings').textContent = allBookings.length + ' bookings';
+    document.getElementById('stat-pending').textContent = pending + ' pending';
+    document.getElementById('stat-tasks').textContent = openTasks + ' open tasks';
+    document.getElementById('stat-alerts').textContent = '1 alert';
+    if (pending === 0) {
+      document.getElementById('stat-pending').style.background = 'var(--bg-surface-alt)';
+      document.getElementById('stat-pending').style.color = 'var(--text-muted)';
+    }
+
+    // Overview
+    renderStatusChecklist(allBookings, tasks);
+    renderOverviewTasks(tasks);
+    renderPrefSnapshot();
+    renderItinerary(allBookings);
+
+    // Bookings tab
+    renderBookings(allBookings);
+
+    // Travelers tab
+    renderTravelers(travelers);
+
+    // Tasks tab
+    renderTasks(tasks);
+
+    // Activity tab
+    renderActivity();
+  }
+
+  function renderStatusChecklist(bookings, tasks) {
+    const checks = [
+      { label: 'Flights booked', done: bookings.some(b => b.type === 'flight' && b.status === 'Confirmed') },
+      { label: 'Hotels confirmed', done: bookings.filter(b => b.type === 'hotel').every(b => b.status === 'Confirmed') },
+      { label: 'All tasks complete', done: tasks.every(t => t.status === 'Done') },
+      { label: 'Travelers collected', done: true },
+      { label: 'Client briefed', done: true },
+      { label: 'Insurance arranged', done: false },
+    ];
+
+    document.getElementById('status-checklist').innerHTML = checks.map(c => `
+      <div class="flex items-center gap-2.5">
+        <div class="w-4 h-4 rounded-full flex items-center justify-center flex-shrink-0" style="background:${c.done ? 'var(--success-bg)' : 'var(--bg-surface-alt)'};">
+          ${c.done ? `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>` : ''}
+        </div>
+        <span class="text-xs ${c.done ? '' : ''}" style="color:${c.done ? 'var(--text-secondary)' : 'var(--text-muted)'};">${c.label}</span>
+      </div>
+    `).join('');
+  }
+
+  function renderOverviewTasks(tasks) {
+    const open = tasks.filter(t => t.status !== 'Done').slice(0, 4);
+    if (open.length === 0) {
+      document.getElementById('overview-tasks').innerHTML = `<div class="text-xs text-center py-2" style="color:var(--text-muted);">No open tasks</div>`;
+      return;
+    }
+    const pColors = { Urgent: 'var(--error)', High: 'var(--warning)', Normal: 'var(--info)', Low: 'var(--text-muted)' };
+    document.getElementById('overview-tasks').innerHTML = open.map(t => `
+      <div class="flex items-start gap-2 py-1.5 border-b" style="border-color:var(--border);">
+        <div class="w-1.5 h-1.5 rounded-full mt-1.5 flex-shrink-0" style="background:${pColors[t.priority] || 'var(--text-muted)'}"></div>
+        <div class="flex-1 min-w-0">
+          <div class="text-xs leading-snug" style="color:var(--text-secondary);">${t.title}</div>
+          <div class="text-xs mt-0.5 ${t.dueIn && t.dueIn.includes('overdue') ? '' : ''}" style="color:${t.dueIn && t.dueIn.includes('overdue') ? 'var(--error)' : 'var(--text-muted)'};">${t.dueIn}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderPrefSnapshot() {
+    if (!currentClient) return;
+    const prefs = currentClient.preferences;
+    const items = [
+      { label: 'Airlines', val: prefs.airlines },
+      { label: 'Hotels', val: prefs.hotels },
+      { label: 'Dining', val: prefs.dining },
+      { label: 'Budget', val: prefs.budget },
+    ];
+    document.getElementById('pref-snapshot').innerHTML = items.map(p => `
+      <div>
+        <div class="text-xs font-semibold mb-0.5" style="color:var(--text-muted);">${p.label}</div>
+        <div class="text-xs" style="color:var(--text-secondary);">${p.val}</div>
+      </div>
+    `).join('');
+  }
+
+  function renderItinerary(bookings) {
+    const typeIcons = {
+      flight: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21 4 19.5 2.5c-1.5-1.5-3.5-1.5-5 0L11 6 2.8 4.2c-.5-.1-1 .2-1.2.7l-.5 1.7c-.2.6.1 1.2.7 1.5L8 11l-2 3H4l-1 1 3 2 2 3 1-1v-2l3-2 3.5 6.2c.3.6.9.9 1.5.7l1.7-.5c.6-.2.9-.7.8-1.2z"/></svg>`,
+      hotel: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
+      experience: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+      transfer: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>`,
+    };
+    const typeColors = { flight:'var(--info)', hotel:'var(--success)', experience:'var(--gold)', transfer:'var(--text-muted)' };
+    const statusStyles = {
+      'Confirmed': { bg:'var(--success-bg)', color:'var(--success)' },
+      'Waitlisted': { bg:'var(--warning-bg)', color:'var(--warning)' },
+      'On Hold': { bg:'var(--info-bg)', color:'var(--info)' },
+      'Pending': { bg:'var(--bg-surface-alt)', color:'var(--text-muted)' },
+    };
+
+    if (bookings.length === 0) {
+      document.getElementById('itinerary-timeline').innerHTML = `<div class="text-sm text-center py-4" style="color:var(--text-muted);">No bookings yet — add flights, hotels and experiences.</div>`;
+      return;
+    }
+
+    document.getElementById('itinerary-timeline').innerHTML = bookings.map((b, i) => {
+      const ss = statusStyles[b.status] || statusStyles['Pending'];
+      return `
+        <div class="itinerary-day">
+          <div class="itinerary-dot" style="background:${typeColors[b.type]}22;color:${typeColors[b.type]};">
+            ${typeIcons[b.type] || typeIcons.hotel}
+          </div>
+          <div class="flex-1 pt-1">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <div class="text-sm font-semibold mb-0.5" style="color:var(--text-primary);">${b.name}</div>
+                <div class="text-xs" style="color:var(--text-muted);">${b.dates}${b.nights ? ' &middot; ' + b.nights + ' nights' : ''}${b.duration ? ' &middot; ' + b.duration : ''}</div>
+              </div>
+              <div class="flex items-center gap-2 flex-shrink-0">
+                <span class="text-xs font-semibold" style="color:var(--gold);">${b.price}</span>
+                <span class="badge" style="background:${ss.bg};color:${ss.color};">${b.status}</span>
+                <button class="text-xs px-2 py-0.5 rounded" style="color:var(--text-muted);background:var(--bg-surface-alt);" onclick="openBookingModal('${b.id}')">Edit</button>
+              </div>
+            </div>
+            ${b.score ? `<div class="flex items-center gap-1 mt-1.5">
+              <div class="h-1 rounded-full overflow-hidden" style="width:80px;background:var(--bg-surface-alt);">
+                <div class="h-full rounded-full" style="width:${b.score}%;background:${b.score >= 90 ? 'var(--success)' : b.score >= 75 ? 'var(--gold)' : 'var(--warning)'};"></div>
+              </div>
+              <span class="text-xs" style="color:var(--text-muted);">${b.score}/100</span>
+            </div>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function renderBookings(bookings) {
+    const typeIcons = {
+      flight: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21 4 19.5 2.5c-1.5-1.5-3.5-1.5-5 0L11 6 2.8 4.2c-.5-.1-1 .2-1.2.7l-.5 1.7c-.2.6.1 1.2.7 1.5L8 11l-2 3H4l-1 1 3 2 2 3 1-1v-2l3-2 3.5 6.2c.3.6.9.9 1.5.7l1.7-.5c.6-.2.9-.7.8-1.2z"/></svg>`,
+      hotel: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>`,
+      experience: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+    };
+    const typeLabels = { flight:'Flight', hotel:'Hotel', experience:'Experience', transfer:'Transfer' };
+    const typeColors = { flight:'var(--info)', hotel:'var(--success)', experience:'var(--gold)', transfer:'var(--text-muted)' };
+    const statusStyles = {
+      'Confirmed': { bg:'var(--success-bg)', color:'var(--success)' },
+      'Waitlisted': { bg:'var(--warning-bg)', color:'var(--warning)' },
+      'On Hold': { bg:'var(--info-bg)', color:'var(--info)' },
+      'Pending': { bg:'var(--bg-surface-alt)', color:'var(--text-muted)' },
+    };
+
+    if (bookings.length === 0) {
+      document.getElementById('bookings-list').innerHTML = `<div class="text-sm text-center py-8" style="color:var(--text-muted);">No bookings yet.</div>`;
+      return;
+    }
+
+    document.getElementById('bookings-list').innerHTML = bookings.map(b => {
+      const ss = statusStyles[b.status] || statusStyles['Pending'];
+      return `
+        <div class="card p-4 hover:shadow-md transition-shadow" style="cursor:pointer;" onclick="openBookingModal('${b.id}')">
+          <div class="flex items-start gap-4">
+            <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style="background:${typeColors[b.type]}22;color:${typeColors[b.type]};">
+              ${typeIcons[b.type] || typeIcons.hotel}
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-xs font-semibold px-1.5 py-0.5 rounded" style="background:${typeColors[b.type]}22;color:${typeColors[b.type]};">${typeLabels[b.type] || b.type}</span>
+                <span class="badge" style="background:${ss.bg};color:${ss.color};">${b.status}</span>
+              </div>
+              <div class="text-sm font-semibold mb-0.5" style="color:var(--text-primary);">${b.name}</div>
+              <div class="text-xs" style="color:var(--text-muted);">${b.dates}${b.nights ? ' &middot; ' + b.nights + ' nights' : ''}${b.duration ? ' &middot; ' + b.duration : ''}</div>
+              ${b.score ? `<div class="flex items-center gap-1.5 mt-2">
+                <div class="h-1.5 rounded-full overflow-hidden" style="width:100px;background:var(--bg-surface-alt);">
+                  <div class="h-full rounded-full" style="width:${b.score}%;background:${b.score >= 90 ? 'var(--success)' : b.score >= 75 ? 'var(--gold)' : 'var(--warning)'};"></div>
+                </div>
+                <span class="text-xs font-semibold" style="color:${b.score >= 90 ? 'var(--success)' : 'var(--gold)'};">${b.score}/100</span>
+                <span class="text-xs" style="color:var(--text-muted);">match score</span>
+              </div>` : ''}
+            </div>
+            <div class="text-right flex-shrink-0">
+              <div class="text-sm font-bold mb-1" style="color:var(--gold);">${b.price}</div>
+              <div class="text-xs" style="color:var(--text-muted);">Updated ${b.updatedAt}</div>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function filterBookings(type, btn) {
+    document.querySelectorAll('.booking-filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const filtered = type === 'all' ? allBookings : allBookings.filter(b => b.type === type);
+    renderBookings(filtered);
+    document.getElementById('add-booking-placeholder').style.display = filtered.length < allBookings.length ? 'none' : '';
+  }
+
+  function renderTravelers(travelers) {
+    if (travelers.length === 0) {
+      document.getElementById('travelers-list').innerHTML = `<div class="col-span-2 text-sm text-center py-8" style="color:var(--text-muted);">No travelers added yet.</div>`;
+      return;
+    }
+    const client = currentClient;
+    document.getElementById('travelers-list').innerHTML = travelers.map(t => `
+      <div class="card p-4">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="avatar avatar-md" style="background:${client?.avatarColor || '#6366f1'};color:#fff;">${t.name.split(' ').map(n=>n[0]).join('').slice(0,2)}</span>
+          <div>
+            <div class="text-sm font-semibold" style="color:var(--text-primary);">${t.name}</div>
+            <div class="text-xs" style="color:var(--text-muted);">${t.note ? t.note : 'Primary traveler'} &middot; Age ${t.age}</div>
+          </div>
+        </div>
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between text-xs">
+            <span style="color:var(--text-muted);">Passport</span>
+            <span class="badge" style="background:var(--warning-bg);color:var(--warning);">Needed</span>
+          </div>
+          <div class="flex items-center justify-between text-xs">
+            <span style="color:var(--text-muted);">Visa</span>
+            <span class="badge" style="background:var(--success-bg);color:var(--success);">Not required</span>
+          </div>
+          <div class="flex items-center justify-between text-xs">
+            <span style="color:var(--text-muted);">Seat preference</span>
+            <span style="color:var(--text-secondary);">${t.name.includes('Sybil') || t.name.includes('Juliana') || t.name.includes('Margolotta') ? 'Window' : 'Window'}</span>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderTasks(tasks) {
+    const pColors = { Urgent:'var(--error)', High:'var(--warning)', Normal:'var(--info)', Low:'var(--text-muted)' };
+    const sColors = {
+      'In Progress': { bg:'var(--info-bg)', color:'var(--info)' },
+      'Blocked':     { bg:'var(--error-bg)', color:'var(--error)' },
+      'Not Started': { bg:'var(--bg-surface-alt)', color:'var(--text-muted)' },
+      'Waiting':     { bg:'var(--warning-bg)', color:'var(--warning)' },
+      'Done':        { bg:'var(--success-bg)', color:'var(--success)' },
+    };
+    const agent = getAgent.bind(null);
+    document.getElementById('tasks-body').innerHTML = tasks.map(t => {
+      const sc = sColors[t.status] || sColors['Not Started'];
+      const a = getAgent(t.assignedTo);
+      const overdue = t.dueIn && t.dueIn.includes('overdue');
+      return `
+        <tr style="cursor:pointer;" onclick="window.location.href='tasks.html'">
+          <td>
+            <div class="flex items-center gap-2">
+              <div class="w-2 h-2 rounded-full flex-shrink-0" style="background:${pColors[t.priority] || 'var(--text-muted)'}"></div>
+              <span class="text-sm" style="color:var(--text-primary);">${t.title}</span>
+            </div>
+          </td>
+          <td><span class="text-xs font-semibold" style="color:${pColors[t.priority] || 'var(--text-muted)'};">${t.priority}</span></td>
+          <td><span class="badge" style="background:${sc.bg};color:${sc.color};">${t.status}</span></td>
+          <td>
+            ${a ? `<div class="flex items-center gap-1.5">
+              <span class="avatar avatar-sm" style="background:${a.color};color:#fff;">${a.initials}</span>
+              <span class="text-xs">${a.name.split(' ')[0]}</span>
+            </div>` : '—'}
+          </td>
+          <td class="text-xs" style="color:${overdue ? 'var(--error)' : 'var(--text-muted)'};">${t.dueIn}</td>
+          <td><span class="badge" style="background:var(--bg-surface-alt);color:var(--text-muted);">${t.source === 'auto' ? 'AI' : 'Manual'}</span></td>
+        </tr>`;
+    }).join('');
+
+    if (tasks.length === 0) {
+      document.getElementById('tasks-body').innerHTML = `<tr><td colspan="6" class="text-center py-8" style="color:var(--text-muted);">No tasks for this trip.</td></tr>`;
+    }
+  }
+
+  function renderActivity() {
+    const entries = [
+      { time: 'Mar 30, 2:35 PM', actor: 'Angua', icon: 'note', color: 'var(--warning)', text: 'Added internal note about Scorpios Mykonos reservation request' },
+      { time: 'Mar 30, 11:00 AM', actor: 'Angua', icon: 'check', color: 'var(--success)', text: 'Booking confirmed — Private Yacht Day, May 15 (Cavo Tagoo marina)' },
+      { time: 'Mar 29, 11:30 AM', actor: 'Angua', icon: 'info', color: 'var(--info)', text: 'Quoted helicopter transfer Mykonos → Santorini: $2,500-3,500 for group of 4. Task created.' },
+      { time: 'Mar 29, 10:00 AM', actor: 'System', icon: 'auto', color: 'var(--gold)', text: 'Task auto-created: Book helicopter transfer Mykonos to Santorini' },
+      { time: 'Mar 28, 3:00 PM', actor: 'Angua', icon: 'note', color: 'var(--warning)', text: 'Placed hold on Grace Hotel Santorini as backup — 4 nights May 18-22' },
+      { time: 'Mar 25, 2:00 PM', actor: 'Angua', icon: 'check', color: 'var(--success)', text: 'Hotel confirmed — Grande Bretagne Athens, 3 nights' },
+      { time: 'Mar 23, 11:00 AM', actor: 'Angua', icon: 'check', color: 'var(--success)', text: 'Hotel confirmed — Cavo Tagoo Mykonos, 5 nights' },
+      { time: 'Mar 22, 4:30 PM', actor: 'Angua', icon: 'check', color: 'var(--success)', text: 'Flight confirmed — Delta DL-401, 86,000 pts, 12h 20m' },
+      { time: 'Mar 15, 9:00 AM', actor: 'Angua', icon: 'create', color: 'var(--text-muted)', text: 'Trip created — Athens, Mykonos & Santorini for Samuel & Sybil Vimes' },
+    ];
+
+    const icons = {
+      note: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
+      check: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`,
+      info: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+      auto: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>`,
+      create: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="M5 12h14"/></svg>`,
+    };
+
+    document.getElementById('activity-log').innerHTML = entries.map(e => `
+      <div class="activity-item">
+        <div class="activity-dot" style="background:${e.color}22;color:${e.color};">
+          ${icons[e.icon] || icons.info}
+        </div>
+        <div class="flex-1 pt-1.5">
+          <div class="flex items-center gap-2 mb-0.5">
+            <span class="text-xs font-semibold" style="color:var(--text-secondary);">${e.actor}</span>
+            <span class="text-xs" style="color:var(--text-muted);">${e.time}</span>
+          </div>
+          <div class="text-sm" style="color:var(--text-secondary);">${e.text}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function openBookingModal(bookingId) {
+    const b = BOOKINGS.find(x => x.id === bookingId);
+    if (!b) return;
+    document.getElementById('modal-booking-title').textContent = b.name;
+    const statusOpts = ['Confirmed','Waitlisted','On Hold','Cancelled'].map(s =>
+      `<option ${s === b.status ? 'selected' : ''}>${s}</option>`
+    ).join('');
+    document.getElementById('modal-booking-body').innerHTML = `
+      <div class="space-y-4">
+        <div>
+          <div class="text-xs font-semibold mb-1" style="color:var(--text-muted);">Name</div>
+          <input class="input w-full" value="${b.name}">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <div class="text-xs font-semibold mb-1" style="color:var(--text-muted);">Dates</div>
+            <input class="input w-full" value="${b.dates}">
+          </div>
+          <div>
+            <div class="text-xs font-semibold mb-1" style="color:var(--text-muted);">Status</div>
+            <select class="select w-full">${statusOpts}</select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <div class="text-xs font-semibold mb-1" style="color:var(--text-muted);">Price / Points</div>
+            <input class="input w-full" value="${b.price}">
+          </div>
+          ${b.nights ? `<div>
+            <div class="text-xs font-semibold mb-1" style="color:var(--text-muted);">Nights</div>
+            <input class="input w-full" type="number" value="${b.nights}">
+          </div>` : ''}
+          ${b.duration ? `<div>
+            <div class="text-xs font-semibold mb-1" style="color:var(--text-muted);">Duration</div>
+            <input class="input w-full" value="${b.duration}">
+          </div>` : ''}
+        </div>
+        <div>
+          <div class="text-xs font-semibold mb-1" style="color:var(--text-muted);">Notes</div>
+          <textarea class="input w-full" rows="2" placeholder="Add notes..."></textarea>
+        </div>
+      </div>
+    `;
+    openModal('booking-modal');
+  }
+
+  function switchTab(tabId) {
+    ['overview','bookings','travelers','tasks','activity'].forEach(t => {
+      document.getElementById('tab-' + t).style.display = t === tabId ? '' : 'none';
+    });
+    document.querySelectorAll('.tab-item').forEach(el => {
+      el.classList.toggle('active', el.dataset.tab === tabId);
+    });
+  }
+</script>
+
+</body>
+</html>

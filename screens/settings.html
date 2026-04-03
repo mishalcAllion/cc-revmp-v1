@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings -- Maestro Command Centre</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/theme.css">
+  <script src="../js/data.js"></script>
+  <script src="../js/theme.js"></script>
+  <script src="../js/nav.js"></script>
+  <script src="../js/interactions.js"></script>
+</head>
+<body class="antialiased">
+
+<div id="sidebar-root"></div>
+
+<div id="main-wrapper" class="transition-all duration-200" style="margin-left:240px;">
+  <div class="h-screen overflow-y-auto" style="background:var(--bg-app);">
+    <div class="max-w-3xl mx-auto py-8 px-6">
+
+      <h1 class="text-xl font-semibold mb-6" style="color:var(--text-primary);">Settings</h1>
+
+      <!-- Settings tabs -->
+      <div class="tab-bar mb-6">
+        <div class="tab-item active" data-tab="team" onclick="switchSettingsTab('team')">Team</div>
+        <div class="tab-item" data-tab="sla" onclick="switchSettingsTab('sla')">SLA Configuration</div>
+        <div class="tab-item" data-tab="channels" onclick="switchSettingsTab('channels')">Channels</div>
+        <div class="tab-item" data-tab="appearance" onclick="switchSettingsTab('appearance')">Appearance</div>
+        <div class="tab-item" data-tab="shortcuts" onclick="switchSettingsTab('shortcuts')">Keyboard Shortcuts</div>
+      </div>
+
+      <!-- Team -->
+      <div id="tab-team">
+        <div class="card p-5">
+          <div class="text-xs font-semibold uppercase tracking-wide mb-4" style="color:var(--text-muted);">Team Members</div>
+          <table class="data-table">
+            <thead>
+              <tr><th>Name</th><th>Role</th><th>Status</th></tr>
+            </thead>
+            <tbody id="team-members-tbody">
+              <!-- Populated by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SLA Configuration -->
+      <div id="tab-sla" style="display:none;">
+        <div class="card p-5 space-y-5">
+          <div class="text-xs font-semibold uppercase tracking-wide" style="color:var(--text-muted);">Response Time Targets</div>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between p-3 rounded-lg" style="background:var(--bg-surface-alt);">
+              <div>
+                <div class="text-sm font-medium" style="color:var(--text-primary);">VIP Clients</div>
+                <div class="text-xs" style="color:var(--text-muted);">Maximum response time for VIP-tier clients</div>
+              </div>
+              <div class="flex items-center gap-2">
+                <input class="input" value="15" style="width:60px;text-align:center;">
+                <span class="text-xs" style="color:var(--text-muted);">minutes</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between p-3 rounded-lg" style="background:var(--bg-surface-alt);">
+              <div>
+                <div class="text-sm font-medium" style="color:var(--text-primary);">Standard Clients</div>
+                <div class="text-xs" style="color:var(--text-muted);">Maximum response time for standard-tier clients</div>
+              </div>
+              <div class="flex items-center gap-2">
+                <input class="input" value="60" style="width:60px;text-align:center;">
+                <span class="text-xs" style="color:var(--text-muted);">minutes</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="text-xs font-semibold uppercase tracking-wide pt-2" style="color:var(--text-muted);">Escalation Rules</div>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between p-3 rounded-lg" style="background:var(--bg-surface-alt);">
+              <div>
+                <div class="text-sm font-medium" style="color:var(--text-primary);">Warning Threshold</div>
+                <div class="text-xs" style="color:var(--text-muted);">Show amber indicator when this % of SLA is consumed</div>
+              </div>
+              <div class="flex items-center gap-2">
+                <input class="input" value="75" style="width:60px;text-align:center;">
+                <span class="text-xs" style="color:var(--text-muted);">%</span>
+              </div>
+            </div>
+            <div class="flex items-center justify-between p-3 rounded-lg" style="background:var(--bg-surface-alt);">
+              <div>
+                <div class="text-sm font-medium" style="color:var(--text-primary);">Escalate at Breach</div>
+                <div class="text-xs" style="color:var(--text-muted);">Notify manager when SLA is breached</div>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" checked class="sr-only peer">
+                <div class="w-9 h-5 rounded-full peer" style="background:var(--success);"></div>
+              </label>
+            </div>
+          </div>
+          <button class="btn-gold" onclick="showToast('SLA settings saved','success')">Save Changes</button>
+        </div>
+      </div>
+
+      <!-- Channels -->
+      <div id="tab-channels" style="display:none;">
+        <div class="space-y-4">
+          <div class="card p-5">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background:#25D366;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="#fff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/></svg>
+                </div>
+                <div>
+                  <div class="text-sm font-semibold" style="color:var(--text-primary);">WhatsApp Business</div>
+                  <div class="text-xs" style="color:var(--text-muted);">Connected via Twilio + Custom Go provider</div>
+                </div>
+              </div>
+              <span class="badge" style="background:var(--success-bg);color:var(--success);">Connected</span>
+            </div>
+          </div>
+          <div class="card p-5">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background:#6366f1;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+                </div>
+                <div>
+                  <div class="text-sm font-semibold" style="color:var(--text-primary);">Stream Chat (In-App)</div>
+                  <div class="text-xs" style="color:var(--text-muted);">Messages synced to Maestro mobile app</div>
+                </div>
+              </div>
+              <span class="badge" style="background:var(--success-bg);color:var(--success);">Connected</span>
+            </div>
+          </div>
+          <div class="card p-5">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background:#2563eb;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                </div>
+                <div>
+                  <div class="text-sm font-semibold" style="color:var(--text-primary);">Email</div>
+                  <div class="text-xs" style="color:var(--text-muted);">Planned for Q2 2026</div>
+                </div>
+              </div>
+              <span class="badge" style="background:var(--warning-bg);color:var(--warning);">Coming Soon</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Appearance -->
+      <div id="tab-appearance" style="display:none;">
+        <div class="card p-5 space-y-5">
+          <div>
+            <div class="text-sm font-medium mb-2" style="color:var(--text-primary);">Theme</div>
+            <div class="flex gap-3">
+              <button class="btn-ghost flex items-center gap-2" onclick="MaestroTheme.set('light')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/></svg>
+                Light
+              </button>
+              <button class="btn-ghost flex items-center gap-2" onclick="MaestroTheme.set('dark')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+                Dark
+              </button>
+            </div>
+          </div>
+          <div>
+            <div class="text-sm font-medium mb-2" style="color:var(--text-primary);">Density</div>
+            <div class="flex gap-3">
+              <button class="btn-ghost">Compact</button>
+              <button class="btn-ghost" style="background:var(--bg-active);">Comfortable</button>
+            </div>
+          </div>
+          <div>
+            <div class="text-sm font-medium mb-2" style="color:var(--text-primary);">Sidebar</div>
+            <div class="flex gap-3">
+              <button class="btn-ghost" onclick="MaestroNav.toggleSidebar()">Toggle Sidebar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Keyboard Shortcuts -->
+      <div id="tab-shortcuts" style="display:none;">
+        <div class="card p-5">
+          <div class="text-xs font-semibold uppercase tracking-wide mb-4" style="color:var(--text-muted);">Global</div>
+          <div class="space-y-2">
+            <div class="flex items-center justify-between py-2 border-b" style="border-color:var(--border);">
+              <span class="text-sm" style="color:var(--text-secondary);">Open command palette</span>
+              <kbd class="px-2 py-0.5 rounded text-xs font-mono font-semibold" style="background:var(--bg-surface-alt);color:var(--text-primary);border:1px solid var(--border-strong);">Cmd + K</kbd>
+            </div>
+            <div class="flex items-center justify-between py-2 border-b" style="border-color:var(--border);">
+              <span class="text-sm" style="color:var(--text-secondary);">Toggle sidebar</span>
+              <kbd class="px-2 py-0.5 rounded text-xs font-mono font-semibold" style="background:var(--bg-surface-alt);color:var(--text-primary);border:1px solid var(--border-strong);">Cmd + /</kbd>
+            </div>
+            <div class="flex items-center justify-between py-2 border-b" style="border-color:var(--border);">
+              <span class="text-sm" style="color:var(--text-secondary);">Close modal / slide-over</span>
+              <kbd class="px-2 py-0.5 rounded text-xs font-mono font-semibold" style="background:var(--bg-surface-alt);color:var(--text-primary);border:1px solid var(--border-strong);">Escape</kbd>
+            </div>
+            <div class="flex items-center justify-between py-2 border-b" style="border-color:var(--border);">
+              <span class="text-sm" style="color:var(--text-secondary);">Go to Inbox</span>
+              <kbd class="px-2 py-0.5 rounded text-xs font-mono font-semibold" style="background:var(--bg-surface-alt);color:var(--text-primary);border:1px solid var(--border-strong);">G then I</kbd>
+            </div>
+            <div class="flex items-center justify-between py-2 border-b" style="border-color:var(--border);">
+              <span class="text-sm" style="color:var(--text-secondary);">Go to Clients</span>
+              <kbd class="px-2 py-0.5 rounded text-xs font-mono font-semibold" style="background:var(--bg-surface-alt);color:var(--text-primary);border:1px solid var(--border-strong);">G then C</kbd>
+            </div>
+            <div class="flex items-center justify-between py-2 border-b" style="border-color:var(--border);">
+              <span class="text-sm" style="color:var(--text-secondary);">Go to Trips</span>
+              <kbd class="px-2 py-0.5 rounded text-xs font-mono font-semibold" style="background:var(--bg-surface-alt);color:var(--text-primary);border:1px solid var(--border-strong);">G then T</kbd>
+            </div>
+            <div class="flex items-center justify-between py-2 border-b" style="border-color:var(--border);">
+              <span class="text-sm" style="color:var(--text-secondary);">Go to Tasks</span>
+              <kbd class="px-2 py-0.5 rounded text-xs font-mono font-semibold" style="background:var(--bg-surface-alt);color:var(--text-primary);border:1px solid var(--border-strong);">G then K</kbd>
+            </div>
+          </div>
+          <div class="text-xs font-semibold uppercase tracking-wide mt-6 mb-4" style="color:var(--text-muted);">Conversation</div>
+          <div class="space-y-2">
+            <div class="flex items-center justify-between py-2 border-b" style="border-color:var(--border);">
+              <span class="text-sm" style="color:var(--text-secondary);">Reply to conversation</span>
+              <kbd class="px-2 py-0.5 rounded text-xs font-mono font-semibold" style="background:var(--bg-surface-alt);color:var(--text-primary);border:1px solid var(--border-strong);">R</kbd>
+            </div>
+            <div class="flex items-center justify-between py-2 border-b" style="border-color:var(--border);">
+              <span class="text-sm" style="color:var(--text-secondary);">New internal note</span>
+              <kbd class="px-2 py-0.5 rounded text-xs font-mono font-semibold" style="background:var(--bg-surface-alt);color:var(--text-primary);border:1px solid var(--border-strong);">N</kbd>
+            </div>
+            <div class="flex items-center justify-between py-2 border-b" style="border-color:var(--border);">
+              <span class="text-sm" style="color:var(--text-secondary);">AI draft reply</span>
+              <kbd class="px-2 py-0.5 rounded text-xs font-mono font-semibold" style="background:var(--bg-surface-alt);color:var(--text-primary);border:1px solid var(--border-strong);">A</kbd>
+            </div>
+            <div class="flex items-center justify-between py-2 border-b" style="border-color:var(--border);">
+              <span class="text-sm" style="color:var(--text-secondary);">Edit last message</span>
+              <kbd class="px-2 py-0.5 rounded text-xs font-mono font-semibold" style="background:var(--bg-surface-alt);color:var(--text-primary);border:1px solid var(--border-strong);">E</kbd>
+            </div>
+            <div class="flex items-center justify-between py-2 border-b" style="border-color:var(--border);">
+              <span class="text-sm" style="color:var(--text-secondary);">Send message</span>
+              <kbd class="px-2 py-0.5 rounded text-xs font-mono font-semibold" style="background:var(--bg-surface-alt);color:var(--text-primary);border:1px solid var(--border-strong);">Cmd + Enter</kbd>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    MaestroNav.render('sidebar-root');
+    document.getElementById('main-wrapper').style.marginLeft = MaestroNav.getSidebarWidth() + 'px';
+
+    const observer = new MutationObserver(() => {
+      document.getElementById('main-wrapper').style.marginLeft = MaestroNav.getSidebarWidth() + 'px';
+    });
+    setTimeout(() => {
+      const sb = document.getElementById('sidebar');
+      if (sb) observer.observe(sb, { attributes: true, attributeFilter: ['class'] });
+    }, 100);
+
+    // Populate team members table
+    renderTeamMembers();
+  });
+
+  function renderTeamMembers() {
+    const tbody = document.getElementById('team-members-tbody');
+    tbody.innerHTML = AGENTS.map(agent => `
+      <tr>
+        <td>
+          <div class="flex items-center gap-2">
+            <span class="avatar avatar-sm" style="background:${agent.color};color:#fff;">${agent.initials}</span>
+            <span class="font-medium">${agent.name}</span>
+          </div>
+        </td>
+        <td class="text-xs">Concierge Agent</td>
+        <td><span class="badge" style="background:var(--success-bg);color:var(--success);">Online</span></td>
+      </tr>
+    `).join('');
+  }
+
+  function switchSettingsTab(tabId) {
+    ['team','sla','channels','appearance','shortcuts'].forEach(t => {
+      document.getElementById('tab-' + t).style.display = t === tabId ? '' : 'none';
+    });
+    document.querySelectorAll('.tab-item').forEach(el => {
+      el.classList.toggle('active', el.dataset.tab === tabId);
+    });
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inbox (Cards) -- Maestro Command Centre</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/theme.css">
+  <script src="../js/data.js"></script>
+  <script src="../js/theme.js"></script>
+  <script src="../js/nav.js"></script>
+  <script src="../js/interactions.js"></script>
+  <style>
+    @keyframes pulse-sla {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .sla-bar-breached {
+      animation: pulse-sla 1.5s ease-in-out infinite;
+    }
+    .conv-card {
+      transition: all 0.15s ease;
+    }
+    .conv-card:hover {
+      transform: translateY(-1px);
+    }
+    .conv-card.active {
+      border-left: 3px solid var(--gold) !important;
+    }
+  </style>
+</head>
+<body class="antialiased">
+
+<!-- Sidebar -->
+<div id="sidebar-root"></div>
+
+<!-- Main content (shifts right based on sidebar width) -->
+<div id="main-wrapper" class="transition-all duration-200" style="margin-left:240px;">
+  <div class="flex h-screen overflow-hidden">
+
+    <!-- ============ LEFT: Conversation Cards (320px) ============ -->
+    <div class="flex flex-col border-r transition-theme" style="width:320px;min-width:320px;background:var(--bg-surface);border-color:var(--border);">
+      <!-- List header -->
+      <div class="px-4 py-3 border-b transition-theme" style="border-color:var(--border);">
+        <div class="flex items-center justify-between mb-3">
+          <h1 class="text-base font-semibold" style="color:var(--text-primary);">Inbox</h1>
+          <div class="flex items-center gap-2">
+            <!-- View toggle: compact / cards / queue -->
+            <div class="flex items-center border rounded-md overflow-hidden" style="border-color:var(--border);">
+              <a href="inbox-compact.html" class="view-toggle px-2 py-1" title="Compact list" style="color:var(--text-muted);">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+              </a>
+              <button class="view-toggle active px-2 py-1" data-view="cards" title="Card view" style="background:var(--bg-active);">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+              </button>
+              <a href="inbox-queue.html" class="view-toggle px-2 py-1" title="Queue view" style="color:var(--text-muted);">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5"/><path d="M8 3H3v5"/><path d="M12 22v-8.3a4 4 0 0 0-1.172-2.872L3 3"/><path d="m15 9 6-6"/></svg>
+              </a>
+            </div>
+            <a href="onboarding.html" class="btn-gold" style="padding:5px 10px;font-size:11px;">+ Client</a>
+          </div>
+        </div>
+        <!-- Search -->
+        <input class="input" placeholder="Search conversations..." style="font-size:12px;padding:6px 10px;">
+        <!-- Filters -->
+        <div class="flex gap-2 mt-2">
+          <select class="select" data-filter="status" onchange="renderConversationCards()" style="font-size:11px;padding:4px 8px;">
+            <option value="all">All</option>
+            <option value="open" selected>Open</option>
+            <option value="snoozed">Snoozed</option>
+            <option value="closed">Closed</option>
+          </select>
+          <select class="select" data-filter="assigned" onchange="renderConversationCards()" style="font-size:11px;padding:4px 8px;">
+            <option value="all">All agents</option>
+            <option value="me">My conversations</option>
+            <option value="unassigned">Unassigned</option>
+            <optgroup label="By agent">
+              <option value="a1">Angua</option>
+              <option value="a2">Carrot</option>
+              <option value="a3">Magrat</option>
+              <option value="a4">Cheery</option>
+              <option value="a5">Tiffany</option>
+            </optgroup>
+          </select>
+          <select class="select" data-filter="sla" onchange="renderConversationCards()" style="font-size:11px;padding:4px 8px;">
+            <option value="all">All SLA</option>
+            <option value="breached">Breached</option>
+            <option value="warning">Warning</option>
+          </select>
+          <select class="select" data-filter="type" onchange="renderConversationCards()" style="font-size:11px;padding:4px 8px;">
+            <option value="all">All types</option>
+            <option value="trip">Trip</option>
+            <option value="general">General</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Conversation card list -->
+      <div class="flex-1 overflow-y-auto" id="conversation-list" style="padding:8px;">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <!-- ============ CENTER: Conversation Thread ============ -->
+    <div class="flex-1 flex flex-col transition-theme" style="background:var(--bg-app);">
+      <!-- Conversation header -->
+      <div class="flex items-center px-5 h-14 border-b transition-theme" style="background:var(--bg-surface);border-color:var(--border);">
+        <div class="flex items-center gap-3 flex-1">
+          <span id="conv-avatar" class="avatar" style="background:#6366f1;color:#fff;">SV</span>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-semibold text-sm" style="color:var(--text-primary);" id="conv-client-name">Samuel & Sybil Vimes</span>
+              <span class="badge" style="background:var(--warning-bg);color:var(--warning);font-size:10px;" id="conv-status">In Progress</span>
+            </div>
+            <div class="text-xs" style="color:var(--text-muted);" id="conv-trip-name">Athens, Mykonos & Santorini</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <!-- SLA timer -->
+          <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style="background:var(--success-bg);" id="sla-badge">
+            <div class="w-2 h-2 rounded-full" style="background:var(--sla-healthy);"></div>
+            <span class="text-xs font-semibold" style="color:var(--success);">45m remaining</span>
+          </div>
+          <!-- Assigned agents -->
+          <div class="relative" id="agent-assign-wrapper">
+            <div id="conv-agent-avatars" class="flex items-center cursor-pointer" onclick="toggleAssignDropdown()" title="Manage assignment">
+              <span class="avatar avatar-sm" style="background:#f97316;color:#fff;">AU</span>
+            </div>
+            <!-- Assignment dropdown (placeholder for future implementation) -->
+            <div id="assign-dropdown" class="absolute right-0 top-full mt-1 w-64 rounded-lg border shadow-lg py-1 hidden" style="background:var(--bg-surface);border-color:var(--border);z-index:50;">
+              <div class="px-3 py-1.5 text-xs font-semibold uppercase tracking-wide" style="color:var(--text-muted);">Assign to</div>
+              <div id="assign-agent-list"></div>
+            </div>
+          </div>
+          <!-- Toggle context panel -->
+          <button id="toggle-context" class="w-8 h-8 rounded border flex items-center justify-center transition-all duration-200" style="border-color:var(--border);color:var(--text-muted);" title="Toggle context panel">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M15 3v18"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Messages area -->
+      <div class="flex-1 overflow-y-auto px-5 py-4 space-y-4" id="messages-area">
+        <!-- Populated by JS -->
+      </div>
+
+      <!-- Message composer -->
+      <div class="px-5 py-3 border-t transition-theme" style="background:var(--bg-surface);border-color:var(--border);">
+        <!-- Reply / Note toggle -->
+        <div class="flex items-center gap-0 mb-2">
+          <button class="composer-tab active px-3 py-1 text-xs font-semibold rounded-l-md border" style="border-color:var(--border);" data-mode="reply" onclick="switchComposerMode('reply')">Reply</button>
+          <button class="composer-tab px-3 py-1 text-xs font-semibold rounded-r-md border-t border-r border-b" style="border-color:var(--border);color:var(--text-muted);background:transparent;" data-mode="note" onclick="switchComposerMode('note')">Internal Note</button>
+        </div>
+        <div class="flex items-end gap-2">
+          <div class="flex-1 relative">
+            <textarea id="composer-input" class="input" rows="2" placeholder="Reply to Samuel..." style="resize:none;padding-right:80px;"></textarea>
+          </div>
+          <div class="flex flex-col gap-1">
+            <button class="btn-ghost flex items-center gap-1" style="padding:6px 10px;font-size:11px;" onclick="simulateAIDraft('composer-input','Thank you for reaching out! I\'ve reviewed your request and here is what I recommend for your upcoming trip...')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18"/><path d="M3 12h18"/></svg>
+              AI Draft
+            </button>
+            <button class="btn-gold flex items-center gap-1" style="padding:6px 12px;font-size:11px;" onclick="simulateSend('composer-input')">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+              Send
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ RIGHT: Context Panel (360px) ============ -->
+    <div id="context-panel" class="flex flex-col border-l transition-theme overflow-y-auto" style="width:360px;min-width:360px;background:var(--bg-surface);border-color:var(--border);">
+
+      <!-- Unassigned banner (hidden by default) -->
+      <div id="unassigned-banner" class="px-4 py-3 border-b transition-theme hidden" style="border-color:var(--border);background:var(--warning-bg);">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold" style="border:1.5px dashed var(--warning);color:var(--warning);">?</span>
+            <span class="text-xs font-semibold" style="color:var(--warning);">This conversation is unassigned</span>
+          </div>
+          <button class="btn-gold" style="padding:3px 10px;font-size:11px;" onclick="assignToMe()">Assign to me</button>
+        </div>
+      </div>
+
+      <!-- Client mini-profile -->
+      <div class="p-4 border-b transition-theme" style="border-color:var(--border);">
+        <div class="flex items-center justify-between mb-2">
+          <a href="client-detail?id=c1" class="font-semibold text-sm hover:underline" style="color:var(--text-primary);" id="context-client-name">Samuel & Sybil Vimes</a>
+          <span class="badge" id="context-tier-badge" style="background:var(--gold-bg);color:var(--gold);">VIP</span>
+        </div>
+        <div class="space-y-1 text-xs" style="color:var(--text-secondary);" id="context-client-contact">
+          <div class="flex items-center gap-2">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <span>+1 (720) 555-0411</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            <span>brock.fortner@yahoo.com</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Active trip -->
+      <div class="p-4 border-b transition-theme" style="border-color:var(--border);" id="context-trip-section">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-semibold uppercase tracking-wide" style="color:var(--text-muted);">Active Trip</span>
+            <span id="trip-stage-badge" class="inline-flex items-center px-1.5 py-0 rounded text-white font-semibold" style="font-size:9px;line-height:16px;background:#6366f1;">Planning</span>
+          </div>
+          <a href="trip-detail?id=tr1" class="text-xs font-medium hover:underline" style="color:var(--gold);" id="context-trip-link">View details</a>
+        </div>
+        <div class="font-medium text-sm mb-1" style="color:var(--text-primary);" id="context-trip-name">Athens, Mykonos & Santorini</div>
+        <div class="text-xs mb-2" style="color:var(--text-secondary);" id="context-trip-dates">May 10 - 24, 2026</div>
+        <div class="flex items-center gap-2 flex-wrap" id="context-trip-stats">
+          <span class="badge" style="background:var(--info-bg);color:var(--info);">4 travelers</span>
+          <span class="badge" style="background:var(--success-bg);color:var(--success);">6 bookings</span>
+          <span class="badge" style="background:var(--warning-bg);color:var(--warning);">1 pending</span>
+        </div>
+
+        <!-- Travelers -->
+        <div class="mt-3" id="context-travelers">
+          <div class="text-xs font-semibold mb-1.5" style="color:var(--text-muted);">TRAVELERS</div>
+          <div class="flex flex-wrap gap-1.5">
+            <span class="px-2 py-0.5 rounded-full text-xs font-medium border" style="border-color:var(--border);color:var(--text-secondary);">Samuel (40)</span>
+            <span class="px-2 py-0.5 rounded-full text-xs font-medium border" style="border-color:var(--border);color:var(--text-secondary);">Sybil (38)</span>
+            <span class="px-2 py-0.5 rounded-full text-xs font-medium border" style="border-color:var(--border);color:var(--text-secondary);">Nobby (39)</span>
+            <span class="px-2 py-0.5 rounded-full text-xs font-medium border" style="border-color:var(--border);color:var(--text-secondary);">Rosamund (37)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Household threads (shown for general threads) -->
+      <div id="threads-section" class="p-4 border-b transition-theme hidden" style="border-color:var(--border);">
+        <div class="text-xs font-semibold uppercase tracking-wide mb-3" style="color:var(--text-muted);">HOUSEHOLD THREADS</div>
+        <div class="space-y-2" id="household-threads-list">
+          <!-- Populated by JS for general threads -->
+        </div>
+      </div>
+
+      <!-- Bookings -->
+      <div class="p-4 border-b transition-theme" style="border-color:var(--border);">
+        <div class="text-xs font-semibold uppercase tracking-wide mb-3" style="color:var(--text-muted);">BOOKINGS <span id="booking-count">(6)</span></div>
+
+        <!-- Booking cards -->
+        <div class="space-y-2" id="booking-cards">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Quick actions -->
+      <div class="p-4 border-b transition-theme" style="border-color:var(--border);">
+        <div class="grid grid-cols-2 gap-2">
+          <button class="btn-ghost text-xs flex items-center justify-center gap-1" onclick="openTaskModal()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 12 2 2 4-4"/></svg>
+            Create Task
+          </button>
+          <button class="btn-ghost text-xs flex items-center justify-center gap-1" onclick="openFlightSearchModal()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
+            Search Flights
+          </button>
+          <button class="btn-ghost text-xs flex items-center justify-center gap-1" onclick="openHotelSearchModal()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Z"/><path d="m9 16 .348-.24c1.465-1.013 3.84-1.013 5.304 0L15 16"/><path d="M8 7h.01"/><path d="M16 7h.01"/></svg>
+            Search Hotels
+          </button>
+          <button class="btn-ghost text-xs flex items-center justify-center gap-1" onclick="if(currentPrimaryClientId)window.location.href='client-detail?id='+currentPrimaryClientId">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            View Profile
+          </button>
+        </div>
+      </div>
+
+      <!-- AI Copilot -->
+      <div class="p-4 mt-auto">
+        <div class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:var(--text-muted);">AI COPILOT</div>
+        <div class="relative">
+          <input class="input" placeholder="/search-flights, /draft-reply, or ask anything..." style="font-size:12px;padding:8px 12px;padding-right:36px;">
+          <button class="absolute right-2 top-1/2 -translate-y-1/2" style="color:var(--gold);" onclick="showToast('AI copilot processing your request...','info')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+          </button>
+        </div>
+        <div class="text-xs mt-1.5" style="color:var(--text-muted);">Try: /search-flights SFO-ATH May 8-12</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Command Palette -->
+<div id="cmd-palette-root"></div>
+
+<script>
+  let currentConversationId = 'conv1';
+  let currentPrimaryClientId = null;
+
+  // ---- Render sidebar ----
+  document.addEventListener('DOMContentLoaded', () => {
+    MaestroNav.render('sidebar-root');
+    updateMainMargin();
+    renderConversationCards();
+    renderMessages();
+    renderBookingCards();
+    updateContextPanel();
+    document.getElementById('cmd-palette-root').innerHTML = renderCommandPalette();
+
+    // Context panel toggle
+    document.getElementById('toggle-context').addEventListener('click', () => {
+      const panel = document.getElementById('context-panel');
+      if (panel.style.display === 'none') {
+        panel.style.display = '';
+      } else {
+        panel.style.display = 'none';
+      }
+    });
+  });
+
+  // Observe sidebar changes
+  const observer = new MutationObserver(updateMainMargin);
+  setTimeout(() => {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) observer.observe(sidebar, { attributes: true, attributeFilter: ['class'] });
+  }, 100);
+
+  function updateMainMargin() {
+    const w = MaestroNav.getSidebarWidth();
+    document.getElementById('main-wrapper').style.marginLeft = w + 'px';
+  }
+
+  // ---- Stage badge mapping ----
+  function getStageBadge(stage) {
+    const stages = {
+      lead: { label: 'Lead', bg: 'var(--info-bg)', color: 'var(--info)' },
+      planning: { label: 'Planning', bg: 'var(--warning-bg)', color: 'var(--warning)' },
+      booking: { label: 'Booking', bg: '#fef3c7', color: '#d97706' },
+      confirmed: { label: 'Confirmed', bg: 'var(--success-bg)', color: 'var(--success)' },
+    };
+    return stages[stage] || stages.lead;
+  }
+
+  // ---- Filter conversations ----
+  function getFilteredConversations() {
+    let convs = [...CONVERSATIONS];
+    const status = document.querySelector('[data-filter="status"]')?.value || 'all';
+    const assigned = document.querySelector('[data-filter="assigned"]')?.value || 'all';
+    const sla = document.querySelector('[data-filter="sla"]')?.value || 'all';
+    const type = document.querySelector('[data-filter="type"]')?.value || 'all';
+
+    if (status !== 'all') convs = convs.filter(c => c.status === status);
+    if (assigned === 'me') convs = convs.filter(c => c.assignedTo === 'a1');
+    else if (assigned === 'unassigned') convs = convs.filter(c => !c.assignedTo);
+    else if (assigned !== 'all') convs = convs.filter(c => c.assignedTo === assigned || (c.collaborators || []).includes(assigned));
+    if (sla === 'breached') convs = convs.filter(c => c.slaStatus === 'breached');
+    else if (sla === 'warning') convs = convs.filter(c => c.slaStatus === 'warning' || c.slaStatus === 'critical');
+    if (type === 'trip') convs = convs.filter(c => c.threadType === 'trip');
+    else if (type === 'general') convs = convs.filter(c => c.threadType === 'general');
+
+    return convs;
+  }
+
+  // ---- Agent avatar HTML helper ----
+  function renderAgentAvatars(conv) {
+    if (!conv.assignedTo) {
+      return `<span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0" style="border:1.5px dashed var(--warning);color:var(--warning);">?</span>`;
+    }
+    const agents = getConversationAgents(conv.id);
+    if (agents.length === 0) return '';
+    let html = '<div class="flex items-center flex-shrink-0" style="margin-left:2px;">';
+    agents.slice(0, 3).forEach((a, i) => {
+      const ml = i > 0 ? 'margin-left:-8px;' : '';
+      html += `<span class="w-6 h-6 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0" style="font-size:9px;${ml}background:${a.color};outline:2px solid var(--bg-surface);z-index:${10-i};" title="${a.name}">${a.initials}</span>`;
+    });
+    if (agents.length > 3) {
+      html += `<span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0" style="margin-left:-8px;background:var(--bg-app);color:var(--text-muted);outline:2px solid var(--bg-surface);">+${agents.length - 3}</span>`;
+    }
+    html += '</div>';
+    return html;
+  }
+
+  // ---- Thread type indicator HTML helper ----
+  function renderThreadIndicator(conv) {
+    if (conv.threadType === 'general') {
+      return `<span class="text-xs font-medium" style="color:var(--info);">General</span>`;
+    }
+    const trip = conv.tripId ? getTrip(conv.tripId) : null;
+    if (trip) {
+      const stage = getPipelineStage(trip.stage);
+      return `
+        <div class="flex items-center gap-1.5">
+          <span class="text-xs truncate" style="color:var(--text-secondary);">${trip.destinations}</span>
+          ${stage ? `<span class="inline-flex items-center px-1.5 py-0 rounded text-white font-semibold flex-shrink-0" style="font-size:9px;background:${stage.color};line-height:14px;">${stage.label}</span>` : ''}
+        </div>`;
+    }
+    return '';
+  }
+
+  // ---- Conversation cards ----
+  function renderConversationCards() {
+    const container = document.getElementById('conversation-list');
+    const convs = getFilteredConversations();
+    container.innerHTML = convs.map((conv, i) => {
+      const household = getHousehold(conv.householdId);
+      const primaryClient = getClient(household.primaryClientId);
+      const householdMembers = getClientsByHousehold(conv.householdId);
+      const trip = getTrip(conv.tripId);
+      const agent = getAgent(conv.assignedTo);
+
+      const slaColors = {
+        healthy: 'var(--sla-healthy)',
+        warning: 'var(--sla-warning)',
+        critical: 'var(--sla-critical)',
+        breached: 'var(--sla-breached)'
+      };
+
+      // SLA bar width calculation (percentage based on 120 min max)
+      const slaPercent = Math.min(100, (conv.slaMinutes / 120) * 100);
+      const slaBarWidth = conv.slaStatus === 'breached' ? '100%' : `${slaPercent}%`;
+
+      const channelIcons = {
+        whatsapp: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9z"/><path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1"/></svg>',
+        stream: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>',
+        sms: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>'
+      };
+
+      const isActive = conv.id === currentConversationId;
+      const isUnassigned = !conv.assignedTo;
+
+      // Calculate traveler count and booking count
+      const travelerCount = trip && trip.travelers ? trip.travelers.length : 0;
+      const bookingCount = trip ? trip.bookingCount : 0;
+
+      return `
+        <div class="conv-card card p-3 cursor-pointer mb-2 ${isActive ? 'active' : ''} ${isUnassigned ? 'card-unassigned' : ''}"
+             data-conv-id="${conv.id}"
+             style="background:var(--bg-surface);border-left:3px solid ${isActive ? 'var(--gold)' : 'transparent'};min-height:130px;"
+             onclick="selectConversation('${conv.id}')">
+
+          <!-- SLA progress bar (full width at top) -->
+          <div class="w-full h-[3px] rounded-full overflow-hidden mb-2.5" style="background:var(--border);">
+            <div class="h-full transition-all duration-300 ${conv.slaStatus === 'breached' ? 'sla-bar-breached' : ''}"
+                 style="width:${slaBarWidth};background:${slaColors[conv.slaStatus]};"></div>
+          </div>
+
+          <!-- Header: Avatar, Name, Time, Channel -->
+          <div class="flex items-start gap-2.5 mb-2">
+            <span class="avatar flex-shrink-0" style="background:${primaryClient.avatarColor};color:#fff;font-size:11px;width:36px;height:36px;">${primaryClient.initials}</span>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-2 mb-0.5">
+                <span class="text-sm font-semibold truncate" style="color:var(--text-primary);">${household.name}</span>
+                <div class="flex items-center gap-1.5 flex-shrink-0">
+                  <span class="text-xs" style="color:var(--text-muted);">${conv.lastActivity}</span>
+                  <span style="color:var(--text-muted);">${channelIcons[conv.channel] || channelIcons.sms}</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-1.5">
+                ${isUnassigned ? `<span class="badge flex-shrink-0" style="background:var(--warning-bg);color:var(--warning);font-size:9px;padding:2px 6px;">Unassigned</span>` : ''}
+                ${renderThreadIndicator(conv)}
+              </div>
+            </div>
+          </div>
+
+          <!-- Stat badges -->
+          <div class="flex items-center gap-2 mb-2.5">
+            <div class="flex items-center gap-1.5 px-2 py-1 rounded-md" style="background:var(--info-bg);">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--info)" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <span class="text-xs font-semibold" style="color:var(--info);">${travelerCount} traveler${travelerCount !== 1 ? 's' : ''}</span>
+            </div>
+            <div class="flex items-center gap-1.5 px-2 py-1 rounded-md" style="background:var(--success-bg);">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 12 2 2 4-4"/></svg>
+              <span class="text-xs font-semibold" style="color:var(--success);">${bookingCount} booking${bookingCount !== 1 ? 's' : ''}</span>
+            </div>
+          </div>
+
+          <!-- Footer: Action buttons + Agent avatars -->
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 flex-1">
+              <button class="btn-ghost text-xs py-1.5 px-2" onclick="event.stopPropagation();selectConversation('${conv.id}')">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Reply
+              </button>
+              ${trip ? `<button class="btn-ghost text-xs py-1.5 px-2" onclick="event.stopPropagation();window.location.href='trip-detail?id=${conv.tripId}'">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                View Trip
+              </button>` : ''}
+            </div>
+            ${renderAgentAvatars(conv)}
+          </div>
+
+          ${conv.unread > 0 ? `
+          <div class="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold" style="background:var(--gold);color:#000;">
+            ${conv.unread}
+          </div>` : ''}
+        </div>`;
+    }).join('');
+  }
+
+  // ---- Messages ----
+  function renderMessages() {
+    const container = document.getElementById('messages-area');
+    const msgs = MESSAGES[currentConversationId] || MESSAGES.conv1 || [];
+    container.innerHTML = msgs.map(msg => {
+      if (msg.sender === 'client') {
+        return `
+          <div class="flex gap-3 max-w-[75%]">
+            <span class="avatar avatar-sm flex-shrink-0" style="background:#6366f1;color:#fff;margin-top:2px;">${msg.senderName[0]}</span>
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-xs font-semibold" style="color:var(--text-primary);">${msg.senderName}</span>
+                <span class="badge" style="background:var(--info-bg);color:var(--info);font-size:9px;">Client</span>
+                <span class="text-xs" style="color:var(--text-muted);">${msg.time}</span>
+              </div>
+              <div class="msg-client px-3 py-2 text-sm" style="color:var(--text-primary);">${msg.text}</div>
+            </div>
+          </div>`;
+      }
+      if (msg.sender === 'ops') {
+        return `
+          <div class="flex gap-3 justify-end">
+            <div class="text-right">
+              <div class="flex items-center gap-2 mb-1 justify-end">
+                <span class="text-xs" style="color:var(--text-muted);">${msg.time}</span>
+                <span class="text-xs font-semibold" style="color:var(--text-primary);">${msg.senderName}</span>
+                <span class="badge" style="background:var(--gold-bg);color:var(--gold);font-size:9px;">Concierge</span>
+              </div>
+              <div class="msg-ops px-3 py-2 text-sm" style="color:var(--text-primary);">${msg.text}</div>
+            </div>
+            <span class="avatar avatar-sm flex-shrink-0" style="background:#f97316;color:#fff;margin-top:2px;">CR</span>
+          </div>`;
+      }
+      if (msg.sender === 'internal') {
+        return `
+          <div class="msg-internal px-3 py-2 text-sm">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="badge" style="background:#fef9c3;color:#854d0e;font-size:9px;border:1px solid #ca8a04;">Internal Note</span>
+              <span class="text-xs font-semibold" style="color:var(--text-secondary);">${msg.senderName}</span>
+              <span class="text-xs" style="color:var(--text-muted);">${msg.time}</span>
+            </div>
+            <div style="color:var(--text-secondary);">${msg.text}</div>
+          </div>`;
+      }
+      if (msg.sender === 'ai-draft') {
+        return `
+          <div class="flex gap-3 justify-end">
+            <div class="text-right" style="max-width:75%;">
+              <div class="flex items-center gap-2 mb-1 justify-end">
+                <span class="badge" style="background:var(--gold-bg);color:var(--gold);font-size:9px;">AI Draft</span>
+                <span class="badge" style="background:var(--success-bg);color:var(--success);font-size:9px;">${msg.confidence} confidence</span>
+              </div>
+              <div class="msg-ai-draft px-3 py-2 text-sm text-left" style="color:var(--text-primary);">${msg.text}</div>
+              <div class="flex items-center gap-2 mt-2 justify-end">
+                <button class="btn-gold" style="padding:4px 12px;font-size:11px;" onclick="this.closest('.flex.gap-3').remove();showToast('Message approved and sent!','success')">Approve & Send</button>
+                <button class="btn-ghost" style="padding:4px 10px;font-size:11px;">Edit</button>
+                <button class="btn-ghost" style="padding:4px 10px;font-size:11px;color:var(--error);" onclick="this.closest('.flex.gap-3').remove()">Dismiss</button>
+              </div>
+            </div>
+            <span class="avatar avatar-sm flex-shrink-0" style="background:var(--gold);color:#000;margin-top:2px;">AI</span>
+          </div>`;
+      }
+      return '';
+    }).join('');
+  }
+
+  // ---- Booking cards ----
+  function renderBookingCards() {
+    const container = document.getElementById('booking-cards');
+    const conv = CONVERSATIONS.find(c => c.id === currentConversationId);
+    if (!conv || !conv.tripId) {
+      container.innerHTML = '<div class="text-xs" style="color:var(--text-muted);">No bookings yet</div>';
+      return;
+    }
+    const bookings = getBookingsByTrip(conv.tripId);
+    const typeIcons = {
+      hotel: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Z"/><path d="m9 16 .348-.24c1.465-1.013 3.84-1.013 5.304 0L15 16"/><path d="M8 7h.01"/><path d="M16 7h.01"/></svg>',
+      flight: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>',
+      experience: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>',
+    };
+    const statusColors = {
+      'Confirmed': { bg: 'var(--success-bg)', color: 'var(--success)' },
+      'Waitlisted': { bg: 'var(--warning-bg)', color: 'var(--warning)' },
+      'On Hold': { bg: 'var(--info-bg)', color: 'var(--info)' },
+    };
+
+    container.innerHTML = bookings.slice(0, 5).map(b => {
+      const sc = statusColors[b.status] || statusColors['Confirmed'];
+      return `
+        <div class="card p-2.5 flex items-start gap-2.5 cursor-pointer" style="font-size:12px;">
+          <div class="mt-0.5" style="color:var(--text-muted);">${typeIcons[b.type] || typeIcons.hotel}</div>
+          <div class="flex-1 min-w-0">
+            <div class="font-medium truncate" style="color:var(--text-primary);">${b.name}</div>
+            <div style="color:var(--text-muted);">${b.dates}</div>
+            <div class="flex items-center gap-2 mt-1">
+              <span class="badge" style="background:${sc.bg};color:${sc.color};font-size:10px;">${b.status}</span>
+              <span style="color:var(--text-secondary);font-weight:600;">${b.price}</span>
+              ${b.score ? `<span style="color:${b.score >= 90 ? 'var(--success)' : 'var(--warning)'};font-weight:600;">${b.score}/100</span>` : ''}
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // ---- Update conversation header agents ----
+  function updateConvHeaderAgents(conv) {
+    const container = document.getElementById('conv-agent-avatars');
+    if (!conv.assignedTo) {
+      container.innerHTML = `
+        <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style="border:1.5px dashed var(--warning);color:var(--warning);">?</span>
+        <span class="text-xs font-semibold ml-1" style="color:var(--warning);">Unassigned</span>`;
+      return;
+    }
+    const agents = getConversationAgents(conv.id);
+    let html = '';
+    agents.slice(0, 3).forEach((a, i) => {
+      const ml = i > 0 ? 'margin-left:-6px;' : '';
+      html += `<span class="w-6 h-6 rounded-full flex items-center justify-center text-white font-bold" style="font-size:9px;${ml}background:${a.color};outline:2px solid var(--bg-surface);z-index:${10-i};" title="${a.name}">${a.initials}</span>`;
+    });
+    if (agents.length > 3) {
+      html += `<span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold" style="margin-left:-6px;background:var(--bg-app);color:var(--text-muted);outline:2px solid var(--bg-surface);">+${agents.length - 3}</span>`;
+    }
+    // Add [+] button
+    html += `<span class="w-5 h-5 rounded-full flex items-center justify-center text-xs ml-1" style="border:1px solid var(--border);color:var(--text-muted);">+</span>`;
+    container.innerHTML = html;
+  }
+
+  // ---- Update context panel ----
+  function updateContextPanel() {
+    const conv = CONVERSATIONS.find(c => c.id === currentConversationId);
+    if (!conv) return;
+
+    const household = getHousehold(conv.householdId);
+    const client = getClient(household.primaryClientId);
+    const trip = getTrip(conv.tripId);
+    const travelers = trip && trip.travelers ? trip.travelers.map(id => getClient(id)).filter(c => c) : [];
+    const isGeneral = conv.threadType === 'general';
+
+    // Show/hide unassigned banner
+    const unassignedBanner = document.getElementById('unassigned-banner');
+    if (!conv.assignedTo) {
+      unassignedBanner.classList.remove('hidden');
+    } else {
+      unassignedBanner.classList.add('hidden');
+    }
+
+    // Update client info
+    const nameEl = document.getElementById('context-client-name');
+    nameEl.textContent = household.name;
+    nameEl.href = `client-detail?id=${client.id}`;
+    document.getElementById('context-tier-badge').textContent = client.tier;
+    document.getElementById('context-tier-badge').style.background = client.tier === 'VIP' ? 'var(--gold-bg)' : 'var(--info-bg)';
+    document.getElementById('context-tier-badge').style.color = client.tier === 'VIP' ? 'var(--gold)' : 'var(--info)';
+
+    document.getElementById('context-client-contact').innerHTML = `
+      <div class="flex items-center gap-2">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        <span>${client.phone}</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+        <span>${client.email}</span>
+      </div>
+    `;
+
+    // Toggle trip vs general sections
+    const tripSection = document.getElementById('context-trip-section');
+    const threadsSection = document.getElementById('threads-section');
+
+    if (isGeneral) {
+      // Hide trip section, show household threads
+      tripSection.classList.add('hidden');
+      threadsSection.classList.remove('hidden');
+      renderHouseholdThreads(conv.householdId, conv.id);
+    } else {
+      // Show trip section, hide household threads
+      tripSection.classList.remove('hidden');
+      threadsSection.classList.add('hidden');
+    }
+
+    // Update trip info
+    if (trip) {
+      document.getElementById('context-trip-name').textContent = trip.name;
+      document.getElementById('context-trip-dates').textContent = trip.dates;
+      document.getElementById('context-trip-link').href = `trip-detail?id=${trip.id}`;
+
+      // Update trip stage badge
+      const stage = getPipelineStage(trip.stage);
+      if (stage) {
+        document.getElementById('trip-stage-badge').textContent = stage.label;
+        document.getElementById('trip-stage-badge').style.background = stage.color;
+      }
+
+      const travelerCount = trip.travelers ? trip.travelers.length : 0;
+      const bookingCount = trip.bookingCount || 0;
+      const pendingCount = trip.pendingCount || 0;
+
+      let statsHTML = `<span class="badge" style="background:var(--info-bg);color:var(--info);">${travelerCount} traveler${travelerCount !== 1 ? 's' : ''}</span>`;
+      statsHTML += `<span class="badge" style="background:var(--success-bg);color:var(--success);">${bookingCount} booking${bookingCount !== 1 ? 's' : ''}</span>`;
+      if (pendingCount > 0) {
+        statsHTML += `<span class="badge" style="background:var(--warning-bg);color:var(--warning);">${pendingCount} pending</span>`;
+      }
+      document.getElementById('context-trip-stats').innerHTML = statsHTML;
+
+      // Update travelers
+      if (travelers.length > 0) {
+        document.getElementById('context-travelers').innerHTML = `
+          <div class="text-xs font-semibold mb-1.5" style="color:var(--text-muted);">TRAVELERS</div>
+          <div class="flex flex-wrap gap-1.5">
+            ${travelers.map(t => `<a href="client-detail?id=${t.id}" class="px-2 py-0.5 rounded-full text-xs font-medium border hover:border-current" style="border-color:var(--border);color:var(--text-secondary);text-decoration:none;">${t.name} (${t.age})</a>`).join('')}
+          </div>
+        `;
+      }
+    }
+
+    // Update booking count
+    const bookings = trip ? getBookingsByTrip(trip.id) : [];
+    document.getElementById('booking-count').textContent = `(${bookings.length})`;
+  }
+
+  // ---- Render household threads for general conversations ----
+  function renderHouseholdThreads(householdId, currentConvId) {
+    const container = document.getElementById('household-threads-list');
+    const generalThread = getGeneralThread(householdId);
+    const tripThreads = getTripThreads(householdId);
+
+    let html = '';
+
+    if (generalThread) {
+      const isActive = generalThread.id === currentConvId;
+      html += `
+        <div class="card p-2.5 cursor-pointer ${isActive ? 'border-l-2' : ''}" style="${isActive ? 'border-left-color:var(--gold);' : ''}" onclick="selectConversation('${generalThread.id}')">
+          <div class="flex items-center gap-2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--info)" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span class="text-xs font-medium flex-1" style="color:var(--text-primary);">General Inquiry</span>
+            ${generalThread.unread > 0 ? `<span class="w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold" style="background:var(--gold);color:#000;font-size:9px;">${generalThread.unread}</span>` : ''}
+          </div>
+        </div>`;
+    }
+
+    tripThreads.forEach(thread => {
+      const trip = getTrip(thread.tripId);
+      if (!trip) return;
+      const isActive = thread.id === currentConvId;
+      html += `
+        <div class="card p-2.5 cursor-pointer ${isActive ? 'border-l-2' : ''}" style="${isActive ? 'border-left-color:var(--gold);' : ''}" onclick="selectConversation('${thread.id}')">
+          <div class="flex items-center gap-2 mb-1">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>
+            <span class="text-xs font-medium flex-1 truncate" style="color:var(--text-primary);">${trip.destinations}</span>
+            ${thread.unread > 0 ? `<span class="w-4 h-4 rounded-full flex items-center justify-center text-xs font-bold" style="background:var(--gold);color:#000;font-size:9px;">${thread.unread}</span>` : ''}
+          </div>
+          <div class="text-xs" style="color:var(--text-muted);">${trip.dates}</div>
+        </div>`;
+    });
+
+    container.innerHTML = html || '<div class="text-xs" style="color:var(--text-muted);">No threads yet</div>';
+  }
+
+  // ---- Placeholder functions ----
+  function toggleAssignDropdown() {
+    // Placeholder for assignment dropdown
+    const dropdown = document.getElementById('assign-dropdown');
+    dropdown.classList.toggle('hidden');
+  }
+
+  function assignToMe() {
+    showToast('Assigned to you', 'success');
+    const conv = CONVERSATIONS.find(c => c.id === currentConversationId);
+    if (conv) {
+      conv.assignedTo = 'a1';
+      renderConversationCards();
+      selectConversation(currentConversationId);
+    }
+  }
+
+  // ---- Composer mode ----
+  function switchComposerMode(mode) {
+    document.querySelectorAll('.composer-tab').forEach(t => {
+      const isActive = t.dataset.mode === mode;
+      t.classList.toggle('active', isActive);
+      t.style.background = isActive ? 'var(--bg-active)' : 'transparent';
+      t.style.color = isActive ? 'var(--text-primary)' : 'var(--text-muted)';
+    });
+    const input = document.getElementById('composer-input');
+    if (mode === 'note') {
+      input.placeholder = 'Write an internal note (only visible to team)...';
+      input.style.borderColor = '#ca8a04';
+    } else {
+      input.placeholder = 'Reply to client...';
+      input.style.borderColor = '';
+    }
+  }
+
+  function selectConversation(convId) {
+    // Remove active state from all cards
+    document.querySelectorAll('.conv-card').forEach(card => {
+      card.classList.remove('active');
+      card.style.borderLeft = '3px solid transparent';
+    });
+
+    // Add active state to selected card
+    const selectedCard = document.querySelector(`[data-conv-id="${convId}"]`);
+    if (selectedCard) {
+      selectedCard.classList.add('active');
+      selectedCard.style.borderLeft = '3px solid var(--gold)';
+    }
+
+    // Update current conversation
+    currentConversationId = convId;
+
+    // Update center + right panes
+    const conv = CONVERSATIONS.find(c => c.id === convId);
+    if (conv) {
+      const household = getHousehold(conv.householdId);
+      const primaryClient = getClient(household.primaryClientId);
+      currentPrimaryClientId = primaryClient ? primaryClient.id : null;
+      const trip = getTrip(conv.tripId);
+      const isGeneral = conv.threadType === 'general';
+
+      // Update header
+      document.getElementById('conv-avatar').textContent = primaryClient.initials;
+      document.getElementById('conv-avatar').style.background = primaryClient.avatarColor;
+      document.getElementById('conv-client-name').textContent = household.name;
+      document.getElementById('conv-trip-name').textContent = trip ? trip.destinations : (isGeneral ? 'General Inquiry' : 'No trip');
+
+      // Update agent avatars cluster
+      updateConvHeaderAgents(conv);
+
+      // Update SLA badge
+      const slaColors = {
+        healthy: { bg: 'var(--success-bg)', color: 'var(--success)', dot: 'var(--sla-healthy)' },
+        warning: { bg: 'var(--warning-bg)', color: 'var(--warning)', dot: 'var(--sla-warning)' },
+        critical: { bg: 'var(--error-bg)', color: 'var(--error)', dot: 'var(--sla-critical)' },
+        breached: { bg: 'var(--error-bg)', color: 'var(--error)', dot: 'var(--sla-breached)' }
+      };
+      const slaStyle = slaColors[conv.slaStatus] || slaColors.healthy;
+      const slaBadge = document.getElementById('sla-badge');
+      slaBadge.style.background = slaStyle.bg;
+      slaBadge.querySelector('.w-2').style.background = slaStyle.dot;
+      slaBadge.querySelector('span').style.color = slaStyle.color;
+      slaBadge.querySelector('span').textContent = `${conv.slaMinutes}m remaining`;
+
+      // Update composer placeholder
+      document.getElementById('composer-input').placeholder = `Reply to ${household.name}...`;
+
+      // Re-render messages and bookings
+      renderMessages();
+      renderBookingCards();
+      updateContextPanel();
+    }
+
+  }
+</script>
+
+</body>
+</html>

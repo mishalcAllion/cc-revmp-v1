@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Client -- Maestro Command Centre</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/theme.css">
+  <script src="../js/data.js"></script>
+  <script src="../js/theme.js"></script>
+  <script src="../js/nav.js"></script>
+  <script src="../js/interactions.js"></script>
+</head>
+<body class="antialiased">
+
+<div id="sidebar-root"></div>
+
+<div id="main-wrapper" class="transition-all duration-200" style="margin-left:240px;">
+  <div class="h-screen overflow-y-auto" style="background:var(--bg-app);">
+    <div class="max-w-3xl mx-auto py-8 px-6">
+
+      <!-- Breadcrumb -->
+      <div class="flex items-center gap-2 text-xs mb-6" style="color:var(--text-muted);">
+        <a href="clients.html" class="hover:underline" style="color:var(--gold);">Clients</a>
+        <span>/</span>
+        <span>New Client</span>
+      </div>
+
+      <h1 class="text-xl font-semibold mb-1" style="color:var(--text-primary);">Create New Client</h1>
+      <p class="text-sm mb-6" style="color:var(--text-secondary);">Enter client details to create an account. A concierge group will be auto-created.</p>
+
+      <!-- Form -->
+      <div class="space-y-6">
+
+        <!-- Section 1: Required fields (always visible) -->
+        <div class="card p-5">
+          <div class="text-xs font-semibold uppercase tracking-wide mb-4" style="color:var(--text-muted);">Required Information</div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-medium mb-1.5" style="color:var(--text-secondary);">First Name *</label>
+              <input class="input" placeholder="First name" value="Samuel">
+            </div>
+            <div>
+              <label class="block text-xs font-medium mb-1.5" style="color:var(--text-secondary);">Last Name *</label>
+              <input class="input" placeholder="Last name" value="Vimes">
+            </div>
+          </div>
+          <div class="mt-4">
+            <label class="block text-xs font-medium mb-1.5" style="color:var(--text-secondary);">Phone Number *</label>
+            <div class="flex gap-2">
+              <select class="select" style="width:80px;">
+                <option>+1</option>
+                <option>+44</option>
+                <option>+61</option>
+                <option>+91</option>
+              </select>
+              <input class="input" placeholder="(720) 555-0411" value="(720) 555-0411">
+            </div>
+          </div>
+          <div class="mt-3 p-3 rounded-lg" style="background:var(--info-bg);">
+            <div class="text-xs" style="color:var(--info);">
+              <strong>On save:</strong> Account created, WhatsApp group "<span class="font-semibold">Samuel Vimes / Maestro</span>" auto-created, key team members added.
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Additional contact (collapsible) -->
+        <div class="card overflow-hidden">
+          <button class="w-full flex items-center justify-between p-4 text-left" onclick="toggleSection('contact-section')">
+            <span class="text-xs font-semibold uppercase tracking-wide" style="color:var(--text-muted);">Additional Contact Details</span>
+            <svg id="contact-section-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted);transition:transform 0.2s;"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div id="contact-section" class="px-5 pb-5" style="display:none;">
+            <div class="space-y-4">
+              <div>
+                <label class="block text-xs font-medium mb-1.5" style="color:var(--text-secondary);">Email</label>
+                <input class="input" placeholder="email@example.com">
+              </div>
+              <div>
+                <div class="flex items-center justify-between mb-2">
+                  <label class="text-xs font-medium" style="color:var(--text-secondary);">Household Members</label>
+                  <button class="text-xs font-medium" style="color:var(--gold);cursor:pointer;" onclick="addHouseholdMember()">+ Add Member</button>
+                </div>
+                <div id="household-members" class="space-y-2">
+                  <div class="flex gap-2 items-center">
+                    <input class="input" placeholder="First name" style="flex:1;">
+                    <input class="input" placeholder="Last name" style="flex:1;">
+                    <select class="select" style="width:110px;">
+                      <option>Spouse</option>
+                      <option>Partner</option>
+                      <option>Child</option>
+                      <option>Parent</option>
+                      <option>Friend</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 3: Onboarding transcript (collapsible) -->
+        <div class="card overflow-hidden">
+          <button class="w-full flex items-center justify-between p-4 text-left" onclick="toggleSection('transcript-section')">
+            <span class="text-xs font-semibold uppercase tracking-wide" style="color:var(--text-muted);">Onboarding Transcript / Notes</span>
+            <svg id="transcript-section-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted);transition:transform 0.2s;"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div id="transcript-section" class="px-5 pb-5" style="display:none;">
+            <div class="space-y-4">
+              <!-- File upload zone -->
+              <div class="border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-all" style="border-color:var(--border);"
+                   ondragover="this.style.borderColor='var(--gold)'" ondragleave="this.style.borderColor='var(--border)'"
+                   onclick="showAIExtraction()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted);margin:0 auto 8px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                <div class="text-sm font-medium mb-1" style="color:var(--text-secondary);">Upload onboarding transcript</div>
+                <div class="text-xs" style="color:var(--text-muted);">Drag & drop or click to browse. Supports .txt, .pdf, .doc</div>
+              </div>
+              <div class="text-center text-xs font-medium" style="color:var(--text-muted);">OR</div>
+              <div>
+                <label class="block text-xs font-medium mb-1.5" style="color:var(--text-secondary);">Paste Notes</label>
+                <textarea class="input" rows="4" placeholder="Paste onboarding call notes here..." style="resize:vertical;"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 4: AI Extraction Preview (appears after upload) -->
+        <div id="ai-extraction" class="card overflow-hidden" style="display:none;">
+          <div class="p-4 border-b" style="border-color:var(--border);background:var(--gold-bg);">
+            <div class="flex items-center gap-2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M12 3v18"/><path d="M3 12h18"/></svg>
+              <span class="text-xs font-semibold uppercase tracking-wide" style="color:var(--gold);">AI Extracted Preferences</span>
+              <span class="badge" style="background:var(--success-bg);color:var(--success);font-size:9px;">12 fields extracted</span>
+            </div>
+          </div>
+          <div class="p-5">
+            <div class="grid grid-cols-2 gap-6">
+              <!-- Left: Traveler Preferences -->
+              <div>
+                <div class="text-xs font-semibold uppercase tracking-wide mb-3" style="color:var(--text-muted);">Traveler Preferences</div>
+                <div class="space-y-3">
+                  <div class="flex items-start gap-2">
+                    <div class="w-2 h-2 rounded-full mt-1.5" style="background:var(--success);"></div>
+                    <div class="flex-1">
+                      <label class="text-xs font-medium" style="color:var(--text-secondary);">Travel Style</label>
+                      <input class="input mt-1" value="Luxury boutique, cultural immersion" style="font-size:12px;">
+                    </div>
+                  </div>
+                  <div class="flex items-start gap-2">
+                    <div class="w-2 h-2 rounded-full mt-1.5" style="background:var(--success);"></div>
+                    <div class="flex-1">
+                      <label class="text-xs font-medium" style="color:var(--text-secondary);">Airline Preferences</label>
+                      <input class="input mt-1" value="Delta One, Singapore Suites, Emirates First" style="font-size:12px;">
+                    </div>
+                  </div>
+                  <div class="flex items-start gap-2">
+                    <div class="w-2 h-2 rounded-full mt-1.5" style="background:var(--success);"></div>
+                    <div class="flex-1">
+                      <label class="text-xs font-medium" style="color:var(--text-secondary);">Hotel Preferences</label>
+                      <input class="input mt-1" value="Aman, Four Seasons, small luxury boutiques" style="font-size:12px;">
+                    </div>
+                  </div>
+                  <div class="flex items-start gap-2">
+                    <div class="w-2 h-2 rounded-full mt-1.5" style="background:var(--warning);"></div>
+                    <div class="flex-1">
+                      <label class="text-xs font-medium" style="color:var(--text-secondary);">Dining</label>
+                      <input class="input mt-1" value="Farm-to-table, no shellfish (Sybil)" style="font-size:12px;">
+                      <div class="text-xs mt-0.5" style="color:var(--warning);">Medium confidence -- verify with client</div>
+                    </div>
+                  </div>
+                  <div class="flex items-start gap-2">
+                    <div class="w-2 h-2 rounded-full mt-1.5" style="background:var(--success);"></div>
+                    <div class="flex-1">
+                      <label class="text-xs font-medium" style="color:var(--text-secondary);">Budget Range</label>
+                      <input class="input mt-1" value="$15,000 - 25,000 per trip" style="font-size:12px;">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Right: Trip Details -->
+              <div>
+                <div class="text-xs font-semibold uppercase tracking-wide mb-3" style="color:var(--text-muted);">Trip Details Extracted</div>
+                <div class="space-y-3">
+                  <div class="card p-3">
+                    <div class="text-xs font-semibold mb-1" style="color:var(--gold);">Upcoming Trip</div>
+                    <div class="text-sm font-medium" style="color:var(--text-primary);">Greece Island Hopping</div>
+                    <div class="text-xs" style="color:var(--text-muted);">May 2026, 2 weeks, 4 travelers</div>
+                    <div class="text-xs mt-1" style="color:var(--text-secondary);">Athens, Mykonos, Santorini. Wants caldera view hotels, yacht day, fine dining.</div>
+                  </div>
+                  <div class="card p-3">
+                    <div class="text-xs font-semibold mb-1" style="color:var(--text-muted);">Future Idea</div>
+                    <div class="text-sm font-medium" style="color:var(--text-primary);">Japan Cherry Blossom</div>
+                    <div class="text-xs" style="color:var(--text-muted);">Spring 2027, exploring</div>
+                    <div class="text-xs mt-1" style="color:var(--text-secondary);">Tokyo + Kyoto, ryokan experience, tea ceremonies.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 5: Points & Loyalty (collapsible) -->
+        <div class="card overflow-hidden">
+          <button class="w-full flex items-center justify-between p-4 text-left" onclick="toggleSection('points-section')">
+            <span class="text-xs font-semibold uppercase tracking-wide" style="color:var(--text-muted);">Points & Loyalty Programs</span>
+            <svg id="points-section-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted);transition:transform 0.2s;"><path d="m6 9 6 6 6-6"/></svg>
+          </button>
+          <div id="points-section" class="px-5 pb-5" style="display:none;">
+            <div id="loyalty-programs" class="space-y-3">
+              <div class="flex gap-2 items-center">
+                <select class="select" style="flex:1;">
+                  <option>Amex Membership Rewards</option>
+                  <option>Chase Ultimate Rewards</option>
+                  <option>Marriott Bonvoy</option>
+                  <option>Hilton Honors</option>
+                  <option>Delta SkyMiles</option>
+                  <option>United MileagePlus</option>
+                  <option>Singapore KrisFlyer</option>
+                </select>
+                <input class="input" placeholder="Balance" style="width:120px;">
+                <input class="input" placeholder="Status tier" style="width:120px;">
+              </div>
+            </div>
+            <button class="text-xs font-medium mt-3" style="color:var(--gold);cursor:pointer;" onclick="addLoyaltyProgram()">+ Add Program</button>
+          </div>
+        </div>
+
+        <!-- Submit -->
+        <div class="card p-5">
+          <div class="text-xs font-semibold uppercase tracking-wide mb-3" style="color:var(--text-muted);">Preview</div>
+          <div class="p-3 rounded-lg" style="background:var(--bg-surface-alt);">
+            <div class="text-sm" style="color:var(--text-primary);">
+              <strong>Account:</strong> Samuel Vimes<br>
+              <strong>Phone:</strong> +1 (720) 555-0411<br>
+              <strong>Auto-create:</strong> WhatsApp group "Samuel Vimes / Maestro"<br>
+              <strong>Auto-add:</strong> Angua von Uberwald (Senior Planner), Carrot Ironfoundersson (Lead)
+            </div>
+          </div>
+          <div class="flex gap-3 mt-4">
+            <button class="btn-gold flex-1" onclick="showToast('Client account created successfully!','success');setTimeout(()=>{window.location.href='client-detail?id=c1'},1500)">Create Client Account</button>
+            <button class="btn-ghost" onclick="window.location.href='clients.html'">Cancel</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    MaestroNav.render('sidebar-root');
+    document.getElementById('main-wrapper').style.marginLeft = MaestroNav.getSidebarWidth() + 'px';
+
+    const observer = new MutationObserver(() => {
+      document.getElementById('main-wrapper').style.marginLeft = MaestroNav.getSidebarWidth() + 'px';
+    });
+    setTimeout(() => {
+      const sb = document.getElementById('sidebar');
+      if (sb) observer.observe(sb, { attributes: true, attributeFilter: ['class'] });
+    }, 100);
+  });
+
+  function toggleSection(id) {
+    const section = document.getElementById(id);
+    const arrow = document.getElementById(id + '-arrow');
+    if (section.style.display === 'none') {
+      section.style.display = '';
+      if (arrow) arrow.style.transform = 'rotate(180deg)';
+    } else {
+      section.style.display = 'none';
+      if (arrow) arrow.style.transform = '';
+    }
+  }
+
+  function showAIExtraction() {
+    document.getElementById('ai-extraction').style.display = '';
+    showToast('Transcript uploaded -- AI extraction complete', 'success');
+  }
+
+  function addHouseholdMember() {
+    const container = document.getElementById('household-members');
+    const div = document.createElement('div');
+    div.className = 'flex gap-2 items-center';
+    div.innerHTML = `
+      <input class="input" placeholder="First name" style="flex:1;">
+      <input class="input" placeholder="Last name" style="flex:1;">
+      <select class="select" style="width:110px;">
+        <option>Spouse</option><option>Partner</option><option>Child</option><option>Parent</option><option>Friend</option>
+      </select>
+      <button style="color:var(--error);cursor:pointer;" onclick="this.parentElement.remove()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    `;
+    container.appendChild(div);
+  }
+
+  function addLoyaltyProgram() {
+    const container = document.getElementById('loyalty-programs');
+    const div = document.createElement('div');
+    div.className = 'flex gap-2 items-center';
+    div.innerHTML = `
+      <select class="select" style="flex:1;">
+        <option>Amex Membership Rewards</option><option>Chase Ultimate Rewards</option><option>Marriott Bonvoy</option><option>Hilton Honors</option><option>Delta SkyMiles</option><option>United MileagePlus</option>
+      </select>
+      <input class="input" placeholder="Balance" style="width:120px;">
+      <input class="input" placeholder="Status tier" style="width:120px;">
+      <button style="color:var(--error);cursor:pointer;" onclick="this.parentElement.remove()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    `;
+    container.appendChild(div);
+  }
+</script>
+
+</body>
+</html>

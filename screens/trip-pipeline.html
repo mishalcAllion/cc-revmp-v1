@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Trip Pipeline -- Maestro Command Centre</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/theme.css">
+  <script src="../js/data.js"></script>
+  <script src="../js/theme.js"></script>
+  <script src="../js/nav.js"></script>
+  <script src="../js/interactions.js"></script>
+</head>
+<body class="antialiased">
+
+<div id="sidebar-root"></div>
+
+<div id="main-wrapper" class="transition-all duration-200" style="margin-left:240px;">
+  <div class="h-screen flex flex-col overflow-hidden" style="background:var(--bg-app);">
+
+    <!-- Header -->
+    <div class="px-6 py-4 border-b transition-theme" style="background:var(--bg-surface);border-color:var(--border);">
+      <div class="flex items-center justify-between mb-3">
+        <h1 class="text-lg font-semibold" style="color:var(--text-primary);">Trip Pipeline</h1>
+        <div class="flex items-center gap-2">
+          <!-- View toggle -->
+          <div class="flex items-center border rounded-md overflow-hidden" style="border-color:var(--border);">
+            <button class="px-2 py-1 text-xs font-medium" style="background:var(--bg-active);color:var(--text-primary);">Kanban</button>
+            <button class="px-2 py-1 text-xs font-medium" style="color:var(--text-muted);">Table</button>
+          </div>
+          <button class="btn-gold" style="padding:6px 12px;font-size:12px;" onclick="openTripModal()">+ Trip</button>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="flex items-center gap-2">
+        <select class="select">
+          <option>All Agents</option>
+          <option>My Trips</option>
+          <option>Angua von Uberwald</option>
+          <option>Carrot Ironfoundersson</option>
+          <option>Magrat Garlick</option>
+        </select>
+        <select class="select">
+          <option>All Dates</option>
+          <option>This Month</option>
+          <option>Next Month</option>
+          <option>Q2 2026</option>
+        </select>
+        <input class="input" placeholder="Search trips..." style="width:200px;font-size:12px;padding:5px 10px;">
+        <div class="ml-auto flex items-center gap-3">
+          <span class="stat-pill"><span style="font-weight:700;color:var(--text-primary);">${TRIPS.length}</span> total trips</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Kanban board -->
+    <div class="flex-1 overflow-x-auto overflow-y-hidden px-4 py-4">
+      <div class="flex gap-4 h-full" id="kanban-board" style="min-width:max-content;">
+        <!-- Columns rendered by JS -->
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    MaestroNav.render('sidebar-root');
+    document.getElementById('main-wrapper').style.marginLeft = MaestroNav.getSidebarWidth() + 'px';
+    renderKanban();
+
+    const observer = new MutationObserver(() => {
+      document.getElementById('main-wrapper').style.marginLeft = MaestroNav.getSidebarWidth() + 'px';
+    });
+    setTimeout(() => {
+      const sb = document.getElementById('sidebar');
+      if (sb) observer.observe(sb, { attributes: true, attributeFilter: ['class'] });
+    }, 100);
+  });
+
+  function renderKanban() {
+    const board = document.getElementById('kanban-board');
+
+    board.innerHTML = PIPELINE_STAGES.map(stage => {
+      const trips = getTripsByStage(stage.id);
+      return `
+        <div class="kanban-col flex flex-col">
+          <!-- Column header -->
+          <div class="flex items-center justify-between mb-3 px-1">
+            <div class="flex items-center gap-2">
+              <div class="w-2.5 h-2.5 rounded-full" style="background:${stage.color};"></div>
+              <span class="text-xs font-semibold uppercase tracking-wide" style="color:var(--text-secondary);">${stage.label}</span>
+              <span class="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold" style="background:var(--bg-surface-alt);color:var(--text-muted);">${trips.length}</span>
+            </div>
+          </div>
+
+          <!-- Column body -->
+          <div class="flex-1 overflow-y-auto space-y-2 rounded-lg p-2" style="background:var(--bg-surface-alt);">
+            ${trips.length === 0 ? `
+              <div class="text-center py-8 text-xs" style="color:var(--text-muted);">
+                No trips in ${stage.label.toLowerCase()}
+              </div>
+            ` : trips.map(trip => {
+              const household = getHousehold(trip.householdId);
+              const primaryClient = getClient(household.primaryClientId);
+              const agent = getAgent(trip.agentId);
+              const bookings = getBookingsByTrip(trip.id);
+              const travelerCount = trip.travelers.length + (trip.guests?.length || 0);
+              const slaColors = { Active: 'var(--sla-healthy)', Confirmed: 'var(--success)' };
+
+              return `
+                <div class="kanban-card" style="padding:10px;" data-tooltip="${trip.budget ? 'Budget: ' + trip.budget : ''}" onclick="window.location.href='trip-detail?id=${trip.id}'">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <div class="flex items-center gap-1.5">
+                      <span class="avatar avatar-sm" style="background:${primaryClient.avatarColor};color:#fff;font-size:9px;">${primaryClient.initials}</span>
+                      <span class="text-xs font-semibold" style="color:var(--text-primary);">${household.name}</span>
+                    </div>
+                    ${trip.pendingCount > 0 ? `<span class="badge" style="background:var(--warning-bg);color:var(--warning);font-size:9px;">${trip.pendingCount} pending</span>` : ''}
+                  </div>
+                  <div class="text-sm font-medium mb-1" style="color:var(--text-primary);">${trip.name}</div>
+                  <div class="text-xs mb-2" style="color:var(--text-muted);">${trip.dates}</div>
+                  <div class="flex items-center justify-between">
+                    <div class="text-xs" style="color:var(--text-muted);">
+                      ${travelerCount} travelers &#183; ${trip.bookingCount} bookings
+                    </div>
+                    <span class="avatar avatar-sm" style="background:${agent?.color || '#94a3b8'};color:#fff;font-size:9px;" title="${agent?.name}">${agent?.initials || '?'}</span>
+                  </div>
+                </div>`;
+            }).join('')}
+          </div>
+        </div>`;
+    }).join('');
+  }
+</script>
+
+</body>
+</html>

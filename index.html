@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maestro Command Centre -- Prototype Directory</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/theme.css">
+  <script src="js/theme.js"></script>
+</head>
+<body class="antialiased" style="background:var(--bg-app);">
+
+<div class="max-w-4xl mx-auto py-12 px-6">
+
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-8">
+    <div class="flex items-center gap-3">
+      <img src="https://maestroassets.s3.eu-north-1.amazonaws.com/public/Maestro-logo-simple.svg" alt="Maestro" class="h-7">
+      <div>
+        <h1 class="text-2xl font-bold" style="color:var(--text-primary);">Command Centre Revamp</h1>
+        <p class="text-sm" style="color:var(--text-secondary);">High-fidelity interactive prototype -- April 2026</p>
+      </div>
+    </div>
+    <button class="theme-toggle btn-ghost flex items-center gap-2" style="padding:6px 12px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+      <span class="text-xs">Theme</span>
+    </button>
+  </div>
+
+  <!-- Design Principles -->
+  <div class="card p-5 mb-8">
+    <div class="text-xs font-semibold uppercase tracking-wide mb-3" style="color:var(--gold);">Design Principles</div>
+    <div class="grid grid-cols-4 gap-4">
+      <div>
+        <div class="text-sm font-semibold mb-1" style="color:var(--text-primary);">Information Density</div>
+        <div class="text-xs" style="color:var(--text-muted);">Dense but scannable. Power users handling 20-50+ conversations/day.</div>
+      </div>
+      <div>
+        <div class="text-sm font-semibold mb-1" style="color:var(--text-primary);">AI as Copilot</div>
+        <div class="text-xs" style="color:var(--text-muted);">No separate AI tab. Inline draft replies + embedded copilot in context panel.</div>
+      </div>
+      <div>
+        <div class="text-sm font-semibold mb-1" style="color:var(--text-primary);">Keyboard-First</div>
+        <div class="text-xs" style="color:var(--text-muted);">Cmd+K palette, keyboard shortcuts for all common actions.</div>
+      </div>
+      <div>
+        <div class="text-sm font-semibold mb-1" style="color:var(--text-primary);">Dark-First</div>
+        <div class="text-xs" style="color:var(--text-muted);">Shift workers across Manila/Nairobi/Austin. Toggle available on every screen.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Screens Grid -->
+  <div class="grid grid-cols-3 gap-4">
+
+    <!-- Inbox Variants -->
+    <div class="card p-4 hover:shadow-md transition-shadow">
+      <div class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:var(--gold);">P0 -- Core</div>
+      <a href="screens/inbox-compact.html" class="text-sm font-semibold hover:underline block mb-1" style="color:var(--text-primary);">Inbox -- Compact List</a>
+      <p class="text-xs" style="color:var(--text-muted);">Conversation list + chat thread + context panel with AI copilot, bookings, and quick actions.</p>
+    </div>
+
+    <div class="card p-4 hover:shadow-md transition-shadow">
+      <div class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:var(--gold);">P0 -- Core</div>
+      <a href="screens/inbox-cards.html" class="text-sm font-semibold hover:underline block mb-1" style="color:var(--text-primary);">Inbox -- Card View</a>
+      <p class="text-xs" style="color:var(--text-muted);">Card-based conversation list with SLA progress bars. Same chat + context panel.</p>
+    </div>
+
+    <div class="card p-4 hover:shadow-md transition-shadow">
+      <div class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:var(--gold);">P0 -- Core</div>
+      <a href="screens/inbox-queue.html" class="text-sm font-semibold hover:underline block mb-1" style="color:var(--text-primary);">Inbox -- Queue View</a>
+      <p class="text-xs" style="color:var(--text-muted);">Grouped by SLA urgency: Needs Response, Warning, On Track. Manager view.</p>
+    </div>
+
+    <!-- CRM -->
+    <div class="card p-4 hover:shadow-md transition-shadow">
+      <div class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:var(--info);">P1 -- CRM</div>
+      <a href="screens/clients.html" class="text-sm font-semibold hover:underline block mb-1" style="color:var(--text-primary);">Client List</a>
+      <p class="text-xs" style="color:var(--text-muted);">Full CRM table with search, filters, and links to client 360 detail.</p>
+    </div>
+
+    <div class="card p-4 hover:shadow-md transition-shadow">
+      <div class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:var(--info);">P1 -- CRM</div>
+      <a href="screens/client-detail?id=c1" class="text-sm font-semibold hover:underline block mb-1" style="color:var(--text-primary);">Client 360 Detail</a>
+      <p class="text-xs" style="color:var(--text-muted);">6 tabs: Overview, Trips, Conversations, Preferences, Points, Activity.</p>
+    </div>
+
+    <div class="card p-4 hover:shadow-md transition-shadow">
+      <div class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:var(--info);">P1 -- CRM</div>
+      <a href="screens/onboarding.html" class="text-sm font-semibold hover:underline block mb-1" style="color:var(--text-primary);">Client Onboarding</a>
+      <p class="text-xs" style="color:var(--text-muted);">Progressive disclosure form with AI transcript extraction and preference capture.</p>
+    </div>
+
+    <!-- Trip Management -->
+    <div class="card p-4 hover:shadow-md transition-shadow">
+      <div class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:var(--success);">P1 -- Trips</div>
+      <a href="screens/trip-pipeline.html" class="text-sm font-semibold hover:underline block mb-1" style="color:var(--text-primary);">Trip Pipeline (Kanban)</a>
+      <p class="text-xs" style="color:var(--text-muted);">7-stage kanban board: Lead through Archived. Filterable by agent and date.</p>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="card p-4 hover:shadow-md transition-shadow">
+      <div class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:var(--gold);">P0 -- Manager View</div>
+      <a href="screens/dashboard.html" class="text-sm font-semibold hover:underline block mb-1" style="color:var(--text-primary);">Dashboard</a>
+      <p class="text-xs" style="color:var(--text-muted);">KPI cards, SLA health bar, pipeline summary, team workload, recent activity. Manager overview.</p>
+    </div>
+
+    <!-- Trip Detail -->
+    <div class="card p-4 hover:shadow-md transition-shadow">
+      <div class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:var(--success);">P2 -- Trips</div>
+      <a href="screens/trip-detail?id=tr1" class="text-sm font-semibold hover:underline block mb-1" style="color:var(--text-primary);">Trip Detail</a>
+      <p class="text-xs" style="color:var(--text-muted);">5 tabs: Overview (AI summary, itinerary, notes), Bookings, Travelers, Tasks, Activity log.</p>
+    </div>
+
+    <!-- Tasks & Alerts -->
+    <div class="card p-4 hover:shadow-md transition-shadow">
+      <div class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:var(--warning);">P1 -- Tasks</div>
+      <a href="screens/tasks.html" class="text-sm font-semibold hover:underline block mb-1" style="color:var(--text-primary);">Task List</a>
+      <p class="text-xs" style="color:var(--text-muted);">Table with stats bar, priority filters, slide-over detail with activity log.</p>
+    </div>
+
+    <div class="card p-4 hover:shadow-md transition-shadow">
+      <div class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:var(--warning);">P2 -- Alerts</div>
+      <a href="screens/alerts.html" class="text-sm font-semibold hover:underline block mb-1" style="color:var(--text-primary);">Flight Alerts</a>
+      <p class="text-xs" style="color:var(--text-muted);">Alert monitoring table with route, cabin, points threshold, trigger history.</p>
+    </div>
+
+    <!-- Settings -->
+    <div class="card p-4 hover:shadow-md transition-shadow">
+      <div class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:var(--text-muted);">P3 -- Settings</div>
+      <a href="screens/settings.html" class="text-sm font-semibold hover:underline block mb-1" style="color:var(--text-primary);">Settings</a>
+      <p class="text-xs" style="color:var(--text-muted);">Team, SLA config, channels, appearance (dark/light), keyboard shortcuts.</p>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="mt-8 text-center text-xs" style="color:var(--text-muted);">
+    Maestro Command Centre Revamp -- Spec-driven prototype by Mishal Chowdhury (BA/Scrum Master)
+    <br>Built April 2026. All data is mock/demo.
+  </div>
+
+</div>
+
+</body>
+</html>
