@@ -230,7 +230,7 @@ const MaestroAI = (() => {
     pill.className = 'ai-bar-pill';
     pill.innerHTML = `
       <span class="ai-sparkle">${SPARKLE_SVG}</span>
-      <span>Ask Maestro AI...</span>
+      <span class="ai-pill-label">Ask Maestro AI...</span>
       <kbd>${navigator.platform.includes('Mac') ? '\u2318' : 'Ctrl'}+J</kbd>
     `;
     pill.addEventListener('click', openBar);

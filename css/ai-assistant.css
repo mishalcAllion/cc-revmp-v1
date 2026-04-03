@@ -54,29 +54,42 @@
   padding-bottom: 72px;
 }
 
-/* Collapsed pill */
+/* Collapsed pill — icon-only by default, expands on hover */
 .ai-bar-pill {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
+  gap: 0;
+  padding: 10px;
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-full);
   box-shadow: var(--shadow-md);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   font-size: 13px;
   color: var(--text-muted);
   white-space: nowrap;
-  max-width: 300px;
+  overflow: hidden;
+  width: 40px;
 }
 .ai-bar-pill:hover {
   border-color: var(--gold);
   box-shadow: var(--shadow-lg), 0 0 0 3px var(--ai-glow);
   color: var(--text-secondary);
+  gap: 8px;
+  padding: 10px 20px;
+  width: auto;
 }
-.ai-bar-pill .ai-sparkle { margin-right: -2px; }
+.ai-bar-pill .ai-sparkle { flex-shrink: 0; }
+.ai-bar-pill .ai-pill-label,
+.ai-bar-pill kbd {
+  opacity: 0;
+  transition: opacity 0.15s 0.05s;
+}
+.ai-bar-pill:hover .ai-pill-label,
+.ai-bar-pill:hover kbd {
+  opacity: 1;
+}
 .ai-bar-pill kbd {
   font-size: 10px;
   padding: 1px 5px;
