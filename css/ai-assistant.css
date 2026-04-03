@@ -799,3 +799,143 @@
 .ai-agent-panel.with-tracker {
   width: 740px;
 }
+
+
+/* ============================================================
+   8. Inline AI Result Card (replaces toasts for AI responses)
+   ============================================================ */
+.ai-inline-result {
+  position: fixed;
+  bottom: 72px;
+  right: 24px;
+  width: 380px;
+  max-height: 320px;
+  background: var(--bg-surface);
+  border: 1px solid var(--ai-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg), 0 0 0 3px var(--ai-glow);
+  z-index: 41;
+  overflow: hidden;
+  animation: ai-result-slide-in 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.ai-inline-result.dismissing {
+  animation: ai-result-slide-out 0.2s ease-in forwards;
+}
+@keyframes ai-result-slide-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes ai-result-slide-out {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to   { opacity: 0; transform: translateY(8px) scale(0.97); }
+}
+.ai-inline-result-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px 8px;
+  border-bottom: 1px solid var(--border);
+}
+.ai-inline-result-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gold);
+  flex: 1;
+}
+.ai-inline-result-dismiss {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 2px;
+  line-height: 1;
+}
+.ai-inline-result-dismiss:hover { color: var(--text-primary); }
+.ai-inline-result-body {
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  overflow-y: auto;
+  max-height: 260px;
+}
+.ai-inline-result-body strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+/* Loading shimmer state */
+.ai-inline-result.loading .ai-inline-result-body {
+  color: var(--text-muted);
+  font-style: italic;
+}
+.ai-inline-result.loading .ai-inline-result-body::after {
+  content: '';
+  display: block;
+  margin-top: 10px;
+  height: 12px;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--bg-surface-alt) 0px, var(--ai-bg) 40px, var(--bg-surface-alt) 80px);
+  background-size: 200px 100%;
+  animation: ai-shimmer 1.5s ease-in-out infinite;
+}
+/* Timer bar at bottom */
+.ai-inline-result-timer {
+  height: 2px;
+  background: var(--ai-border);
+}
+.ai-inline-result-timer-fill {
+  height: 100%;
+  background: var(--gold);
+  width: 100%;
+  transition: width linear;
+}
+
+/* ============================================================
+   9. Composer highlight animation (for draft-reply)
+   ============================================================ */
+@keyframes ai-composer-highlight {
+  0%   { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.4); border-color: var(--gold); }
+  50%  { box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.15); border-color: var(--gold); }
+  100% { box-shadow: none; border-color: var(--border); }
+}
+.ai-composer-highlighted {
+  animation: ai-composer-highlight 1.5s ease-out;
+}
+
+/* ============================================================
+   10. Assign Dropdown (replaces placeholder toast)
+   ============================================================ */
+.ai-assign-dropdown {
+  position: absolute;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-md);
+  min-width: 180px;
+  z-index: 60;
+  animation: ai-fade-in 0.15s ease-out;
+}
+.ai-assign-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.1s;
+}
+.ai-assign-dropdown-item:first-child { border-radius: var(--radius) var(--radius) 0 0; }
+.ai-assign-dropdown-item:last-child { border-radius: 0 0 var(--radius) var(--radius); }
+.ai-assign-dropdown-item:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+.ai-assign-dropdown-item .avatar {
+  width: 20px;
+  height: 20px;
+  font-size: 9px;
+}
