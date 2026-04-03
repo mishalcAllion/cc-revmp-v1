@@ -201,13 +201,13 @@
           </div>
         </div>
 
-        <!-- Bookings section -->
+        <!-- Components section -->
         <div class="mb-4">
-          <button class="flex items-center justify-between w-full text-left" onclick="toggleSection('bookings-section')">
-            <span class="text-xs font-semibold uppercase tracking-wide" style="color:var(--text-muted);">BOOKINGS (3)</span>
+          <button class="flex items-center justify-between w-full text-left" onclick="toggleSection('components-section')">
+            <span id="components-header" class="text-xs font-semibold uppercase tracking-wide" style="color:var(--text-muted);">COMPONENTS (0)</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
-          <div id="bookings-section" class="mt-2 space-y-2"></div>
+          <div id="components-section" class="mt-2 space-y-2"></div>
         </div>
 
         <!-- Tasks section -->
@@ -253,7 +253,7 @@
     updateMainMargin();
     renderQueue();
     renderMessages();
-    renderBookingCards();
+    renderComponentCards();
     document.getElementById('cmd-palette-root').innerHTML = renderCommandPalette();
 
     // Context panel toggle
@@ -420,7 +420,7 @@
     // Re-render queue items to update active highlight (without re-triggering auto-select)
     renderQueue(true);
     renderMessages();
-    renderBookingCards();
+    renderComponentCards();
   }
 
   // ---- Messages rendering ----
@@ -555,38 +555,63 @@
     container.scrollTop = container.scrollHeight;
   }
 
-  // ---- Booking cards rendering ----
-  function renderBookingCards() {
+  // ---- Component cards rendering ----
+  function renderComponentCards() {
     if (!selectedConvId) return;
 
     const conv = CONVERSATIONS.find(c => c.id === selectedConvId);
     if (!conv) return;
 
-    const bookings = getBookingsByTrip(conv.tripId);
-    const container = document.getElementById('bookings-section');
+    const components = getComponentsByTrip(conv.tripId);
+    const container = document.getElementById('components-section');
 
-    const statusColors = {
-      'Confirmed': { bg: 'var(--success-bg)', color: 'var(--success)' },
-      'Waitlisted': { bg: 'var(--warning-bg)', color: 'var(--warning)' },
-      'On Hold': { bg: 'var(--info-bg)', color: 'var(--info)' },
+    // Update header count
+    const header = document.getElementById('components-header');
+    if (header) header.textContent = `COMPONENTS (${components.length})`;
+
+    const categoryColors = {
+      flight: 'var(--info)',
+      hotel: 'var(--success)',
+      dining: '#f97316',
+      experience: 'var(--gold)',
+      transfer: 'var(--text-muted)',
+      vip_touch: '#ec4899',
+      train: '#8b5cf6'
     };
-    const typeIcons = {
+
+    const statusStyles = {
+      'Working on it': { bg: 'var(--info-bg)', color: 'var(--info)' },
+      'Need your input': { bg: 'var(--warning-bg)', color: 'var(--warning)' },
+      'Ready for approval': { bg: 'var(--gold-bg)', color: 'var(--gold)' },
+      'On hold': { bg: 'var(--bg-surface-alt)', color: 'var(--text-muted)' },
+      'Confirmed': { bg: 'var(--success-bg)', color: 'var(--success)' },
+      'Booked': { bg: 'var(--success-bg)', color: 'var(--success)' }
+    };
+
+    const categoryIcons = {
       hotel: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
       flight: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>',
       experience: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
+      dining: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>',
+      transfer: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 17V7l5 5 5-5v10"/></svg>',
+      vip_touch: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>',
+      train: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="16" height="16" x="4" y="3" rx="2"/><path d="M4 11h16"/><path d="M12 3v8"/><path d="m8 19-2 3"/><path d="m18 22-2-3"/><path d="M8 15h0"/><path d="M16 15h0"/></svg>'
     };
 
-    container.innerHTML = bookings.slice(0, 5).map(b => {
-      const sc = statusColors[b.status] || statusColors['Confirmed'];
+    container.innerHTML = components.slice(0, 5).map(comp => {
+      const ss = statusStyles[comp.clientFacingStatus] || statusStyles['Confirmed'];
+      const catColor = categoryColors[comp.category] || 'var(--text-muted)';
+      const icon = categoryIcons[comp.category] || categoryIcons.hotel;
+      const priceDisplay = comp.pricePoints || comp.priceCash || '';
       return `
         <div class="card p-2 flex items-start gap-2 cursor-pointer" style="font-size:11px;">
-          <div class="mt-0.5" style="color:var(--text-muted);">${typeIcons[b.type] || typeIcons.hotel}</div>
+          <div class="mt-0.5" style="color:${catColor};">${icon}</div>
           <div class="flex-1 min-w-0">
-            <div class="font-medium truncate" style="color:var(--text-primary);">${b.name}</div>
-            <div style="color:var(--text-muted);">${b.dates}</div>
+            <div class="font-medium truncate" style="color:var(--text-primary);">${comp.name}</div>
+            <div style="color:var(--text-muted);">${comp.dates}</div>
             <div class="flex items-center gap-2 mt-1">
-              <span class="badge" style="background:${sc.bg};color:${sc.color};font-size:9px;">${b.status}</span>
-              <span style="color:var(--text-secondary);font-weight:600;">${b.price}</span>
+              <span class="badge" style="background:${ss.bg};color:${ss.color};font-size:9px;">${comp.clientFacingStatus}</span>
+              ${priceDisplay ? `<span style="color:var(--text-secondary);font-weight:600;">${priceDisplay}</span>` : ''}
             </div>
           </div>
         </div>

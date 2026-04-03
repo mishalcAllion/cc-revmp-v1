@@ -104,7 +104,7 @@
             <th class="py-2 px-3 font-semibold">Stage</th>
             <th class="py-2 px-3 font-semibold">Agent</th>
             <th class="py-2 px-3 font-semibold text-center">Travelers</th>
-            <th class="py-2 px-3 font-semibold text-center">Bookings</th>
+            <th class="py-2 px-3 font-semibold text-center">Components</th>
             <th class="py-2 px-3 font-semibold">Budget</th>
           </tr>
         </thead>
@@ -128,7 +128,7 @@
                 <td class="py-2.5 px-3"><span class="inline-flex items-center px-1.5 py-0.5 rounded text-white font-semibold" style="font-size:10px;background:${stage.color};">${stage.label}</span></td>
                 <td class="py-2.5 px-3"><span class="avatar avatar-sm" style="background:${agent?.color || '#94a3b8'};color:#fff;font-size:9px;" title="${agent?.name}">${agent?.initials || '?'}</span></td>
                 <td class="py-2.5 px-3 text-center">${travelerCount}</td>
-                <td class="py-2.5 px-3 text-center">${trip.bookingCount}</td>
+                <td class="py-2.5 px-3 text-center">${getComponentsByTrip(trip.id).length}</td>
                 <td class="py-2.5 px-3">${trip.budget || '--'}</td>
               </tr>`;
           }).join('')}
@@ -177,9 +177,8 @@
               const household = getHousehold(trip.householdId);
               const primaryClient = getClient(household.primaryClientId);
               const agent = getAgent(trip.agentId);
-              const bookings = getBookingsByTrip(trip.id);
+              const stats = getComponentStats(trip.id);
               const travelerCount = trip.travelers.length + (trip.guests?.length || 0);
-              const slaColors = { Active: 'var(--sla-healthy)', Confirmed: 'var(--success)' };
 
               return `
                 <div class="kanban-card" style="padding:10px;" data-tooltip="${trip.budget ? 'Budget: ' + trip.budget : ''}" onclick="window.location.href='trip-detail?id=${trip.id}'">
@@ -188,14 +187,15 @@
                       <span class="avatar avatar-sm" style="background:${primaryClient.avatarColor};color:#fff;font-size:9px;">${primaryClient.initials}</span>
                       <span class="text-xs font-semibold" style="color:var(--text-primary);">${household.name}</span>
                     </div>
-                    ${trip.pendingCount > 0 ? `<span class="badge" style="background:var(--warning-bg);color:var(--warning);font-size:9px;">${trip.pendingCount} pending</span>` : ''}
+                    ${stats.needsAttention > 0 ? `<span class="badge" style="background:var(--warning-bg);color:var(--warning);font-size:9px;">${stats.needsAttention} attention</span>` : ''}
                   </div>
                   <div class="text-sm font-medium mb-1" style="color:var(--text-primary);">${trip.name}</div>
                   <div class="text-xs mb-2" style="color:var(--text-muted);">${trip.dates}</div>
                   <div class="flex items-center justify-between">
                     <div class="text-xs" style="color:var(--text-muted);">
-                      ${travelerCount} travelers &#183; ${trip.bookingCount} bookings
+                      ${travelerCount} travelers &#183; ${stats.total} components
                     </div>
+                    ${stats.unreviewed > 0 ? `<span class="w-2 h-2 rounded-full" style="background:var(--error);" title="${stats.unreviewed} unreviewed comments"></span>` : ''}
                     <span class="avatar avatar-sm" style="background:${agent?.color || '#94a3b8'};color:#fff;font-size:9px;" title="${agent?.name}">${agent?.initials || '?'}</span>
                   </div>
                 </div>`;

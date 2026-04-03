@@ -195,7 +195,7 @@
         <div class="text-xs mb-2" style="color:var(--text-secondary);" id="trip-dates">May 10 - 24, 2026</div>
         <div class="flex items-center gap-2 flex-wrap">
           <span class="badge" style="background:var(--info-bg);color:var(--info);" id="trip-travelers-badge">4 travelers</span>
-          <span class="badge" style="background:var(--success-bg);color:var(--success);" id="trip-bookings-badge">6 bookings</span>
+          <span class="badge" style="background:var(--success-bg);color:var(--success);" id="trip-components-badge">6 components</span>
           <span class="badge" style="background:var(--warning-bg);color:var(--warning);" id="trip-pending-badge">1 pending</span>
         </div>
       </div>
@@ -228,18 +228,18 @@
         </div>
       </div>
 
-      <!-- Bookings (collapsible) -->
+      <!-- Components (collapsible) -->
       <div class="border-b transition-theme" style="border-color:var(--border);">
-        <div class="flex items-center justify-between px-4 py-2.5 cursor-pointer" style="background:var(--bg-surface);" onclick="toggleContextSection('bookings')">
+        <div class="flex items-center justify-between px-4 py-2.5 cursor-pointer" style="background:var(--bg-surface);" onclick="toggleContextSection('components')">
           <span class="text-xs font-semibold uppercase tracking-wide" style="color:var(--text-muted);">
-            BOOKINGS <span id="bookings-count">6</span> <span id="bookings-pending" style="color:var(--text-muted);">· 1 pending</span>
+            COMPONENTS <span id="components-count">6</span> <span id="components-pending" style="color:var(--text-muted);">· 1 needs attention</span>
           </span>
-          <svg id="bookings-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted);transition:transform 0.2s;">
+          <svg id="components-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted);transition:transform 0.2s;">
             <polyline points="6 9 12 15 18 9"/>
           </svg>
         </div>
-        <div id="bookings-content" class="p-4" style="display:none;">
-          <div class="space-y-2" id="booking-cards">
+        <div id="components-content" class="p-4" style="display:none;">
+          <div class="space-y-2" id="component-cards">
             <!-- Populated by JS -->
           </div>
         </div>
@@ -297,7 +297,7 @@
     updateMainMargin();
     renderConversationList();
     renderMessages();
-    renderBookingCards();
+    renderComponentCards();
     document.getElementById('cmd-palette-root').innerHTML = renderCommandPalette();
 
     // Context panel toggle
@@ -452,7 +452,7 @@
     const householdMembers = getClientsByHousehold(conv.householdId);
     const trip = conv.tripId ? getTrip(conv.tripId) : null;
     const agent = conv.assignedTo ? getAgent(conv.assignedTo) : null;
-    const bookings = trip ? getBookingsByTrip(conv.tripId) : [];
+    const components = trip ? getComponentsByTrip(conv.tripId) : [];
     const travelers = trip ? trip.travelers.map(id => getClient(id)).filter(c => c) : [];
     const isGeneral = conv.threadType === 'general';
 
@@ -504,13 +504,13 @@
     const tripSection = document.getElementById('trip-section');
     const threadsSection = document.getElementById('threads-section');
     const travelersSection = document.getElementById('travelers-content')?.closest('.border-b');
-    const bookingsSection = document.getElementById('bookings-content')?.closest('.border-b');
+    const componentsSection = document.getElementById('components-content')?.closest('.border-b');
 
     if (isGeneral) {
       // Hide trip-specific sections
       tripSection.classList.add('hidden');
       if (travelersSection) travelersSection.classList.add('hidden');
-      if (bookingsSection) bookingsSection.classList.add('hidden');
+      if (componentsSection) componentsSection.classList.add('hidden');
 
       // Show household threads section
       threadsSection.classList.remove('hidden');
@@ -520,7 +520,7 @@
       tripSection.classList.remove('hidden');
       threadsSection.classList.add('hidden');
       if (travelersSection) travelersSection.classList.remove('hidden');
-      if (bookingsSection) bookingsSection.classList.remove('hidden');
+      if (componentsSection) componentsSection.classList.remove('hidden');
 
       // Update trip info
       if (trip) {
@@ -528,9 +528,10 @@
         document.getElementById('trip-name').textContent = trip.name;
         document.getElementById('trip-dates').textContent = trip.dates;
         document.getElementById('trip-travelers-badge').textContent = `${travelers.length} travelers`;
-        document.getElementById('trip-bookings-badge').textContent = `${bookings.length} bookings`;
-        document.getElementById('trip-pending-badge').textContent = `${trip.pendingCount} pending`;
-        document.getElementById('trip-pending-badge').style.display = trip.pendingCount > 0 ? 'inline-flex' : 'none';
+        document.getElementById('trip-components-badge').textContent = `${components.length} components`;
+        const needsAttentionCount = getComponentsNeedingAttention(trip.id).length;
+        document.getElementById('trip-pending-badge').textContent = `${needsAttentionCount} needs attention`;
+        document.getElementById('trip-pending-badge').style.display = needsAttentionCount > 0 ? 'inline-flex' : 'none';
 
         // Trip stage badge
         const stage = getPipelineStage(trip.stage);
@@ -547,13 +548,14 @@
         ).join('');
         document.getElementById('travelers-content').innerHTML = `<div class="flex flex-wrap gap-1.5">${travelersContent}</div>`;
 
-        // Update bookings section
-        document.getElementById('bookings-count').textContent = bookings.length;
-        document.getElementById('bookings-pending').textContent = trip.pendingCount > 0 ? `· ${trip.pendingCount} pending` : '';
+        // Update components section
+        document.getElementById('components-count').textContent = components.length;
+        const attentionCount = getComponentsNeedingAttention(trip.id).length;
+        document.getElementById('components-pending').textContent = attentionCount > 0 ? `· ${attentionCount} needs attention` : '';
       }
 
-      // Render bookings
-      renderBookingCards(conv.tripId);
+      // Render components
+      renderComponentCards(conv.tripId);
     }
 
     // Load messages
@@ -782,33 +784,51 @@
     // Initial render happens in selectConversation
   }
 
-  // ---- Booking cards ----
-  function renderBookingCards(tripId = 'tr1') {
-    const container = document.getElementById('booking-cards');
-    const bookings = getBookingsByTrip(tripId);
-    const typeIcons = {
+  // ---- Component cards ----
+  function renderComponentCards(tripId = 'tr1') {
+    const container = document.getElementById('component-cards');
+    const components = getComponentsByTrip(tripId);
+    const categoryIcons = {
       hotel: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Z"/><path d="m9 16 .348-.24c1.465-1.013 3.84-1.013 5.304 0L15 16"/><path d="M8 7h.01"/><path d="M16 7h.01"/></svg>',
       flight: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>',
       experience: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>',
+      dining: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>',
+      transfer: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="12" x="2" y="6" rx="2"/><path d="M6 18v2"/><path d="M18 18v2"/><circle cx="7" cy="12" r="1"/><circle cx="17" cy="12" r="1"/></svg>',
+      vip_touch: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>',
+      train: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="16" height="16" x="4" y="3" rx="2"/><path d="M4 11h16"/><path d="M12 3v8"/><path d="m8 19-2 3"/><path d="m18 22-2-3"/><circle cx="9" cy="15" r="1"/><circle cx="15" cy="15" r="1"/></svg>',
     };
-    const statusColors = {
+    const categoryColors = {
+      flight: 'var(--info)',
+      hotel: 'var(--success)',
+      dining: '#f97316',
+      experience: 'var(--gold)',
+      transfer: 'var(--text-muted)',
+      vip_touch: '#ec4899',
+      train: '#8b5cf6',
+    };
+    const statusStyles = {
+      'Working on it': { bg: 'var(--info-bg)', color: 'var(--info)' },
+      'Need your input': { bg: 'var(--warning-bg)', color: 'var(--warning)' },
+      'Ready for approval': { bg: 'var(--gold-bg)', color: 'var(--gold)' },
+      'On hold': { bg: 'var(--bg-surface)', color: 'var(--text-muted)' },
       'Confirmed': { bg: 'var(--success-bg)', color: 'var(--success)' },
-      'Waitlisted': { bg: 'var(--warning-bg)', color: 'var(--warning)' },
-      'On Hold': { bg: 'var(--info-bg)', color: 'var(--info)' },
+      'Booked': { bg: 'var(--success-bg)', color: 'var(--success)' },
     };
 
-    container.innerHTML = bookings.slice(0, 5).map(b => {
-      const sc = statusColors[b.status] || statusColors['Confirmed'];
+    container.innerHTML = components.slice(0, 5).map(c => {
+      const ss = statusStyles[c.clientFacingStatus] || statusStyles['Confirmed'];
+      const catColor = categoryColors[c.category] || 'var(--text-muted)';
+      const priceDisplay = c.pricePoints || c.priceCash || '';
       return `
         <div class="card p-2.5 flex items-start gap-2.5 cursor-pointer" style="font-size:12px;">
-          <div class="mt-0.5" style="color:var(--text-muted);">${typeIcons[b.type] || typeIcons.hotel}</div>
+          <div class="mt-0.5" style="color:${catColor};">${categoryIcons[c.category] || categoryIcons.hotel}</div>
           <div class="flex-1 min-w-0">
-            <div class="font-medium truncate" style="color:var(--text-primary);">${b.name}</div>
-            <div style="color:var(--text-muted);">${b.dates}</div>
+            <div class="font-medium truncate" style="color:var(--text-primary);">${c.name}</div>
+            <div style="color:var(--text-muted);">${c.dates}</div>
             <div class="flex items-center gap-2 mt-1">
-              <span class="badge" style="background:${sc.bg};color:${sc.color};font-size:10px;">${b.status}</span>
-              <span style="color:var(--text-secondary);font-weight:600;">${b.price}</span>
-              ${b.score ? `<span style="color:${b.score >= 90 ? 'var(--success)' : 'var(--warning)'};font-weight:600;">${b.score}/100</span>` : ''}
+              <span class="badge" style="background:${ss.bg};color:${ss.color};font-size:10px;">${c.clientFacingStatus}</span>
+              <span style="color:var(--text-secondary);font-weight:600;">${priceDisplay}</span>
+              ${c.score ? `<span style="color:${c.score >= 90 ? 'var(--success)' : 'var(--warning)'};font-weight:600;">${c.score}/100</span>` : ''}
             </div>
           </div>
         </div>`;

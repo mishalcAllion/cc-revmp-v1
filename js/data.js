@@ -222,21 +222,20 @@ const TRIPS = [
     status: 'Active', stage: 'booking', agentId: 'a1',
     travelers: ['c1','c2'],
     guests: [{name:'Nobby Nobbs', age:39}, {name:'Rosamund Nobbs', age:37}],
-    bookingCount: 6, pendingCount: 1,
     budget: '$22,000'
   },
   {
     id: 'tr2', householdId: 'h2', name: 'Paris & French Riviera Anniversary',
     destinations: 'Paris, Nice, Saint-Tropez', dates: 'Jun 15 - 28, 2026',
     status: 'Active', stage: 'planning', agentId: 'a1',
-    travelers: ['c3','c4'], bookingCount: 3, pendingCount: 4,
+    travelers: ['c3','c4'],
     budget: '$16,000'
   },
   {
     id: 'tr3', householdId: 'h3', name: 'Maldives Escape',
     destinations: 'Male, North Ari Atoll', dates: 'Apr 20 - 28, 2026',
     status: 'Confirmed', stage: 'confirmed', agentId: 'a2',
-    travelers: ['c5','c6'], bookingCount: 4, pendingCount: 0,
+    travelers: ['c5','c6'],
     budget: '$28,000'
   },
   {
@@ -245,35 +244,34 @@ const TRIPS = [
     status: 'Active', stage: 'planning', agentId: 'a2',
     travelers: ['c7','c8'],
     dependents: [{name:'Pewsey Ogg', age:12}, {name:'Shawn Ogg', age:9}],
-    bookingCount: 2, pendingCount: 3,
     budget: '$24,000'
   },
   {
     id: 'tr5', householdId: 'h5', name: 'Bali & Singapore Luxury',
     destinations: 'Ubud, Seminyak, Singapore', dates: 'Aug 1 - 14, 2026',
     status: 'Active', stage: 'lead', agentId: 'a3',
-    travelers: ['c9','c10'], bookingCount: 0, pendingCount: 0,
+    travelers: ['c9','c10'],
     budget: '$42,000'
   },
   {
     id: 'tr6', householdId: 'h6', name: 'Amalfi Coast & Rome',
     destinations: 'Amalfi, Ravello, Rome', dates: 'Sep 8 - 18, 2026',
     status: 'Active', stage: 'planning', agentId: 'a1',
-    travelers: ['c11','c12'], bookingCount: 1, pendingCount: 2,
+    travelers: ['c11','c12'],
     budget: '$14,000'
   },
   {
     id: 'tr7', householdId: 'h3', name: 'Japan Cherry Blossom',
     destinations: 'Tokyo, Kyoto, Osaka', dates: 'Mar 25 - Apr 6, 2027',
     status: 'Active', stage: 'lead', agentId: 'a4',
-    travelers: ['c5','c6'], bookingCount: 0, pendingCount: 0,
+    travelers: ['c5','c6'],
     budget: '$22,000'
   },
   {
     id: 'tr8', householdId: 'h5', name: 'Italy 2026',
     destinations: 'Lake Como, Florence, Amalfi', dates: 'Oct 5 - 19, 2026',
     status: 'Active', stage: 'booking', agentId: 'a5',
-    travelers: ['c9','c10'], bookingCount: 3, pendingCount: 2,
+    travelers: ['c9','c10'],
     budget: '$38,000'
   }
 ];
@@ -288,18 +286,209 @@ const PIPELINE_STAGES = [
   { id: 'archived',   label: 'Archived',   color: '#64748b' },
 ];
 
-const BOOKINGS = [
-  { id: 'b1', tripId: 'tr1', type: 'hotel', name: 'Hotel Grande Bretagne, Athens', dates: 'May 10 - 13, 2026', status: 'Confirmed', price: '$850/night', nights: 3, score: 93, updatedAt: 'Mar 25' },
-  { id: 'b2', tripId: 'tr1', type: 'flight', name: 'Delta DL-401', dates: 'May 10, 2026', status: 'Confirmed', price: '86,000 pts', duration: '12h 20m', score: 86, updatedAt: 'Mar 22' },
-  { id: 'b3', tripId: 'tr1', type: 'hotel', name: 'Cavo Tagoo Mykonos', dates: 'May 13 - 18, 2026', status: 'Confirmed', price: '$1,200/night', nights: 5, score: 95, updatedAt: 'Mar 23' },
-  { id: 'b4', tripId: 'tr1', type: 'experience', name: 'Private Yacht Day - Mykonos', dates: 'May 15, 2026', status: 'Confirmed', price: '$3,200', score: 95, updatedAt: 'Mar 30' },
-  { id: 'b5', tripId: 'tr1', type: 'hotel', name: 'Canaves Oia Suites', dates: 'May 18 - 22, 2026', status: 'Waitlisted', price: '$1,400/night', nights: 4, score: 97, updatedAt: 'Mar 28' },
-  { id: 'b6', tripId: 'tr1', type: 'hotel', name: 'Grace Hotel Santorini (Backup)', dates: 'May 18 - 22, 2026', status: 'On Hold', price: '$980/night', nights: 4, score: 91, updatedAt: 'Mar 29' },
-  { id: 'b7', tripId: 'tr2', type: 'hotel', name: 'Le Bristol Paris', dates: 'Jun 15 - 19, 2026', status: 'Confirmed', price: '$1,100/night', nights: 4, score: 94, updatedAt: 'Mar 18' },
-  { id: 'b8', tripId: 'tr2', type: 'flight', name: 'Air France AF-23', dates: 'Jun 15, 2026', status: 'Confirmed', price: '95,000 pts', duration: '10h 45m', score: 88, updatedAt: 'Mar 15' },
-  { id: 'b9', tripId: 'tr3', type: 'hotel', name: 'Soneva Fushi Water Villa', dates: 'Apr 20 - 28, 2026', status: 'Confirmed', price: '$2,800/night', nights: 8, score: 98, updatedAt: 'Mar 10' },
-  { id: 'b10', tripId: 'tr4', type: 'flight', name: 'Delta DL-619', dates: 'Jul 5, 2026', status: 'Confirmed', price: '55,000 pts', duration: '5h 30m', score: 82, updatedAt: 'Mar 20' },
+const COMPONENTS = [
+  // ── tr1: Athens, Mykonos & Santorini (Vimes) ──────────────────────────
+  {
+    id: 'comp1', tripId: 'tr1', name: 'Hotel Grande Bretagne, Athens', category: 'hotel',
+    clientFacingStatus: 'Booked', clientDecision: 'Approved', decidedBy: 'Samuel Vimes', clientDecisionDate: '2026-03-20',
+    priceCash: '$850/night', pricePoints: null, recommendedPayment: 'Cash',
+    dates: 'May 10 - 13, 2026', nights: 3, duration: null, keyTime: '3:00 PM',
+    advisorReasoning: 'Top-tier location on Syntagma Square with Acropolis views. Matches preference for luxury boutiques. Rooftop restaurant is one of the best in Athens.',
+    websiteUrl: 'https://www.marriott.com/hotels/travel/athgb-hotel-grande-bretagne-a-luxury-collection-hotel-athens/', imageUrl: null,
+    optionGroup: null, displayOrder: 1,
+    score: 93, internalNotes: 'Client stayed here before and loved it. Loyalty rate applied.',
+    comments: [], updatedAt: 'Mar 25'
+  },
+  {
+    id: 'comp2', tripId: 'tr1', name: 'Delta DL-401 (JFK-ATH)', category: 'flight',
+    clientFacingStatus: 'Booked', clientDecision: 'Approved', decidedBy: 'Samuel Vimes', clientDecisionDate: '2026-03-18',
+    priceCash: null, pricePoints: '86,000 pts', recommendedPayment: 'Points',
+    dates: 'May 10, 2026', nights: null, duration: '12h 20m', keyTime: '5:30 PM',
+    advisorReasoning: 'Delta One suite with flat-bed and direct aisle access. Non-stop JFK to ATH. Best points value at 1.8 cpp.',
+    websiteUrl: null, imageUrl: null,
+    optionGroup: null, displayOrder: 2,
+    score: 86, internalNotes: 'Transferred 86K Amex MR during 30% bonus promo.',
+    comments: [], updatedAt: 'Mar 22'
+  },
+  {
+    id: 'comp3', tripId: 'tr1', name: 'Cavo Tagoo Mykonos', category: 'hotel',
+    clientFacingStatus: 'Confirmed', clientDecision: 'Approved', decidedBy: 'Sybil Ramkin', clientDecisionDate: '2026-03-19',
+    priceCash: '$1,200/night', pricePoints: null, recommendedPayment: 'Cash',
+    dates: 'May 13 - 18, 2026', nights: 5, duration: null, keyTime: '2:00 PM',
+    advisorReasoning: 'Iconic cave-style suites with private pools. Ideal for a relaxed Mykonos stay away from party scene. Matches their "max 2 activities/day" pace preference.',
+    websiteUrl: 'https://cavotagoo.com/', imageUrl: null,
+    optionGroup: null, displayOrder: 3,
+    score: 95, internalNotes: null,
+    comments: [
+      { id: 'cmt1', message: 'Can we get a suite with a private pool? Sybil really wants one.', author: 'Samuel Vimes', commentType: 'client', source: 'app', createdAt: '2026-03-20T10:00:00', reviewStatus: 'Addressed' },
+      { id: 'cmt2', message: 'Confirmed — booked the Tagoo Suite with private infinity pool overlooking caldera.', author: 'Angua von Uberwald', commentType: 'ops', source: 'manual', createdAt: '2026-03-20T14:30:00', reviewStatus: null }
+    ],
+    updatedAt: 'Mar 23'
+  },
+  {
+    id: 'comp4', tripId: 'tr1', name: 'Private Yacht Day - Mykonos', category: 'experience',
+    clientFacingStatus: 'Confirmed', clientDecision: 'Approved', decidedBy: 'Samuel Vimes', clientDecisionDate: '2026-03-25',
+    priceCash: '$3,200', pricePoints: null, recommendedPayment: 'Cash',
+    dates: 'May 15, 2026', nights: null, duration: null, keyTime: '9:00 AM',
+    advisorReasoning: 'Full-day private yacht charter around Delos and Rhenia islands. Captain + chef included. Perfect for their group of 4.',
+    websiteUrl: null, imageUrl: null,
+    optionGroup: null, displayOrder: 4,
+    score: 95, internalNotes: 'Vendor: Mykonos Yachting. Deposit paid.',
+    comments: [], updatedAt: 'Mar 30'
+  },
+  {
+    id: 'comp5', tripId: 'tr1', name: 'Canaves Oia Suites', category: 'hotel',
+    clientFacingStatus: 'Ready for approval', clientDecision: 'Approved', decidedBy: 'Samuel Vimes', clientDecisionDate: '2026-03-29',
+    priceCash: '$1,400/night', pricePoints: null, recommendedPayment: 'Cash',
+    dates: 'May 18 - 22, 2026', nights: 4, duration: null, keyTime: '3:00 PM',
+    advisorReasoning: 'Best sunset views in Oia. Private plunge pool suites. Consistently ranked #1 on Santorini. Matches their luxury boutique preference perfectly.',
+    websiteUrl: 'https://canaves.com/', imageUrl: null,
+    optionGroup: 'santorini-hotel', displayOrder: 5,
+    score: 97, internalNotes: 'Waitlisted — expected confirmation by Apr 5. Priority #1.',
+    comments: [
+      { id: 'cmt3', message: 'This is our top pick! How likely is the waitlist to clear?', author: 'Samuel Vimes', commentType: 'client', source: 'app', createdAt: '2026-03-29T09:00:00', reviewStatus: 'Reviewing' },
+      { id: 'cmt4', message: 'Very likely — I have a contact at Canaves and they expect a cancellation by Apr 3. Will update immediately.', author: 'Angua von Uberwald', commentType: 'ops', source: 'manual', createdAt: '2026-03-29T11:00:00', reviewStatus: null }
+    ],
+    updatedAt: 'Mar 28'
+  },
+  {
+    id: 'comp6', tripId: 'tr1', name: 'Grace Hotel Santorini', category: 'hotel',
+    clientFacingStatus: 'On hold', clientDecision: 'Pending', decidedBy: null, clientDecisionDate: null,
+    priceCash: '$980/night', pricePoints: null, recommendedPayment: 'Cash',
+    dates: 'May 18 - 22, 2026', nights: 4, duration: null, keyTime: '3:00 PM',
+    advisorReasoning: 'Excellent backup option in Oia with champagne bar and infinity pool. Slightly smaller rooms than Canaves but superb service.',
+    websiteUrl: 'https://gracehotels.com/santorini/', imageUrl: null,
+    optionGroup: 'santorini-hotel', displayOrder: 6,
+    score: 91, internalNotes: 'Holding as backup until Canaves confirms. Release by Apr 10.',
+    comments: [], updatedAt: 'Mar 29'
+  },
+  {
+    id: 'comp7', tripId: 'tr1', name: 'Scorpios Mykonos - Private Dinner', category: 'dining',
+    clientFacingStatus: 'Ready for approval', clientDecision: 'Pending', decidedBy: null, clientDecisionDate: null,
+    priceCash: '$480', pricePoints: null, recommendedPayment: 'Cash',
+    dates: 'May 16, 2026', nights: null, duration: null, keyTime: '7:30 PM',
+    advisorReasoning: 'Exclusive beachside dining at Mykonos\' most iconic sunset venue. Private table reserved on the cliff terrace. Mediterranean tasting menu with local wine pairing.',
+    websiteUrl: 'https://scorpiosmykonos.com/', imageUrl: null,
+    optionGroup: null, displayOrder: 7,
+    score: null, internalNotes: 'Reservation via concierge connection. Dress code: resort casual.',
+    comments: [
+      { id: 'cmt5', message: 'Is this suitable for our shellfish allergy? Sybil can\'t have shellfish.', author: 'Samuel Vimes', commentType: 'client', source: 'app', createdAt: '2026-03-31T08:00:00', reviewStatus: null },
+    ],
+    updatedAt: 'Mar 31'
+  },
+  {
+    id: 'comp8', tripId: 'tr1', name: 'Athens Food & Wine Walking Tour', category: 'dining',
+    clientFacingStatus: 'Need your input', clientDecision: 'Needs Changes', decidedBy: 'Sybil Ramkin', clientDecisionDate: '2026-03-30',
+    priceCash: '$220', pricePoints: null, recommendedPayment: 'Cash',
+    dates: 'May 11, 2026', nights: null, duration: null, keyTime: '10:00 AM',
+    advisorReasoning: 'Guided walk through Plaka and Central Market with 6 tastings including local cheeses, olives, and Greek wine. Small group (max 8).',
+    websiteUrl: null, imageUrl: null,
+    optionGroup: null, displayOrder: 8,
+    score: null, internalNotes: null,
+    comments: [
+      { id: 'cmt6', message: 'Sybil prefers a private tour, not a group one. Can this be arranged privately?', author: 'Samuel Vimes', commentType: 'client', source: 'app', createdAt: '2026-03-30T15:00:00', reviewStatus: null },
+    ],
+    updatedAt: 'Mar 30'
+  },
+  {
+    id: 'comp9', tripId: 'tr1', name: 'VIP Airport Lounge - JFK', category: 'vip_touch',
+    clientFacingStatus: 'Confirmed', clientDecision: 'Approved', decidedBy: 'Samuel Vimes', clientDecisionDate: '2026-03-22',
+    priceCash: '$150', pricePoints: null, recommendedPayment: 'Cash',
+    dates: 'May 10, 2026', nights: null, duration: null, keyTime: '3:00 PM',
+    advisorReasoning: 'Private suite in the Delta Sky Club reserved section. Complimentary champagne and catering pre-flight. Smooth transition to boarding.',
+    websiteUrl: null, imageUrl: null,
+    optionGroup: null, displayOrder: 9,
+    score: null, internalNotes: 'Booked via Delta Amex Centurion access.',
+    comments: [], updatedAt: 'Mar 22'
+  },
+  {
+    id: 'comp10', tripId: 'tr1', name: 'Helicopter Transfer Mykonos - Santorini', category: 'transfer',
+    clientFacingStatus: 'Working on it', clientDecision: null, decidedBy: null, clientDecisionDate: null,
+    priceCash: '$2,800', pricePoints: null, recommendedPayment: 'Cash',
+    dates: 'May 18, 2026', nights: null, duration: '25m', keyTime: '11:00 AM',
+    advisorReasoning: null,
+    websiteUrl: null, imageUrl: null,
+    optionGroup: null, displayOrder: 10,
+    score: null, internalNotes: 'Checking availability with 2 providers. Backup: fast ferry.',
+    comments: [], updatedAt: 'Mar 28'
+  },
+  // ── tr2: Paris & French Riviera Anniversary (Ridcully) ────────────────
+  {
+    id: 'comp11', tripId: 'tr2', name: 'Le Bristol Paris', category: 'hotel',
+    clientFacingStatus: 'Booked', clientDecision: 'Approved', decidedBy: 'Juliana Ridcully', clientDecisionDate: '2026-03-15',
+    priceCash: '$1,100/night', pricePoints: null, recommendedPayment: 'Cash',
+    dates: 'Jun 15 - 19, 2026', nights: 4, duration: null, keyTime: '3:00 PM',
+    advisorReasoning: 'Palace hotel on Rue du Faubourg Saint-Honore. Epicure restaurant (3 Michelin stars) on-site. Matches their fine dining + wine preference.',
+    websiteUrl: 'https://www.oetkercollection.com/hotels/le-bristol-paris/', imageUrl: null,
+    optionGroup: null, displayOrder: 1,
+    score: 94, internalNotes: null,
+    comments: [], updatedAt: 'Mar 18'
+  },
+  {
+    id: 'comp12', tripId: 'tr2', name: 'Air France AF-23 (SFO-CDG)', category: 'flight',
+    clientFacingStatus: 'Booked', clientDecision: 'Approved', decidedBy: 'Mustrum Ridcully', clientDecisionDate: '2026-03-12',
+    priceCash: null, pricePoints: '95,000 pts', recommendedPayment: 'Points',
+    dates: 'Jun 15, 2026', nights: null, duration: '10h 45m', keyTime: '4:15 PM',
+    advisorReasoning: 'La Premiere cabin with lie-flat suite and multi-course French menu. Non-stop SFO to CDG. Excellent points redemption at 2.1 cpp.',
+    websiteUrl: null, imageUrl: null,
+    optionGroup: null, displayOrder: 2,
+    score: 88, internalNotes: 'Transferred 95K United to Flying Blue.',
+    comments: [], updatedAt: 'Mar 15'
+  },
+  {
+    id: 'comp13', tripId: 'tr2', name: 'TGV Paris - Nice', category: 'train',
+    clientFacingStatus: 'Ready for approval', clientDecision: 'Pending', decidedBy: null, clientDecisionDate: null,
+    priceCash: '$180', pricePoints: null, recommendedPayment: 'Cash',
+    dates: 'Jun 19, 2026', nights: null, duration: '5h 36m', keyTime: '9:15 AM',
+    advisorReasoning: 'First class TGV with panoramic views through Provence. Much more scenic than flying — perfect for their pace preference. Arrives Nice in time for sunset dinner.',
+    websiteUrl: null, imageUrl: null,
+    optionGroup: null, displayOrder: 3,
+    score: null, internalNotes: 'Tickets not yet on sale. Opens Apr 10.',
+    comments: [
+      { id: 'cmt7', message: 'Can we get seats on the left side for the coastal views?', author: 'Juliana Ridcully', commentType: 'client', source: 'app', createdAt: '2026-03-30T16:00:00', reviewStatus: 'Reviewing' }
+    ],
+    updatedAt: 'Mar 30'
+  },
+  // ── tr3: Maldives Escape (Vetinari) ───────────────────────────────────
+  {
+    id: 'comp14', tripId: 'tr3', name: 'Soneva Fushi Water Villa', category: 'hotel',
+    clientFacingStatus: 'Booked', clientDecision: 'Approved', decidedBy: 'Havelock Vetinari', clientDecisionDate: '2026-03-05',
+    priceCash: '$2,800/night', pricePoints: null, recommendedPayment: 'Cash',
+    dates: 'Apr 20 - 28, 2026', nights: 8, duration: null, keyTime: '2:00 PM',
+    advisorReasoning: 'Overwater villa with private pool, slide to ocean, and glass floor. Soneva is their preferred brand. Best match for "very relaxed, beach-focused" pace.',
+    websiteUrl: 'https://soneva.com/soneva-fushi/', imageUrl: null,
+    optionGroup: null, displayOrder: 1,
+    score: 98, internalNotes: 'Upgrade request pending — villa #14 preferred (sunrise side).',
+    comments: [], updatedAt: 'Mar 10'
+  },
+  // ── tr4: Panama & Costa Rica Family Adventure (Ogg) ───────────────────
+  {
+    id: 'comp15', tripId: 'tr4', name: 'Delta DL-619 (ORD-PTY)', category: 'flight',
+    clientFacingStatus: 'Confirmed', clientDecision: 'Approved', decidedBy: 'Jason Ogg', clientDecisionDate: '2026-03-18',
+    priceCash: null, pricePoints: '55,000 pts', recommendedPayment: 'Points',
+    dates: 'Jul 5, 2026', nights: null, duration: '5h 30m', keyTime: '8:00 AM',
+    advisorReasoning: 'Direct ORD to Panama City. Delta One for the family — kids get amenity kits.',
+    websiteUrl: null, imageUrl: null,
+    optionGroup: null, displayOrder: 1,
+    score: 82, internalNotes: 'Need passport copies for all 4 pax. Chase by Jun 14.',
+    comments: [], updatedAt: 'Mar 20'
+  },
+  // ── tr8: Italy 2026 (Selachii) ────────────────────────────────────────
+  {
+    id: 'comp16', tripId: 'tr8', name: 'Castello di Ama - Private Wine Tasting', category: 'experience',
+    clientFacingStatus: 'Working on it', clientDecision: null, decidedBy: null, clientDecisionDate: null,
+    priceCash: '$760', pricePoints: null, recommendedPayment: 'Cash',
+    dates: 'Oct 12, 2026', nights: null, duration: null, keyTime: '10:00 AM',
+    advisorReasoning: null,
+    websiteUrl: 'https://castellodiama.com/', imageUrl: null,
+    optionGroup: null, displayOrder: 5,
+    score: null, internalNotes: 'Reached out to estate. Waiting on private group availability for Oct dates.',
+    comments: [], updatedAt: 'Mar 29'
+  },
 ];
+
+// Backward-compatible alias
+const BOOKINGS = COMPONENTS;
 
 const CONVERSATIONS = [
   {
@@ -489,7 +678,7 @@ const MESSAGES = {
 
 const TASKS = [
   { id: 'tk1', title: 'Confirm shellfish-free tasting menu with Eden-Roc for anniversary dinner', householdId: 'h2', tripId: 'tr2', status: 'In Progress', priority: 'High', assignedTo: 'a1', dueIn: '2d', source: 'auto', venue: 'Eden-Roc Private Dining' },
-  { id: 'tk2', title: 'Resolve Canaves Oia waitlist -- need alternate hotel confirmation by May 1', householdId: 'h1', tripId: 'tr1', status: 'Blocked', priority: 'Urgent', assignedTo: 'a1', dueIn: '1d', source: 'auto', venue: 'Canaves Oia Suites' },
+  { id: 'tk2', title: 'Resolve Canaves Oia waitlist -- need alternate hotel confirmation by May 1', householdId: 'h1', tripId: 'tr1', status: 'Blocked', priority: 'Urgent', assignedTo: 'a1', dueIn: '1d', source: 'auto', venue: 'Canaves Oia Suites', componentId: 'comp5' },
   { id: 'tk3', title: 'Follow up on Soneva Fushi overwater villa upgrade request', householdId: 'h3', tripId: 'tr3', status: 'In Progress', priority: 'High', assignedTo: 'a2', dueIn: 'Due today', source: 'manual', venue: 'Soneva Fushi Water Resort' },
   { id: 'tk4', title: 'Negotiate Mulia Bali suite rate for Selachii 2-week stay', householdId: 'h5', tripId: 'tr5', status: 'Not Started', priority: 'Normal', assignedTo: 'a3', dueIn: '2d overdue', source: 'auto', venue: 'The Mulia Bali' },
   { id: 'tk5', title: 'Hold Singapore Airlines Suites SFO-SIN for Selachii', householdId: 'h5', tripId: 'tr5', status: 'Blocked', priority: 'High', assignedTo: 'a2', dueIn: '2d', source: 'auto', venue: 'SQ Suites SFO-SIN' },
@@ -497,7 +686,9 @@ const TASKS = [
   { id: 'tk7', title: 'Research award availability SFO-MLE for Vetinari Maldives trip', householdId: 'h3', tripId: 'tr3', status: 'Not Started', priority: 'Normal', assignedTo: 'a4', dueIn: '5d', source: 'auto', venue: 'Maldives 2026' },
   { id: 'tk8', title: 'Arrange private wine tasting in Chianti for Sto Helit Italy trip', householdId: 'h6', tripId: 'tr6', status: 'Waiting', priority: 'Low', assignedTo: 'a5', dueIn: '7d', source: 'manual', venue: 'Italy 2026' },
   { id: 'tk9', title: 'Collect passport copies from Ogg family for Panama visa check', householdId: 'h4', tripId: 'tr4', status: 'Blocked', priority: 'High', assignedTo: 'a2', dueIn: '1d overdue', source: 'auto', venue: 'Panama & Costa Rica' },
-  { id: 'tk10', title: 'Book helicopter transfer Mykonos to Santorini for Vimes group', householdId: 'h1', tripId: 'tr1', status: 'In Progress', priority: 'Normal', assignedTo: 'a1', dueIn: '4d', source: 'auto', venue: 'Mykonos-Santorini' },
+  { id: 'tk10', title: 'Book helicopter transfer Mykonos to Santorini for Vimes group', householdId: 'h1', tripId: 'tr1', status: 'In Progress', priority: 'Normal', assignedTo: 'a1', dueIn: '4d', source: 'auto', venue: 'Mykonos-Santorini', componentId: 'comp10' },
+  { id: 'tk11', title: 'Athens Food Tour -- Client requested private tour instead of group', householdId: 'h1', tripId: 'tr1', status: 'Not Started', priority: 'High', assignedTo: 'a1', dueIn: '2d', source: 'client-action', venue: 'Athens', componentId: 'comp8' },
+  { id: 'tk12', title: 'Scorpios dinner -- Confirm shellfish-free options for Sybil', householdId: 'h1', tripId: 'tr1', status: 'Not Started', priority: 'Normal', assignedTo: 'a1', dueIn: '3d', source: 'client-action', venue: 'Scorpios Mykonos', componentId: 'comp7' },
 ];
 
 const ALERTS = [
@@ -516,7 +707,26 @@ function getHousehold(id) { return HOUSEHOLDS.find(h => h.id === id); }
 function getClientsByHousehold(householdId) { return CLIENTS.filter(c => c.householdId === householdId); }
 function getTripsByHousehold(householdId) { return TRIPS.filter(t => t.householdId === householdId); }
 function getConversationsByHousehold(householdId) { return CONVERSATIONS.filter(c => c.householdId === householdId); }
-function getBookingsByTrip(tripId) { return BOOKINGS.filter(b => b.tripId === tripId); }
+function getComponentsByTrip(tripId) { return COMPONENTS.filter(c => c.tripId === tripId); }
+function getBookingsByTrip(tripId) { return getComponentsByTrip(tripId); } // backward-compat alias
+function getComponentsByOptionGroup(tripId, groupName) { return COMPONENTS.filter(c => c.tripId === tripId && c.optionGroup === groupName); }
+function getComponentsNeedingAttention(tripId) {
+  return COMPONENTS.filter(c => c.tripId === tripId && (
+    c.clientDecision === 'Declined' || c.clientDecision === 'Needs Changes' ||
+    (c.comments && c.comments.some(cmt => cmt.commentType === 'client' && !cmt.reviewStatus))
+  ));
+}
+function getComponentStats(tripId) {
+  const comps = getComponentsByTrip(tripId);
+  return {
+    total: comps.length,
+    confirmed: comps.filter(c => c.clientFacingStatus === 'Confirmed').length,
+    booked: comps.filter(c => c.clientFacingStatus === 'Booked').length,
+    approved: comps.filter(c => c.clientDecision === 'Approved').length,
+    needsAttention: getComponentsNeedingAttention(tripId).length,
+    unreviewed: comps.reduce((n, c) => n + (c.comments || []).filter(cmt => cmt.commentType === 'client' && !cmt.reviewStatus).length, 0),
+  };
+}
 function getTasksByTrip(tripId) { return TASKS.filter(t => t.tripId === tripId); }
 function getTasksByHousehold(householdId) { return TASKS.filter(t => t.householdId === householdId); }
 function getTripsByStage(stage) { return TRIPS.filter(t => t.stage === stage); }
