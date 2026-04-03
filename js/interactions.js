@@ -29,21 +29,15 @@ function closeModal(id) {
 // ---- Slide-over ----
 function openSlideOver(id) {
   const el = document.getElementById(id);
-  if (el) {
-    el.classList.add('open');
-    el.style.right = '0';
-  }
+  if (el) el.classList.add('open');
   const backdrop = document.getElementById(id + '-backdrop');
-  if (backdrop) backdrop.style.display = 'block';
+  if (backdrop) backdrop.classList.add('open');
 }
 function closeSlideOver(id) {
   const el = document.getElementById(id);
-  if (el) {
-    el.classList.remove('open');
-    el.style.right = '';
-  }
+  if (el) el.classList.remove('open');
   const backdrop = document.getElementById(id + '-backdrop');
-  if (backdrop) backdrop.style.display = 'none';
+  if (backdrop) backdrop.classList.remove('open');
 }
 
 // ---- Toast notification ----

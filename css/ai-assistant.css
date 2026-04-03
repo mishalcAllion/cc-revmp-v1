@@ -294,7 +294,7 @@
 .ai-agent-panel {
   position: fixed;
   top: 0;
-  right: -520px;
+  right: -100vw;
   width: 480px;
   height: 100vh;
   background: var(--bg-surface);

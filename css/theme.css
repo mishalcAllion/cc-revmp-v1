@@ -299,10 +299,19 @@ body {
 }
 
 /* ---- Slide-over ---- */
+.slide-over-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-overlay);
+  z-index: 45;
+  display: none;
+}
+.slide-over-backdrop.open { display: block; }
+
 .slide-over {
   position: fixed;
   top: 0;
-  right: -1000px;
+  right: -100vw;
   width: 480px;
   height: 100vh;
   background: var(--bg-surface);
