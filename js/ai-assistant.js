@@ -703,7 +703,7 @@ const MaestroAI = (() => {
 
   function closeAgentPanel() {
     const panel = document.getElementById('ai-agent-panel');
-    if (panel) panel.classList.remove('open');
+    if (panel) panel.classList.remove('open', 'with-tracker');
     isAgentOpen = false;
     isAgentMinimized = false;
     const minTab = document.getElementById('ai-agent-minimized');
