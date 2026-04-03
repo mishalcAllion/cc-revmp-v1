@@ -48,6 +48,14 @@
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* FAB clearance — prevent content scrolling under the AI bar */
+.flex-1.overflow-y-auto,
+.flex-1.overflow-auto,
+.h-screen.overflow-y-auto,
+#task-container {
+  padding-bottom: 72px;
+}
+
 /* Collapsed pill */
 .ai-bar-pill {
   display: flex;
