@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard — Maestro Command Centre</title>
+  <link href="https://framerusercontent.com/images/IpIhMdzyXKNL7tkqGF51UsTfpk.png" rel="icon" media="(prefers-color-scheme: light)">
+  <link href="https://framerusercontent.com/images/ps9lnUCtneok5DwSUeXm6INQAw.png" rel="icon" media="(prefers-color-scheme: dark)">
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/theme.css">
@@ -746,7 +748,7 @@
     function renderActivityFeed() {
       document.getElementById('activity-feed').innerHTML = ACTIVITY_ITEMS.map(item => {
         const badge = TYPE_BADGE[item.type] || TYPE_BADGE.conv;
-        const rowBg = item.urgent ? 'background:var(--error-bg);border-radius:6px;padding:6px 8px 6px 8px;margin:4px 0 4px -8px;border-left:3px solid var(--error);' : '';
+        const rowBg = item.urgent ? 'background:var(--error-bg);border-radius:4px;padding-top:2px;padding-bottom:12px;padding-right:6px;' : '';
         return `
           <div class="activity-item cursor-pointer" onclick="location.href='${item.href}'" onmouseover="this.style.opacity='.75'" onmouseout="this.style.opacity='1'" style="${rowBg}">
             <div class="activity-dot ${item.dot}"></div>

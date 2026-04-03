@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Maestro Command Centre -- Prototype Directory</title>
+  <link href="https://framerusercontent.com/images/IpIhMdzyXKNL7tkqGF51UsTfpk.png" rel="icon" media="(prefers-color-scheme: light)">
+  <link href="https://framerusercontent.com/images/ps9lnUCtneok5DwSUeXm6INQAw.png" rel="icon" media="(prefers-color-scheme: dark)">
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/theme.css">
@@ -43,23 +45,26 @@
 
   <!-- Inbox & Triage -->
   <div class="mb-8">
-    <div class="flex items-center gap-2 mb-3">
+    <div class="flex items-center gap-2 mb-1">
       <div class="w-2 h-2 rounded-full" style="background:var(--gold);"></div>
       <h2 class="text-sm font-semibold uppercase tracking-wide" style="color:var(--gold);">Inbox & Triage</h2>
-      <span class="text-xs" style="color:var(--text-muted);">-- 3-pane layout: conversation list + chat thread + context panel</span>
     </div>
+    <p class="text-xs mb-3 ml-4" style="color:var(--text-muted);">All three views share the same 3-pane layout (conversation list + chat thread + context panel with AI copilot). The difference is how the conversation list is presented — each view is designed for a different agent workflow and team role.</p>
     <div class="grid grid-cols-3 gap-4">
       <a href="screens/inbox-compact.html" class="card p-4 hover:shadow-md transition-shadow block group">
         <div class="text-sm font-semibold mb-1 group-hover:underline" style="color:var(--text-primary);">Compact List</div>
-        <p class="text-xs" style="color:var(--text-muted);">44px rows, fast scanning. Best for high-volume triage -- click any conversation to load thread + context panel.</p>
+        <div class="text-xs mb-2" style="color:var(--success);font-weight:600;">For: experienced agents, high-volume days</div>
+        <p class="text-xs" style="color:var(--text-muted);">Dense 44px rows — no message preview, maximum conversations visible at once. For agents who know their clients and need to move fast through a full queue.</p>
       </a>
       <a href="screens/inbox-cards.html" class="card p-4 hover:shadow-md transition-shadow block group">
         <div class="text-sm font-semibold mb-1 group-hover:underline" style="color:var(--text-primary);">Card View</div>
-        <p class="text-xs" style="color:var(--text-muted);">Rich cards with SLA progress bars, last message preview, and quick action buttons. Context-first browsing.</p>
+        <div class="text-xs mb-2" style="color:var(--info);font-weight:600;">For: agents handling complex, high-touch trips</div>
+        <p class="text-xs" style="color:var(--text-muted);">Rich cards with last message preview, SLA progress bar, and inline quick actions. For agents managing fewer but more complex conversations where context before responding matters.</p>
       </a>
       <a href="screens/inbox-queue.html" class="card p-4 hover:shadow-md transition-shadow block group">
         <div class="text-sm font-semibold mb-1 group-hover:underline" style="color:var(--text-primary);">Queue View</div>
-        <p class="text-xs" style="color:var(--text-muted);">Swim lanes by SLA urgency: Unassigned, Needs Response, Warning, On Track. Manager triage view.</p>
+        <div class="text-xs mb-2" style="color:var(--warning);font-weight:600;">For: managers, senior agents doing SLA triage</div>
+        <p class="text-xs" style="color:var(--text-muted);">Swim lanes by urgency: Unassigned → Needs Response → Warning → On Track. Most at-risk conversations surface to the top automatically. Built for shift handoffs and SLA oversight.</p>
       </a>
     </div>
   </div>

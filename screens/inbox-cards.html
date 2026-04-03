@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Inbox (Cards) -- Maestro Command Centre</title>
+  <link href="https://framerusercontent.com/images/IpIhMdzyXKNL7tkqGF51UsTfpk.png" rel="icon" media="(prefers-color-scheme: light)">
+  <link href="https://framerusercontent.com/images/ps9lnUCtneok5DwSUeXm6INQAw.png" rel="icon" media="(prefers-color-scheme: dark)">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -66,14 +68,14 @@
         <!-- Search -->
         <input class="input" placeholder="Search conversations..." style="font-size:12px;padding:6px 10px;">
         <!-- Filters -->
-        <div class="flex flex-wrap gap-2 mt-2">
-          <select class="select" data-filter="status" onchange="renderConversationCards()" style="font-size:11px;padding:4px 8px;flex:1 1 0;min-width:0;">
+        <div class="grid grid-cols-2 gap-1.5 mt-2">
+          <select class="select" data-filter="status" onchange="renderConversationCards()" style="font-size:11px;padding:4px 6px;">
             <option value="all">All</option>
             <option value="open" selected>Open</option>
             <option value="snoozed">Snoozed</option>
             <option value="closed">Closed</option>
           </select>
-          <select class="select" data-filter="assigned" onchange="renderConversationCards()" style="font-size:11px;padding:4px 8px;flex:1 1 0;min-width:0;">
+          <select class="select" data-filter="assigned" onchange="renderConversationCards()" style="font-size:11px;padding:4px 6px;">
             <option value="all">All agents</option>
             <option value="me">My conversations</option>
             <option value="unassigned">Unassigned</option>
@@ -85,12 +87,12 @@
               <option value="a5">Tiffany</option>
             </optgroup>
           </select>
-          <select class="select" data-filter="sla" onchange="renderConversationCards()" style="font-size:11px;padding:4px 8px;flex:1 1 0;min-width:0;">
+          <select class="select" data-filter="sla" onchange="renderConversationCards()" style="font-size:11px;padding:4px 6px;">
             <option value="all">All SLA</option>
             <option value="breached">Breached</option>
             <option value="warning">Warning</option>
           </select>
-          <select class="select" data-filter="type" onchange="renderConversationCards()" style="font-size:11px;padding:4px 8px;flex:1 1 0;min-width:0;">
+          <select class="select" data-filter="type" onchange="renderConversationCards()" style="font-size:11px;padding:4px 6px;">
             <option value="all">All types</option>
             <option value="trip">Trip</option>
             <option value="general">General</option>
