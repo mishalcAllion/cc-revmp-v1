@@ -29,7 +29,24 @@
     <div class="px-6 py-4 border-b transition-theme" style="background:var(--bg-surface);border-color:var(--border);">
       <div class="flex items-center justify-between mb-3">
         <h1 class="text-lg font-semibold" style="color:var(--text-primary);">Tasks</h1>
-        <button class="btn-gold" onclick="openTaskModal()">+ Task</button>
+        <div class="flex items-center gap-2">
+          <!-- Board/Table toggle -->
+          <div class="flex items-center rounded-lg border overflow-hidden" style="border-color:var(--border);">
+            <button id="view-board-btn" onclick="switchTaskView('board')"
+              class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors"
+              style="background:var(--gold);color:#000;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="18"/><rect x="14" y="3" width="7" height="18"/></svg>
+              Board
+            </button>
+            <button id="view-table-btn" onclick="switchTaskView('table')"
+              class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors"
+              style="background:transparent;color:var(--text-muted);">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2V9M9 21H5a2 2 0 0 1-2-2V9m0 0h18"/></svg>
+              Table
+            </button>
+          </div>
+          <button class="btn-gold" onclick="openTaskModal()">+ Task</button>
+        </div>
       </div>
 
       <!-- Stats bar -->
@@ -71,22 +88,8 @@
       </div>
     </div>
 
-    <!-- Task table -->
-    <div class="flex-1 overflow-y-auto px-6">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th style="width:40%;">Task</th>
-            <th>Client</th>
-            <th>Status</th>
-            <th>Priority</th>
-            <th>Assigned</th>
-            <th>Due</th>
-          </tr>
-        </thead>
-        <tbody id="task-body"></tbody>
-      </table>
-    </div>
+    <!-- Task container (board or table rendered here) -->
+    <div id="task-container" class="flex-1 overflow-auto"></div>
 
   </div>
 </div>
@@ -106,11 +109,36 @@
 </div>
 
 <script>
+  let currentView = 'board';
+  let currentFilter = null;
+
+  const TASK_STATUSES = [
+    { id: 'Not Started', label: 'Not Started', color: '#94a3b8' },
+    { id: 'In Progress', label: 'In Progress', color: '#2563eb' },
+    { id: 'Blocked',     label: 'Blocked',     color: '#e11d48' },
+    { id: 'Waiting',     label: 'Waiting',     color: '#d97706' },
+    { id: 'Done',        label: 'Done',        color: '#059669' },
+  ];
+
+  const statusStyles = {
+    'In Progress': { bg: 'var(--info-bg)', color: 'var(--info)' },
+    'Blocked':     { bg: 'var(--error-bg)', color: 'var(--error)' },
+    'Not Started': { bg: 'var(--bg-surface-alt)', color: 'var(--text-muted)' },
+    'Waiting':     { bg: 'var(--warning-bg)', color: 'var(--warning)' },
+    'Done':        { bg: 'var(--success-bg)', color: 'var(--success)' },
+  };
+  const priorityStyles = {
+    'Urgent': { bg: 'var(--error-bg)', color: 'var(--error)' },
+    'High':   { bg: 'var(--warning-bg)', color: 'var(--warning)' },
+    'Normal': { bg: 'var(--bg-surface-alt)', color: 'var(--text-secondary)' },
+    'Low':    { bg: 'var(--bg-surface-alt)', color: 'var(--text-muted)' },
+  };
+
   document.addEventListener('DOMContentLoaded', () => {
     MaestroNav.render('sidebar-root');
     document.getElementById('main-wrapper').style.marginLeft = MaestroNav.getSidebarWidth() + 'px';
     renderStats();
-    renderTasks();
+    renderTaskBoard(null);
     initTaskTabs();
 
     const observer = new MutationObserver(() => {
@@ -121,6 +149,15 @@
       if (sb) observer.observe(sb, { attributes: true, attributeFilter: ['class'] });
     }, 100);
   });
+
+  function getFilteredTasks(filter) {
+    let tasks = TASKS.slice();
+    if (filter === 'mine') tasks = tasks.filter(t => t.assignedTo === 'a1');
+    if (filter === 'urgent') tasks = tasks.filter(t => t.priority === 'Urgent');
+    const priorityOrder = { Urgent: 0, High: 1, Normal: 2, Low: 3 };
+    tasks.sort((a, b) => (priorityOrder[a.priority] ?? 9) - (priorityOrder[b.priority] ?? 9));
+    return tasks;
+  }
 
   function renderStats() {
     const s = getTaskStats();
@@ -141,64 +178,122 @@
     `;
   }
 
-  function renderTasks(filter) {
-    let tasks = TASKS;
-    if (filter === 'mine') tasks = tasks.filter(t => t.assignedTo === 'a1');
-    if (filter === 'urgent') tasks = tasks.filter(t => t.priority === 'Urgent');
+  function renderTaskBoard(filter) {
+    const tasks = getFilteredTasks(filter);
+    const container = document.getElementById('task-container');
 
-    const priorityOrder = { Urgent: 0, High: 1, Normal: 2, Low: 3 };
-    tasks.sort((a, b) => (priorityOrder[a.priority] ?? 9) - (priorityOrder[b.priority] ?? 9));
+    container.innerHTML = `
+      <div class="flex gap-4 p-6 h-full" style="min-width:max-content;">
+        ${TASK_STATUSES.map(status => {
+          const colTasks = tasks.filter(t => t.status === status.id);
+          return `
+            <div class="kanban-col flex flex-col gap-3">
+              <!-- Column header -->
+              <div class="flex items-center gap-2 mb-1">
+                <div class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:${status.color};"></div>
+                <span class="text-xs font-semibold uppercase tracking-wide" style="color:var(--text-muted);">${status.label}</span>
+                <span class="ml-auto text-xs font-semibold px-1.5 py-0.5 rounded-full" style="background:var(--bg-surface-alt);color:var(--text-muted);">${colTasks.length}</span>
+              </div>
+              <!-- Cards -->
+              ${colTasks.map(t => renderTaskCard(t)).join('')}
+              ${colTasks.length === 0 ? `<div class="text-xs text-center py-6" style="color:var(--text-muted);border:1px dashed var(--border);border-radius:var(--radius);">No tasks</div>` : ''}
+            </div>`;
+        }).join('')}
+      </div>`;
+  }
 
-    const statusStyles = {
-      'In Progress': { bg: 'var(--info-bg)', color: 'var(--info)' },
-      'Blocked':     { bg: 'var(--error-bg)', color: 'var(--error)' },
-      'Not Started': { bg: 'var(--bg-surface-alt)', color: 'var(--text-muted)' },
-      'Waiting':     { bg: 'var(--warning-bg)', color: 'var(--warning)' },
-      'Done':        { bg: 'var(--success-bg)', color: 'var(--success)' },
-    };
-    const priorityStyles = {
-      'Urgent': { bg: 'var(--error-bg)', color: 'var(--error)' },
-      'High':   { bg: 'var(--warning-bg)', color: 'var(--warning)' },
-      'Normal': { bg: 'var(--bg-surface-alt)', color: 'var(--text-secondary)' },
-      'Low':    { bg: 'var(--bg-surface-alt)', color: 'var(--text-muted)' },
-    };
+  function renderTaskCard(t) {
+    const household = getHousehold(t.householdId);
+    const agent = getAgent(t.assignedTo);
+    const isOverdue = t.dueIn && t.dueIn.includes('overdue');
 
-    document.getElementById('task-body').innerHTML = tasks.map(t => {
-      const household = getHousehold(t.householdId);
-      const primaryClient = getClient(household.primaryClientId);
-      const agent = getAgent(t.assignedTo);
-      const ss = statusStyles[t.status] || statusStyles['Not Started'];
-      const ps = priorityStyles[t.priority] || priorityStyles['Normal'];
-      const isOverdue = t.dueIn && t.dueIn.includes('overdue');
+    let borderLeft = 'border-left: 3px solid transparent';
+    if (t.priority === 'Urgent') borderLeft = 'border-left: 3px solid var(--error)';
+    else if (t.priority === 'High') borderLeft = 'border-left: 3px solid var(--warning)';
 
-      // Priority left border
-      let borderStyle = 'border-left: 3px solid transparent';
-      if (t.priority === 'Urgent') borderStyle = 'border-left: 3px solid var(--error)';
-      else if (t.priority === 'High') borderStyle = 'border-left: 3px solid var(--warning)';
+    return `
+      <div class="kanban-card" style="${borderLeft}" onclick="showTaskDetail('${t.id}')">
+        <div class="text-sm font-medium mb-1.5 leading-snug" style="color:var(--text-primary);">${t.title}</div>
+        <div class="text-xs mb-2.5" style="color:var(--text-muted);">${household?.name || ''} · <span class="${isOverdue ? '' : ''}" style="color:${isOverdue ? 'var(--error)' : 'var(--text-muted)'};">${t.dueIn}</span></div>
+        <div class="flex items-center justify-between">
+          <span class="avatar avatar-sm" style="background:${agent?.color || '#94a3b8'};color:#fff;font-size:9px;" title="${agent?.name || ''}">${agent?.initials || '?'}</span>
+          ${t.priority === 'Urgent' || t.priority === 'High' ? `<span class="badge" style="background:${priorityStyles[t.priority].bg};color:${priorityStyles[t.priority].color};font-size:10px;">${t.priority}</span>` : ''}
+        </div>
+      </div>`;
+  }
 
-      return `
-        <tr style="cursor:pointer;${borderStyle}" onclick="showTaskDetail('${t.id}')">
-          <td>
-            <div class="font-medium" style="color:var(--text-primary);">${t.title}</div>
-            <div class="text-xs mt-0.5" style="color:var(--text-muted);">${t.venue || ''}</div>
-          </td>
-          <td>
-            <div class="flex items-center gap-2">
-              <span class="avatar avatar-sm avatar-silhouette">${clientAvatarSVG()}</span>
-              <span class="text-xs">${household?.name || ''}</span>
-            </div>
-          </td>
-          <td><span class="badge" style="background:${ss.bg};color:${ss.color};">${t.status}</span></td>
-          <td><span class="badge" style="background:${ps.bg};color:${ps.color};">${t.priority}</span></td>
-          <td>
-            <div class="flex items-center gap-1.5">
-              <span class="avatar avatar-sm" style="background:${agent?.color || '#94a3b8'};color:#fff;font-size:9px;">${agent?.initials || '?'}</span>
-              <span class="text-xs">${agent?.name?.split(' ')[0] || ''}</span>
-            </div>
-          </td>
-          <td><span class="text-xs font-medium ${isOverdue ? 'sla-breached' : ''}" style="color:${isOverdue ? 'var(--error)' : 'var(--text-secondary)'};">${t.dueIn}</span></td>
-        </tr>`;
-    }).join('');
+  function renderTaskTable(filter) {
+    const tasks = getFilteredTasks(filter);
+    const container = document.getElementById('task-container');
+
+    container.innerHTML = `
+      <div class="px-6 overflow-y-auto h-full">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width:40%;">Task</th>
+              <th>Client</th>
+              <th>Status</th>
+              <th>Priority</th>
+              <th>Assigned</th>
+              <th>Due</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${tasks.map(t => {
+              const household = getHousehold(t.householdId);
+              const agent = getAgent(t.assignedTo);
+              const ss = statusStyles[t.status] || statusStyles['Not Started'];
+              const ps = priorityStyles[t.priority] || priorityStyles['Normal'];
+              const isOverdue = t.dueIn && t.dueIn.includes('overdue');
+              let borderStyle = 'border-left: 3px solid transparent';
+              if (t.priority === 'Urgent') borderStyle = 'border-left: 3px solid var(--error)';
+              else if (t.priority === 'High') borderStyle = 'border-left: 3px solid var(--warning)';
+              return `
+                <tr style="cursor:pointer;${borderStyle}" onclick="showTaskDetail('${t.id}')">
+                  <td>
+                    <div class="font-medium" style="color:var(--text-primary);">${t.title}</div>
+                    <div class="text-xs mt-0.5" style="color:var(--text-muted);">${t.venue || ''}</div>
+                  </td>
+                  <td>
+                    <div class="flex items-center gap-2">
+                      <span class="avatar avatar-sm avatar-silhouette">${clientAvatarSVG()}</span>
+                      <span class="text-xs">${household?.name || ''}</span>
+                    </div>
+                  </td>
+                  <td><span class="badge" style="background:${ss.bg};color:${ss.color};">${t.status}</span></td>
+                  <td><span class="badge" style="background:${ps.bg};color:${ps.color};">${t.priority}</span></td>
+                  <td>
+                    <div class="flex items-center gap-1.5">
+                      <span class="avatar avatar-sm" style="background:${agent?.color || '#94a3b8'};color:#fff;font-size:9px;">${agent?.initials || '?'}</span>
+                      <span class="text-xs">${agent?.name?.split(' ')[0] || ''}</span>
+                    </div>
+                  </td>
+                  <td><span class="text-xs font-medium" style="color:${isOverdue ? 'var(--error)' : 'var(--text-secondary)'};">${t.dueIn}</span></td>
+                </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>`;
+  }
+
+  function switchTaskView(view) {
+    currentView = view;
+    const boardBtn = document.getElementById('view-board-btn');
+    const tableBtn = document.getElementById('view-table-btn');
+    if (view === 'board') {
+      boardBtn.style.background = 'var(--gold)';
+      boardBtn.style.color = '#000';
+      tableBtn.style.background = 'transparent';
+      tableBtn.style.color = 'var(--text-muted)';
+      renderTaskBoard(currentFilter);
+    } else {
+      tableBtn.style.background = 'var(--gold)';
+      tableBtn.style.color = '#000';
+      boardBtn.style.background = 'transparent';
+      boardBtn.style.color = 'var(--text-muted)';
+      renderTaskTable(currentFilter);
+    }
   }
 
   function initTaskTabs() {
@@ -212,7 +307,9 @@
         tab.classList.add('active');
         tab.style.borderBottomColor = 'var(--gold)';
         tab.style.color = 'var(--text-primary)';
-        renderTasks(tab.dataset.filter === 'all' ? null : tab.dataset.filter);
+        currentFilter = tab.dataset.filter === 'all' ? null : tab.dataset.filter;
+        if (currentView === 'board') renderTaskBoard(currentFilter);
+        else renderTaskTable(currentFilter);
       });
     });
   }
@@ -225,19 +322,6 @@
     const agent = getAgent(t.assignedTo);
     const trip = getTrip(t.tripId);
 
-    const statusStyles = {
-      'In Progress': { bg: 'var(--info-bg)', color: 'var(--info)' },
-      'Blocked':     { bg: 'var(--error-bg)', color: 'var(--error)' },
-      'Not Started': { bg: 'var(--bg-surface-alt)', color: 'var(--text-muted)' },
-      'Waiting':     { bg: 'var(--warning-bg)', color: 'var(--warning)' },
-      'Done':        { bg: 'var(--success-bg)', color: 'var(--success)' },
-    };
-    const priorityStyles = {
-      'Urgent': { bg: 'var(--error-bg)', color: 'var(--error)' },
-      'High':   { bg: 'var(--warning-bg)', color: 'var(--warning)' },
-      'Normal': { bg: 'var(--bg-surface-alt)', color: 'var(--text-secondary)' },
-      'Low':    { bg: 'var(--bg-surface-alt)', color: 'var(--text-muted)' },
-    };
     const ss = statusStyles[t.status] || statusStyles['Not Started'];
     const ps = priorityStyles[t.priority] || priorityStyles['Normal'];
 
@@ -329,7 +413,6 @@
     `;
     openSlideOver('task-detail');
 
-    // Render AI Briefing if available
     const briefing = typeof AI_BRIEFINGS !== 'undefined' && AI_BRIEFINGS[taskId];
     if (briefing) {
       const briefingContainer = document.getElementById('task-ai-briefing-' + taskId);
