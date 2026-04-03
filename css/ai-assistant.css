@@ -49,10 +49,8 @@
 }
 
 /* FAB clearance — prevent content scrolling under the AI bar */
-.flex-1.overflow-y-auto,
-.flex-1.overflow-auto,
-.h-screen.overflow-y-auto,
-#task-container {
+.overflow-y-auto,
+.overflow-auto {
   padding-bottom: 72px;
 }
 
