@@ -1,0 +1,806 @@
+/* ============================================================
+   Maestro Command Centre — AI Assistant Styles
+   Universal AI Bar, suggestion chips, briefing cards,
+   Deep Agent panel, result cards
+   ============================================================ */
+
+/* ---- AI Theme Variables ---- */
+:root {
+  --ai-bg:          #fdf8e8;
+  --ai-bg-subtle:   #fefcf4;
+  --ai-border:      rgba(212, 175, 55, 0.25);
+  --ai-border-solid:#e8d48a;
+  --ai-text:        #92700c;
+  --ai-glow:        rgba(212, 175, 55, 0.08);
+}
+[data-theme="dark"] {
+  --ai-bg:          rgba(212, 175, 55, 0.08);
+  --ai-bg-subtle:   rgba(212, 175, 55, 0.04);
+  --ai-border:      rgba(212, 175, 55, 0.2);
+  --ai-border-solid:#5a4a1a;
+  --ai-text:        #d4af37;
+  --ai-glow:        rgba(212, 175, 55, 0.05);
+}
+
+/* ---- Sparkle icon (inline SVG via CSS) ---- */
+.ai-sparkle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+.ai-sparkle svg {
+  width: 100%;
+  height: 100%;
+  fill: var(--gold);
+}
+
+/* ============================================================
+   1. Universal AI Bar
+   ============================================================ */
+.ai-bar {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(calc(-50% + 120px)); /* offset for sidebar */
+  z-index: 40;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.sidebar.collapsed ~ .ai-bar,
+.sidebar.collapsed ~ * .ai-bar {
+  transform: translateX(calc(-50% + 28px));
+}
+
+/* Collapsed pill */
+.ai-bar-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 13px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  max-width: 300px;
+}
+.ai-bar-pill:hover {
+  border-color: var(--gold);
+  box-shadow: var(--shadow-lg), 0 0 0 3px var(--ai-glow);
+  color: var(--text-secondary);
+}
+.ai-bar-pill .ai-sparkle { margin-right: -2px; }
+.ai-bar-pill kbd {
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--bg-surface-alt);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-family: inherit;
+  margin-left: 4px;
+}
+
+/* Expanded input */
+.ai-bar-expanded {
+  display: none;
+  width: min(640px, calc(100vw - 320px));
+  background: var(--bg-surface);
+  border: 1px solid var(--gold);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg), 0 0 0 3px var(--ai-glow);
+  overflow: hidden;
+}
+.ai-bar.open .ai-bar-pill { display: none; }
+.ai-bar.open .ai-bar-expanded { display: block; }
+
+.ai-bar-input-row {
+  display: flex;
+  align-items: center;
+  padding: 4px 4px 4px 16px;
+  gap: 8px;
+}
+.ai-bar-input-row .ai-sparkle { flex-shrink: 0; }
+.ai-bar-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  color: var(--text-primary);
+  padding: 10px 0;
+  outline: none;
+}
+.ai-bar-input::placeholder { color: var(--text-muted); }
+.ai-bar-send {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--gold);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+.ai-bar-send:hover { background: var(--gold-hover); }
+.ai-bar-send svg { width: 16px; height: 16px; fill: #000; }
+
+/* Suggestions dropdown */
+.ai-bar-suggestions {
+  border-top: 1px solid var(--border);
+  padding: 8px;
+  display: none;
+}
+.ai-bar.open .ai-bar-suggestions { display: block; }
+.ai-bar-suggestion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.1s;
+}
+.ai-bar-suggestion:hover {
+  background: var(--ai-bg);
+  color: var(--text-primary);
+}
+.ai-bar-suggestion .ai-sparkle { opacity: 0.5; }
+.ai-bar-suggestion:hover .ai-sparkle { opacity: 1; }
+
+/* Backdrop */
+.ai-bar-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 39;
+  display: none;
+}
+.ai-bar-backdrop.open { display: block; }
+
+
+/* ============================================================
+   2. Suggestion Chips
+   ============================================================ */
+.ai-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.ai-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  background: var(--ai-bg);
+  border: 1px solid var(--ai-border);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ai-text);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.ai-chip:hover {
+  background: var(--gold);
+  color: #000;
+  border-color: var(--gold);
+}
+.ai-chip .ai-sparkle {
+  width: 10px;
+  height: 10px;
+}
+.ai-chip:hover .ai-sparkle svg { fill: #000; }
+
+/* Loading state */
+.ai-chip.loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+.ai-chip.loading::after {
+  content: '';
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--ai-border-solid);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: ai-spin 0.6s linear infinite;
+  margin-left: 4px;
+}
+@keyframes ai-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Done state */
+.ai-chip.done {
+  background: var(--success-bg);
+  border-color: var(--success);
+  color: var(--success);
+}
+
+
+/* ============================================================
+   3. AI Briefing Card
+   ============================================================ */
+.ai-briefing {
+  background: var(--ai-bg-subtle);
+  border: 1px solid var(--ai-border);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+.ai-briefing-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.ai-briefing-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.ai-briefing-dismiss {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 2px;
+  line-height: 1;
+}
+.ai-briefing-dismiss:hover { color: var(--text-primary); }
+.ai-briefing-body {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+.ai-briefing-body.collapsed {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.ai-briefing-toggle {
+  background: none;
+  border: none;
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 0 0 0;
+}
+.ai-briefing-toggle:hover { text-decoration: underline; }
+.ai-briefing .ai-chips { margin-top: 10px; }
+
+
+/* ============================================================
+   4. Deep Agent Panel
+   ============================================================ */
+.ai-agent-panel {
+  position: fixed;
+  top: 0;
+  right: -520px;
+  width: 480px;
+  height: 100vh;
+  background: var(--bg-surface);
+  border-left: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  z-index: 50;
+  transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+}
+.ai-agent-panel.open { right: 0; }
+
+/* Header */
+.ai-agent-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.ai-agent-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.ai-agent-context {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-left: 4px;
+}
+.ai-agent-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 4px;
+}
+.ai-agent-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s;
+}
+.ai-agent-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* Thread area */
+.ai-agent-thread {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Agent messages */
+.ai-agent-msg {
+  display: flex;
+  gap: 10px;
+}
+.ai-agent-msg-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.ai-agent-msg-avatar svg {
+  width: 14px;
+  height: 14px;
+  fill: #000;
+}
+.ai-agent-msg-body {
+  flex: 1;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+/* User messages */
+.ai-agent-user-msg {
+  display: flex;
+  justify-content: flex-end;
+}
+.ai-agent-user-bubble {
+  background: var(--gold-bg);
+  border: 1px solid var(--ai-border);
+  border-radius: 12px 12px 4px 12px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--text-primary);
+  max-width: 80%;
+}
+
+/* Chip selectors (clarifying questions) */
+.ai-agent-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.ai-agent-chip {
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.ai-agent-chip:hover {
+  border-color: var(--gold);
+  color: var(--text-primary);
+  background: var(--ai-bg);
+}
+.ai-agent-chip.selected {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #000;
+  font-weight: 600;
+}
+
+/* AI thinking indicator */
+.ai-agent-thinking {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+}
+.ai-thinking-dots {
+  display: flex;
+  gap: 4px;
+}
+.ai-thinking-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  animation: ai-dot-bounce 1.4s ease-in-out infinite;
+}
+.ai-thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+.ai-thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes ai-dot-bounce {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1); }
+}
+.ai-thinking-text {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Result cards */
+.ai-result-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  transition: border-color 0.15s;
+}
+.ai-result-card:hover { border-color: var(--border-strong); }
+.ai-result-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 6px;
+}
+.ai-result-card-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.ai-result-card-price {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gold);
+  white-space: nowrap;
+}
+.ai-result-card-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.ai-result-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.ai-result-card-rating {
+  color: var(--gold);
+  font-weight: 600;
+}
+.ai-result-card-status {
+  color: var(--success);
+  font-weight: 500;
+}
+.ai-result-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+.ai-result-card-actions button {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gold);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 0;
+}
+.ai-result-card-actions button:hover { text-decoration: underline; }
+
+/* Agent input */
+.ai-agent-input-area {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ai-agent-input {
+  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 8px 14px;
+  font-size: 13px;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.ai-agent-input:focus { border-color: var(--gold); }
+.ai-agent-input::placeholder { color: var(--text-muted); }
+
+/* Minimized tab */
+.ai-agent-minimized {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  background: var(--gold);
+  color: #000;
+  border-radius: 8px 0 0 8px;
+  padding: 8px 6px 8px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  z-index: 45;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  display: none;
+  box-shadow: var(--shadow-md);
+  transition: all 0.15s;
+}
+.ai-agent-minimized:hover { padding-right: 10px; }
+.ai-agent-minimized.visible { display: flex; align-items: center; gap: 6px; }
+
+
+/* ============================================================
+   5. AI Section Header (for context panels)
+   ============================================================ */
+.ai-section-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+/* ============================================================
+   6. Animations
+   ============================================================ */
+@keyframes ai-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ai-fade-in {
+  animation: ai-fade-in 0.3s ease-out;
+}
+
+@keyframes ai-shimmer {
+  0%   { background-position: -200px 0; }
+  100% { background-position: calc(200px + 100%) 0; }
+}
+.ai-shimmer {
+  background: linear-gradient(90deg, var(--bg-surface-alt) 0px, var(--ai-bg) 40px, var(--bg-surface-alt) 80px);
+  background-size: 200px 100%;
+  animation: ai-shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--radius);
+  height: 14px;
+}
+
+
+/* ============================================================
+   7. Workflow Task Tracker (Deep Agent sidebar)
+   ============================================================ */
+
+/* The agent panel body splits into 2 columns when task tracker is active */
+.ai-agent-body-split {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+.ai-agent-body-split .ai-agent-thread {
+  flex: 1;
+  min-width: 0;
+}
+.ai-task-tracker {
+  width: 260px;
+  min-width: 260px;
+  border-left: 1px solid var(--border);
+  background: var(--bg-app);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Progress header */
+.ai-task-tracker-header {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.ai-task-tracker-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.ai-task-tracker-title span {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+.ai-task-tracker-title small {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+.ai-task-progress-bar {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--bg-surface-alt);
+  overflow: hidden;
+}
+.ai-task-progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--gold);
+  transition: width 0.5s ease;
+}
+
+/* Task sections */
+.ai-task-section {
+  padding: 10px 14px;
+}
+.ai-task-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+.ai-task-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+/* Individual tasks */
+.ai-task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 0;
+}
+.ai-task-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.ai-task-icon.completed {
+  background: var(--success);
+}
+.ai-task-icon.completed svg { stroke: #fff; }
+.ai-task-icon.running {
+  border: 2px solid var(--gold);
+  background: transparent;
+  animation: ai-spin 1.5s linear infinite;
+}
+.ai-task-icon.queued {
+  border: 1.5px solid var(--border-strong);
+  background: transparent;
+}
+.ai-task-text {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-secondary);
+  flex: 1;
+}
+.ai-task-text.completed { color: var(--text-muted); }
+.ai-task-status {
+  font-size: 10px;
+  font-weight: 500;
+  margin-top: 2px;
+}
+.ai-task-status.completed { color: var(--success); }
+.ai-task-status.running { color: var(--gold); }
+.ai-task-status.queued { color: var(--text-muted); }
+
+/* Human tasks */
+.ai-human-task {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-surface);
+  margin-bottom: 8px;
+}
+.ai-human-task-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.4;
+  margin-bottom: 6px;
+}
+.ai-human-task-assign {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 6px;
+}
+.ai-human-task-assign .badge {
+  font-size: 9px;
+  padding: 1px 6px;
+}
+.ai-human-task-notes {
+  margin-top: 6px;
+}
+.ai-human-task-notes-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  padding: 4px 0;
+}
+.ai-human-task-notes-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+.ai-human-task-notes-body {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  padding: 6px 0;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+}
+.ai-human-task-notes-input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  font-size: 11px;
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  outline: none;
+  resize: none;
+  margin-top: 4px;
+}
+.ai-human-task-notes-input::placeholder { color: var(--text-muted); }
+.ai-human-task-notes-input:focus { border-color: var(--gold); }
+
+/* Widen agent panel when task tracker is visible */
+.ai-agent-panel.with-tracker {
+  width: 740px;
+}

@@ -9,10 +9,12 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/theme.css">
+  <link rel="stylesheet" href="../css/ai-assistant.css">
   <script src="../js/data.js"></script>
   <script src="../js/theme.js"></script>
   <script src="../js/nav.js"></script>
   <script src="../js/interactions.js"></script>
+  <script src="../js/ai-assistant.js"></script>
   <style>
     /* ---- Activity timeline ---- */
     .activity-item {
@@ -243,6 +245,9 @@
              ============================================================ -->
         <div id="manager-view">
 
+          <!-- AI Daily Briefing -->
+          <div id="dashboard-ai-briefing"></div>
+
           <!-- Alert Triage Banner -->
           <div id="triage-banner" class="triage-banner" style="display:none;">
             <svg width="16" height="16" viewBox="0 0 20 20" fill="var(--error)" flex-shrink="0">
@@ -406,6 +411,9 @@
              MEMBER VIEW
              ============================================================ -->
         <div id="member-view" style="display:none;">
+
+          <!-- AI Daily Briefing (member view) -->
+          <div id="member-ai-briefing"></div>
 
           <!-- Personal KPI cards (4) -->
           <div class="grid grid-cols-4 gap-4 mb-5" id="member-kpis"></div>
@@ -926,6 +934,33 @@
     MaestroNav.render('sidebar-root');
     loadManagerView();
     initViewSwitcher();
+
+    // AI Daily Briefing
+    const briefingText = generateDashboardBriefing();
+    const briefingContainer = document.getElementById('dashboard-ai-briefing') || document.getElementById('member-ai-briefing');
+    if (briefingContainer) {
+      MaestroAI.renderBriefingCard(briefingContainer, {
+        entityId: 'dashboard',
+        text: briefingText,
+        chips: [
+          { label: 'End-of-day summary', action: 'eod-summary' },
+          { label: 'What should I prioritize?', action: 'prioritize' },
+          { label: 'Show SLA risks', action: 'sla-risks' },
+        ],
+      });
+    }
+    // Also render into member view
+    const memberBriefing = document.getElementById('member-ai-briefing');
+    if (memberBriefing) {
+      MaestroAI.renderBriefingCard(memberBriefing, {
+        entityId: 'dashboard-member',
+        text: briefingText,
+        chips: [
+          { label: 'What should I work on first?', action: 'prioritize-tasks' },
+          { label: 'Show overdue tasks', action: 'overdue-tasks' },
+        ],
+      });
+    }
   </script>
 </body>
 </html>

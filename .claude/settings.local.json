@@ -2,7 +2,10 @@
   "permissions": {
     "allow": [
       "Bash(python3 -c:*)",
-      "mcp__Claude_Preview__preview_start"
+      "mcp__Claude_Preview__preview_start",
+      "WebFetch(domain:askmaestro.com)",
+      "Bash(curl -s \"https://askmaestro.com/\")",
+      "Bash(ls screens/*.html)"
     ]
   }
 }
