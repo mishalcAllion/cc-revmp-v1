@@ -11,10 +11,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/theme.css">
+  <link rel="stylesheet" href="../css/ai-assistant.css">
   <script src="../js/data.js"></script>
   <script src="../js/theme.js"></script>
   <script src="../js/nav.js"></script>
   <script src="../js/interactions.js"></script>
+  <script src="../js/ai-assistant.js"></script>
 </head>
 <body class="antialiased">
 
@@ -122,7 +124,7 @@
                 <td class="py-2.5 px-3 font-medium">${trip.name}</td>
                 <td class="py-2.5 px-3">
                   <div class="flex items-center gap-2">
-                    <span class="avatar avatar-sm" style="background:${primaryClient.avatarColor};color:#fff;font-size:9px;">${primaryClient.initials}</span>
+                    <span class="avatar avatar-sm avatar-silhouette">${clientAvatarSVG()}</span>
                     ${household.name}
                   </div>
                 </td>
@@ -186,7 +188,7 @@
                 <div class="kanban-card" style="padding:10px;" data-tooltip="${trip.budget ? 'Budget: ' + trip.budget : ''}" onclick="window.location.href='trip-detail?id=${trip.id}'">
                   <div class="flex items-center justify-between mb-1.5">
                     <div class="flex items-center gap-1.5">
-                      <span class="avatar avatar-sm" style="background:${primaryClient.avatarColor};color:#fff;font-size:9px;">${primaryClient.initials}</span>
+                      <span class="avatar avatar-sm avatar-silhouette">${clientAvatarSVG()}</span>
                       <span class="text-xs font-semibold" style="color:var(--text-primary);">${household.name}</span>
                     </div>
                     ${stats.needsAttention > 0 ? `<span class="badge" style="background:var(--warning-bg);color:var(--warning);font-size:9px;">${stats.needsAttention} attention</span>` : ''}

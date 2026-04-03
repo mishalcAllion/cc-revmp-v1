@@ -11,10 +11,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/theme.css">
+  <link rel="stylesheet" href="../css/ai-assistant.css">
   <script src="../js/data.js"></script>
   <script src="../js/theme.js"></script>
   <script src="../js/nav.js"></script>
   <script src="../js/interactions.js"></script>
+  <script src="../js/ai-assistant.js"></script>
   <style>
     @keyframes pulse-sla {
       0%, 100% { opacity: 1; }
@@ -111,7 +113,7 @@
       <!-- Conversation header -->
       <div class="flex items-center px-5 h-14 border-b transition-theme" style="background:var(--bg-surface);border-color:var(--border);">
         <div class="flex items-center gap-3 flex-1">
-          <span id="conv-avatar" class="avatar" style="background:#6366f1;color:#fff;">SV</span>
+          <span id="conv-avatar" class="avatar avatar-silhouette"></span>
           <div>
             <div class="flex items-center gap-2">
               <span class="font-semibold text-sm" style="color:var(--text-primary);" id="conv-client-name">Samuel & Sybil Vimes</span>
@@ -275,16 +277,13 @@
         </div>
       </div>
 
-      <!-- AI Copilot -->
+      <!-- AI Assist -->
       <div class="p-4 mt-auto">
-        <div class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:var(--text-muted);">AI COPILOT</div>
-        <div class="relative">
-          <input class="input" placeholder="/search-flights, /draft-reply, or ask anything..." style="font-size:12px;padding:8px 12px;padding-right:36px;">
-          <button class="absolute right-2 top-1/2 -translate-y-1/2" style="color:var(--gold);" onclick="showToast('AI copilot processing your request...','info')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
-          </button>
+        <div class="ai-section-header" style="padding:0 0 6px 0;">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="var(--gold)"><path d="M12 2L9.5 9.5 2 12l7.5 2.5L12 22l2.5-7.5L22 12l-7.5-2.5z"/></svg>
+          <span>AI Assist</span>
         </div>
-        <div class="text-xs mt-1.5" style="color:var(--text-muted);">Try: /search-flights SFO-ATH May 8-12</div>
+        <div id="inbox-ai-chips" class="ai-chips"></div>
       </div>
     </div>
 
@@ -447,7 +446,7 @@
 
           <!-- Header: Avatar, Name, Time, Channel -->
           <div class="flex items-start gap-2.5 mb-2">
-            <span class="avatar flex-shrink-0" style="background:${primaryClient.avatarColor};color:#fff;font-size:11px;width:36px;height:36px;">${primaryClient.initials}</span>
+            <span class="avatar avatar-silhouette flex-shrink-0" style="width:36px;height:36px;">${clientAvatarSVG()}</span>
             <div class="flex-1 min-w-0">
               <div class="flex items-center justify-between gap-2 mb-0.5">
                 <span class="text-sm font-semibold truncate" style="color:var(--text-primary);">${household.name}</span>
@@ -832,8 +831,7 @@
       const isGeneral = conv.threadType === 'general';
 
       // Update header
-      document.getElementById('conv-avatar').textContent = primaryClient.initials;
-      document.getElementById('conv-avatar').style.background = primaryClient.avatarColor;
+      document.getElementById('conv-avatar').innerHTML = clientAvatarSVG();
       document.getElementById('conv-client-name').textContent = household.name;
       document.getElementById('conv-trip-name').textContent = trip ? trip.destinations : (isGeneral ? 'General Inquiry' : 'No trip');
 

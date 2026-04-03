@@ -11,10 +11,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/theme.css">
+  <link rel="stylesheet" href="../css/ai-assistant.css">
   <script src="../js/data.js"></script>
   <script src="../js/theme.js"></script>
   <script src="../js/nav.js"></script>
   <script src="../js/interactions.js"></script>
+  <script src="../js/ai-assistant.js"></script>
 </head>
 <body class="antialiased">
 
@@ -34,7 +36,7 @@
         </a>
       </div>
       <div class="flex items-start gap-4">
-        <span class="avatar avatar-lg" id="client-avatar" style="background:#6366f1;color:#fff;">SV</span>
+        <span class="avatar avatar-lg avatar-silhouette" id="client-avatar"></span>
         <div class="flex-1">
           <div class="flex items-center gap-3 mb-2">
             <h1 class="text-2xl font-semibold" style="color:var(--text-primary);" id="client-name">Samuel Vimes</h1>
@@ -107,6 +109,9 @@
             <div class="text-xs" style="color:var(--text-secondary);">No breaches</div>
           </div>
         </div>
+
+        <!-- AI Briefing -->
+        <div id="client-ai-briefing"></div>
 
         <!-- Recent activity timeline -->
         <div class="card p-5">
@@ -354,6 +359,28 @@
     updateMainMargin();
     loadClientData();
     document.getElementById('cmd-palette-root').innerHTML = renderCommandPalette();
+
+    // AI Briefing for client
+    setTimeout(() => {
+      if (currentClient) {
+        const container = document.getElementById('client-ai-briefing');
+        const household = getHousehold(currentClient.householdId);
+        const trips = getTripsByHousehold(currentClient.householdId);
+        const tasks = getTasksByHousehold(currentClient.householdId);
+        const openTasks = tasks.filter(t => t.status !== 'Done');
+        const pointsStr = currentClient.points ? Object.entries(currentClient.points).map(([k,v]) => `${k.toUpperCase()}: ${(v/1000).toFixed(0)}K`).join(', ') : 'None on file';
+
+        MaestroAI.renderBriefingCard(container, {
+          entityId: 'client-' + currentClient.id,
+          text: `${currentClient.name} (${household?.name} household). ${currentClient.tier} tier, ${currentClient.status}. Points: ${pointsStr}. ${trips.length} trip(s), ${openTasks.length} open task(s). Preferences: ${currentClient.preferences?.dining || 'Not specified'}, pace: ${currentClient.preferences?.pace || 'Not specified'}.`,
+          chips: [
+            { label: 'Find loyalty redemptions', action: 'loyalty-redeem' },
+            { label: 'Summarize recent activity', action: 'client-summary' },
+            { label: 'Draft outreach message', action: 'draft-outreach' },
+          ],
+        });
+      }
+    }, 200);
   });
 
   // Observe sidebar changes
@@ -380,8 +407,7 @@
     }
 
     // Populate header
-    document.getElementById('client-avatar').textContent = currentClient.initials;
-    document.getElementById('client-avatar').style.background = currentClient.avatarColor;
+    document.getElementById('client-avatar').innerHTML = clientAvatarSVG();
     document.getElementById('client-name').textContent = currentClient.name;
     document.getElementById('client-phone').textContent = currentClient.phone;
     document.getElementById('client-email').textContent = currentClient.email;
@@ -461,7 +487,7 @@
         <div class="flex items-center gap-2 flex-wrap">
           ${members.map(m => `
             <a href="client-detail?id=${m.id}" class="flex items-center gap-1.5 px-2 py-1 rounded-lg transition-colors hover:bg-gray-100" style="background:var(--bg-app);border:1px solid var(--border);" onclick="event.stopPropagation();">
-              <span class="avatar avatar-xs" style="background:${m.avatarColor};color:#fff;">${m.initials}</span>
+              <span class="avatar avatar-xs avatar-silhouette">${clientAvatarSVG()}</span>
               <span class="text-xs font-medium" style="color:var(--text-primary);">${m.name}</span>
             </a>
           `).join('')}

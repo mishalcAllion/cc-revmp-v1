@@ -469,6 +469,15 @@ body {
 }
 .avatar-sm { width: 24px; height: 24px; font-size: 10px; }
 .avatar-lg { width: 40px; height: 40px; font-size: 14px; }
+.avatar-silhouette {
+  background: var(--bg-surface-alt);
+  color: var(--text-muted);
+}
+.avatar-silhouette svg {
+  width: 60%;
+  height: 60%;
+  display: block;
+}
 
 /* ---- Tooltip ---- */
 [data-tooltip] { position: relative; }

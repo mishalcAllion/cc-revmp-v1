@@ -11,10 +11,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/theme.css">
+  <link rel="stylesheet" href="../css/ai-assistant.css">
   <script src="../js/data.js"></script>
   <script src="../js/theme.js"></script>
   <script src="../js/nav.js"></script>
   <script src="../js/interactions.js"></script>
+  <script src="../js/ai-assistant.js"></script>
 </head>
 <body class="antialiased">
 
@@ -225,7 +227,7 @@
         <tr onclick="window.location.href='client-detail?id=${client.id}'" style="cursor:pointer;">
           <td>
             <div class="flex items-center gap-2.5">
-              <span class="avatar avatar-sm" style="background:${client.avatarColor};color:#fff;">${client.initials}</span>
+              <span class="avatar avatar-sm avatar-silhouette">${clientAvatarSVG()}</span>
               <span class="font-medium">${client.name}</span>
             </div>
           </td>
@@ -307,7 +309,7 @@
           </td>
           <td>
             <div class="flex items-center gap-1">
-              ${members.map(m => `<span class="avatar avatar-xs" style="background:${m.avatarColor};color:#fff;" title="${m.name}">${m.initials}</span>`).join('')}
+              ${members.map(m => `<span class="avatar avatar-xs avatar-silhouette" title="${m.name}">${clientAvatarSVG()}</span>`).join('')}
               ${household.dependents.length > 0 ? `<span class="text-xs" style="color:var(--text-muted);margin-left:4px;">+${household.dependents.length} ${household.dependents.length === 1 ? 'child' : 'children'}</span>` : ''}
             </div>
           </td>
@@ -341,7 +343,7 @@
               <td colspan="5" style="padding-left:48px;">
                 <div class="flex items-center gap-4">
                   <div class="flex items-center gap-2.5" style="min-width:200px;">
-                    <span class="avatar avatar-sm" style="background:${client.avatarColor};color:#fff;">${client.initials}</span>
+                    <span class="avatar avatar-sm avatar-silhouette">${clientAvatarSVG()}</span>
                     <span class="font-medium">${client.name}</span>
                   </div>
                   <span style="color:var(--text-secondary);min-width:140px;">${client.phone}</span>

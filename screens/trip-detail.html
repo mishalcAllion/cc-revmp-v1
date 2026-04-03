@@ -11,10 +11,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/theme.css">
+  <link rel="stylesheet" href="../css/ai-assistant.css">
   <script src="../js/data.js"></script>
   <script src="../js/theme.js"></script>
   <script src="../js/nav.js"></script>
   <script src="../js/interactions.js"></script>
+  <script src="../js/ai-assistant.js"></script>
 </head>
 <body class="antialiased">
 
@@ -69,7 +71,7 @@
             <div class="text-xs font-medium mb-0.5" style="color:var(--text-muted);">Client</div>
             <a id="trip-client-link" href="#" class="flex items-center gap-2 hover:underline">
               <span class="text-sm font-semibold" id="trip-client-name" style="color:var(--text-primary);">-</span>
-              <span class="avatar avatar-sm" id="trip-client-avatar" style="background:#6366f1;color:#fff;">BF</span>
+              <span class="avatar avatar-sm avatar-silhouette" id="trip-client-avatar"></span>
             </a>
           </div>
           <div class="w-px h-8" style="background:var(--border);"></div>
@@ -147,6 +149,7 @@
                 <p class="text-sm leading-relaxed" style="color:var(--text-secondary);" id="ai-summary">
                   14-night Greece itinerary for 4 travelers (2 couples). Anchors in Athens (3n, Grande Bretagne), Mykonos (5n, Cavo Tagoo), and Santorini (4n, pending Canaves Oia confirmation). Key highlight: private yacht day on May 15 around Delos/Rhenia. Waitlist risk on primary Santorini hotel — Grace Hotel held as backup. Helicopter transfer Mykonos-Santorini being arranged. Budget tracking at $22,000 against $22,000 target.
                 </p>
+                <div id="trip-ai-chips" class="ai-chips" style="margin-top:12px;"></div>
               </div>
 
               <!-- Itinerary timeline -->
@@ -464,6 +467,17 @@
     const tripId = params.get('id') || 'tr1';
     loadTrip(tripId);
 
+    // AI chips for trip summary card
+    const chipContainer = document.getElementById('trip-ai-chips');
+    if (chipContainer) {
+      MaestroAI.renderChips(chipContainer, [
+        { label: 'Compare hotel options', action: 'compare-hotels' },
+        { label: 'Check budget impact', action: 'budget-check' },
+        { label: 'Draft client update', action: 'draft-update' },
+        { label: 'Research activities', action: 'research-activities' },
+      ]);
+    }
+
     const observer = new MutationObserver(() => {
       document.getElementById('main-wrapper').style.marginLeft = MaestroNav.getSidebarWidth() + 'px';
     });
@@ -501,8 +515,7 @@
     if (currentClient) {
       document.getElementById('trip-client-name').textContent = household.name;
       const cavatar = document.getElementById('trip-client-avatar');
-      cavatar.textContent = currentClient.initials;
-      cavatar.style.background = currentClient.avatarColor;
+      cavatar.innerHTML = clientAvatarSVG();
       document.getElementById('trip-client-link').href = 'client-detail?id=' + currentClient.id;
       document.getElementById('client-profile-link').href = 'client-detail?id=' + currentClient.id;
     }
@@ -1017,7 +1030,7 @@
     document.getElementById('travelers-list').innerHTML = travelers.map(t => `
       <div class="card p-4">
         <div class="flex items-center gap-3 mb-3">
-          <span class="avatar avatar-md" style="background:${client?.avatarColor || '#6366f1'};color:#fff;">${t.name.split(' ').map(n=>n[0]).join('').slice(0,2)}</span>
+          <span class="avatar avatar-md avatar-silhouette">${clientAvatarSVG()}</span>
           <div>
             <div class="text-sm font-semibold" style="color:var(--text-primary);">${t.name}</div>
             <div class="text-xs" style="color:var(--text-muted);">${t.note ? t.note : 'Primary traveler'} &middot; Age ${t.age}</div>

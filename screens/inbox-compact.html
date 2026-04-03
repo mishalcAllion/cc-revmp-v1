@@ -11,10 +11,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/theme.css">
+  <link rel="stylesheet" href="../css/ai-assistant.css">
   <script src="../js/data.js"></script>
   <script src="../js/theme.js"></script>
   <script src="../js/nav.js"></script>
   <script src="../js/interactions.js"></script>
+  <script src="../js/ai-assistant.js"></script>
 </head>
 <body class="antialiased">
 
@@ -269,16 +271,13 @@
         </div>
       </div>
 
-      <!-- AI Copilot -->
+      <!-- AI Assist -->
       <div class="p-4 mt-auto">
-        <div class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:var(--text-muted);">AI COPILOT</div>
-        <div class="relative">
-          <input class="input" placeholder="/search-flights, /draft-reply, or ask anything..." style="font-size:12px;padding:8px 12px;padding-right:36px;">
-          <button class="absolute right-2 top-1/2 -translate-y-1/2" style="color:var(--gold);" onclick="showToast('AI copilot processing your request...','info')">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
-          </button>
+        <div class="ai-section-header" style="padding:0 0 6px 0;">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="var(--gold)"><path d="M12 2L9.5 9.5 2 12l7.5 2.5L12 22l2.5-7.5L22 12l-7.5-2.5z"/></svg>
+          <span>AI Assist</span>
         </div>
-        <div class="text-xs mt-1.5" style="color:var(--text-muted);">Try: /search-flights SFO-ATH May 8-12</div>
+        <div id="inbox-ai-chips" class="ai-chips"></div>
       </div>
     </div>
 
@@ -316,7 +315,19 @@
     const urlParams = new URLSearchParams(window.location.search);
     const convParam = urlParams.get('conv');
     selectConversation(convParam || 'conv1');
+
+    // Render AI chips after initial conversation selection
+    setTimeout(updateInboxAIChips, 100);
   });
+
+  function updateInboxAIChips() {
+    const container = document.getElementById('inbox-ai-chips');
+    if (!container) return;
+    container.innerHTML = '';
+    const ctx = MaestroAI.getContext();
+    const suggestions = MaestroAI.getSuggestions(ctx);
+    MaestroAI.renderChips(container, suggestions);
+  }
 
   // Observe sidebar changes
   const observer = new MutationObserver(updateMainMargin);
@@ -403,7 +414,7 @@
           <!-- SLA dot -->
           <div class="w-2.5 h-2.5 rounded-full flex-shrink-0 ${conv.slaStatus === 'breached' ? 'sla-breached' : ''}" style="background:${slaColors[conv.slaStatus]};"></div>
           <!-- Avatar -->
-          <span class="avatar" style="background:${primaryClient.avatarColor};color:#fff;font-size:10px;width:28px;height:28px;">${primaryClient.initials}</span>
+          <span class="avatar avatar-silhouette" style="width:28px;height:28px;">${clientAvatarSVG()}</span>
           <!-- Content -->
           <div class="flex-1 min-w-0">
             <div class="flex items-center gap-1">
@@ -569,7 +580,7 @@
       if (msg.sender === 'client') {
         return `
           <div class="flex gap-3 max-w-[75%]">
-            <span class="avatar avatar-sm flex-shrink-0" style="background:${primaryClient.avatarColor};color:#fff;margin-top:2px;">${primaryClient.initials[0]}</span>
+            <span class="avatar avatar-sm avatar-silhouette flex-shrink-0" style="margin-top:2px;">${clientAvatarSVG()}</span>
             <div>
               <div class="flex items-center gap-2 mb-1">
                 <span class="text-xs font-semibold" style="color:var(--text-primary);">${msg.senderName}</span>

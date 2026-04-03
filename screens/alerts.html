@@ -11,10 +11,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/theme.css">
+  <link rel="stylesheet" href="../css/ai-assistant.css">
   <script src="../js/data.js"></script>
   <script src="../js/theme.js"></script>
   <script src="../js/nav.js"></script>
   <script src="../js/interactions.js"></script>
+  <script src="../js/ai-assistant.js"></script>
 </head>
 <body class="antialiased">
 
@@ -123,6 +125,15 @@
       const client = getClient(a.clientId);
       const ss = statusStyles[a.status] || statusStyles['Active'];
       const programDisplay = programAbbreviations[a.program] || a.program;
+      const aiNote = a.status === 'Triggered' ? `
+        <tr>
+          <td colspan="8" style="padding:4px 12px 10px;border-bottom:1px solid var(--border);">
+            <div style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:var(--ai-bg);border-radius:var(--radius);border-left:2px solid var(--gold);">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="var(--gold)"><path d="M12 2L9.5 9.5 2 12l7.5 2.5L12 22l2.5-7.5L22 12l-7.5-2.5z"/></svg>
+              <span style="font-size:11px;color:var(--ai-text);">AI: Found ${a.triggered} availability window${a.triggered > 1 ? 's' : ''}. Best: ${a.dates.split('-')[0].trim()}, ${a.maxPoints} pts via ${programDisplay}.</span>
+            </div>
+          </td>
+        </tr>` : '';
       return `
         <tr style="cursor:pointer;" onclick="openAlertDetailModal('${a.route}','${a.dates}','${a.cabin}','${a.maxPoints}','${programDisplay}','${client?.name}','${a.status}',${a.triggered})">
           <td><span class="font-semibold" style="color:var(--text-primary);">${a.route}</span></td>
@@ -132,7 +143,7 @@
           <td class="text-xs">${programDisplay}</td>
           <td>
             <div class="flex items-center gap-2">
-              <span class="avatar avatar-sm" style="background:${client?.avatarColor};color:#fff;font-size:9px;">${client?.initials}</span>
+              <span class="avatar avatar-sm avatar-silhouette">${clientAvatarSVG()}</span>
               <a href="client-detail?id=${client?.id}" class="text-xs hover:underline" style="color:var(--text-primary);" onclick="event.stopPropagation()">${client?.name?.split(' ').slice(0,2).join(' ')}</a>
             </div>
           </td>
@@ -140,7 +151,7 @@
           <td>
             <span class="font-semibold" style="color:${a.triggered > 0 ? 'var(--gold)' : 'var(--text-muted)'};">${a.triggered}</span>
           </td>
-        </tr>`;
+        </tr>${aiNote}`;
     }).join('');
   }
 </script>
