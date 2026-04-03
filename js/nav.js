@@ -121,6 +121,13 @@
           if (typeof toggleCommandPalette === 'function') toggleCommandPalette();
         });
       }
+
+      // Re-bind theme toggle (rendered after DOMContentLoaded)
+      const themeBtn = container.querySelector('.theme-toggle');
+      if (themeBtn && window.MaestroTheme) {
+        themeBtn.addEventListener('click', window.MaestroTheme.toggle);
+        window.MaestroTheme.set(window.MaestroTheme.get()); // sync icon state
+      }
     }, 0);
   }
 
