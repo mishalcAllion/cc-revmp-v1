@@ -43,14 +43,9 @@
 .ai-bar {
   position: fixed;
   bottom: 16px;
-  left: 50%;
-  transform: translateX(calc(-50% + 120px)); /* offset for sidebar */
+  right: 24px;
   z-index: 40;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.sidebar.collapsed ~ .ai-bar,
-.sidebar.collapsed ~ * .ai-bar {
-  transform: translateX(calc(-50% + 28px));
 }
 
 /* Collapsed pill */
