@@ -39,7 +39,7 @@
       </div>
 
       <!-- Filters -->
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 min-w-0">
         <select class="select" data-filter="status">
           <option value="all">Status</option>
           <option>Not Started</option>
@@ -60,9 +60,9 @@
           <option>Auto</option>
           <option>Manual</option>
         </select>
-        <div class="ml-auto flex items-center gap-2">
-          <input class="input" placeholder="Search tasks..." style="width:200px;font-size:12px;padding:5px 10px;">
-          <span class="text-xs" style="color:var(--text-muted);">Sort: Priority</span>
+        <div class="ml-auto flex items-center gap-2 flex-shrink-0">
+          <input class="input" placeholder="Search tasks..." style="width:180px;font-size:12px;padding:5px 10px;">
+          <span class="text-xs whitespace-nowrap" style="color:var(--text-muted);">Sort: Priority</span>
         </div>
       </div>
     </div>
@@ -143,7 +143,7 @@
     if (filter === 'urgent') tasks = tasks.filter(t => t.priority === 'Urgent');
 
     const priorityOrder = { Urgent: 0, High: 1, Normal: 2, Low: 3 };
-    tasks.sort((a, b) => (priorityOrder[a.priority] || 9) - (priorityOrder[b.priority] || 9));
+    tasks.sort((a, b) => (priorityOrder[a.priority] ?? 9) - (priorityOrder[b.priority] ?? 9));
 
     const statusStyles = {
       'In Progress': { bg: 'var(--info-bg)', color: 'var(--info)' },

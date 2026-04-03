@@ -66,14 +66,14 @@
         <!-- Search -->
         <input class="input" placeholder="Search conversations..." style="font-size:12px;padding:6px 10px;">
         <!-- Filters -->
-        <div class="flex gap-2 mt-2">
-          <select class="select" data-filter="status" onchange="renderConversationCards()" style="font-size:11px;padding:4px 8px;">
+        <div class="flex flex-wrap gap-2 mt-2">
+          <select class="select" data-filter="status" onchange="renderConversationCards()" style="font-size:11px;padding:4px 8px;flex:1 1 0;min-width:0;">
             <option value="all">All</option>
             <option value="open" selected>Open</option>
             <option value="snoozed">Snoozed</option>
             <option value="closed">Closed</option>
           </select>
-          <select class="select" data-filter="assigned" onchange="renderConversationCards()" style="font-size:11px;padding:4px 8px;">
+          <select class="select" data-filter="assigned" onchange="renderConversationCards()" style="font-size:11px;padding:4px 8px;flex:1 1 0;min-width:0;">
             <option value="all">All agents</option>
             <option value="me">My conversations</option>
             <option value="unassigned">Unassigned</option>
@@ -85,12 +85,12 @@
               <option value="a5">Tiffany</option>
             </optgroup>
           </select>
-          <select class="select" data-filter="sla" onchange="renderConversationCards()" style="font-size:11px;padding:4px 8px;">
+          <select class="select" data-filter="sla" onchange="renderConversationCards()" style="font-size:11px;padding:4px 8px;flex:1 1 0;min-width:0;">
             <option value="all">All SLA</option>
             <option value="breached">Breached</option>
             <option value="warning">Warning</option>
           </select>
-          <select class="select" data-filter="type" onchange="renderConversationCards()" style="font-size:11px;padding:4px 8px;">
+          <select class="select" data-filter="type" onchange="renderConversationCards()" style="font-size:11px;padding:4px 8px;flex:1 1 0;min-width:0;">
             <option value="all">All types</option>
             <option value="trip">Trip</option>
             <option value="general">General</option>
@@ -461,8 +461,8 @@
             </div>
           </div>
 
-          <!-- Stat badges -->
-          <div class="flex items-center gap-2 mb-2.5">
+          <!-- Stat badges (trip threads only) -->
+          ${trip ? `<div class="flex items-center gap-2 mb-2.5">
             <div class="flex items-center gap-1.5 px-2 py-1 rounded-md" style="background:var(--info-bg);">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--info)" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
               <span class="text-xs font-semibold" style="color:var(--info);">${travelerCount} traveler${travelerCount !== 1 ? 's' : ''}</span>
@@ -471,15 +471,11 @@
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 12 2 2 4-4"/></svg>
               <span class="text-xs font-semibold" style="color:var(--success);">${bookingCount} booking${bookingCount !== 1 ? 's' : ''}</span>
             </div>
-          </div>
+          </div>` : ''}
 
           <!-- Footer: Action buttons + Agent avatars -->
           <div class="flex items-center justify-between gap-2">
             <div class="flex items-center gap-2 flex-1">
-              <button class="btn-ghost text-xs py-1.5 px-2" onclick="event.stopPropagation();selectConversation('${conv.id}')">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                Reply
-              </button>
               ${trip ? `<button class="btn-ghost text-xs py-1.5 px-2" onclick="event.stopPropagation();window.location.href='trip-detail?id=${conv.tripId}'">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
                 View Trip
