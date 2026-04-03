@@ -66,7 +66,6 @@
         <div class="flex items-center px-3 h-14 border-b" style="border-color:var(--border);">
           <img src="https://maestroassets.s3.eu-north-1.amazonaws.com/public/Maestro-logo-simple.svg"
                alt="Maestro" class="h-5 sidebar-logo" style="min-width:20px;">
-          <span class="sidebar-header-text ml-2 font-semibold text-sm" style="color:var(--text-primary);">Command Centre</span>
           <button id="sidebar-toggle" class="ml-auto nav-item p-1" style="padding:4px;margin:0;gap:0;" title="Toggle sidebar">
             ${collapsed ? ICONS.expand : ICONS.collapse}
           </button>
