@@ -325,29 +325,30 @@ const MaestroAI = (() => {
         openAgentPanel(suggestion.action, ctx);
         break;
       case 'summarize':
-        executeQuickAssist('Summarizing conversation thread...', generateThreadSummary(ctx));
+        executeQuickAssist('Thread Summary', 'Summarizing conversation thread...', generateThreadSummary(ctx));
         break;
       case 'prioritize-tasks':
       case 'prioritize':
-        executeQuickAssist('Analyzing your workload...', generatePrioritySummary());
+        executeQuickAssist('Priority Analysis', 'Analyzing your workload...', generatePrioritySummary());
         break;
       case 'blocked-tasks':
-        executeQuickAssist('Finding blocked tasks...', generateBlockedSummary());
+        executeQuickAssist('Blocked Tasks', 'Finding blocked tasks...', generateBlockedSummary());
         break;
       case 'overdue-tasks':
-        executeQuickAssist('Checking overdue tasks...', generateOverdueSummary());
+        executeQuickAssist('Overdue Tasks', 'Checking overdue tasks...', generateOverdueSummary());
         break;
       case 'eod-summary':
       case 'eod-tasks':
-        executeQuickAssist('Generating end-of-day summary...', generateEODSummary());
+        executeQuickAssist('End of Day Summary', 'Generating end-of-day summary...', generateEODSummary());
         break;
       case 'sla-risks':
       case 'sla-breaches':
-        executeQuickAssist('Checking SLA status...', generateSLASummary());
+        executeQuickAssist('SLA Status', 'Checking SLA status...', generateSLASummary());
         break;
       default:
-        showToast('AI is processing your request...', 'info');
-        setTimeout(() => showToast(getQuickResponse(suggestion.action), 'success'), 1200);
+        const actionTitle = getActionTitle(suggestion.action);
+        showInlineResult(actionTitle, 'Processing...', { loading: true });
+        setTimeout(() => showInlineResult(actionTitle, getQuickResponse(suggestion.action)), 1200);
     }
   }
 
@@ -359,12 +360,61 @@ const MaestroAI = (() => {
   }
 
   // ============================================================
-  // Quick Assist (inline results via toast)
+  // Inline AI Result Card (replaces toasts for AI responses)
   // ============================================================
-  function executeQuickAssist(loadingMsg, resultMsg) {
-    showToast(loadingMsg, 'info');
+  let inlineResultTimer = null;
+
+  function showInlineResult(title, content, opts = {}) {
+    // Remove any existing result card
+    dismissInlineResult(true);
+
+    const card = document.createElement('div');
+    card.className = 'ai-inline-result' + (opts.loading ? ' loading' : '');
+    card.id = 'ai-inline-result';
+
+    card.innerHTML = `
+      <div class="ai-inline-result-header">
+        <span class="ai-sparkle">${SPARKLE_SVG}</span>
+        <span class="ai-inline-result-title">${title}</span>
+        <button class="ai-inline-result-dismiss" title="Dismiss">&times;</button>
+      </div>
+      <div class="ai-inline-result-body">${content}</div>
+      ${!opts.loading ? '<div class="ai-inline-result-timer"><div class="ai-inline-result-timer-fill"></div></div>' : ''}
+    `;
+
+    card.querySelector('.ai-inline-result-dismiss').addEventListener('click', () => dismissInlineResult());
+
+    document.body.appendChild(card);
+
+    // Auto-dismiss after 12s (unless loading)
+    if (!opts.loading) {
+      const fill = card.querySelector('.ai-inline-result-timer-fill');
+      if (fill) {
+        requestAnimationFrame(() => {
+          fill.style.transitionDuration = '12s';
+          fill.style.width = '0%';
+        });
+      }
+      inlineResultTimer = setTimeout(() => dismissInlineResult(), 12000);
+    }
+  }
+
+  function dismissInlineResult(immediate) {
+    if (inlineResultTimer) { clearTimeout(inlineResultTimer); inlineResultTimer = null; }
+    const existing = document.getElementById('ai-inline-result');
+    if (!existing) return;
+    if (immediate) { existing.remove(); return; }
+    existing.classList.add('dismissing');
+    setTimeout(() => existing.remove(), 200);
+  }
+
+  // ============================================================
+  // Quick Assist (inline result cards)
+  // ============================================================
+  function executeQuickAssist(title, loadingMsg, resultMsg) {
+    showInlineResult(title, loadingMsg, { loading: true });
     setTimeout(() => {
-      showToast(resultMsg, 'success');
+      showInlineResult(title, resultMsg);
     }, 1500);
   }
 
@@ -374,9 +424,11 @@ const MaestroAI = (() => {
     if (textarea && typeof simulateAIDraft === 'function') {
       const draftText = getDraftForContext(ctx);
       simulateAIDraft('composer-input', draftText);
-      showToast('AI draft generated', 'success');
+      // Highlight composer instead of toast
+      textarea.classList.add('ai-composer-highlighted');
+      setTimeout(() => textarea.classList.remove('ai-composer-highlighted'), 1600);
     } else {
-      showToast('Draft reply generated -- switch to a conversation to see it', 'info');
+      showInlineResult('Draft Reply', 'Draft reply generated -- switch to a conversation to see it.');
     }
   }
 
@@ -425,6 +477,28 @@ const MaestroAI = (() => {
     const breached = CONVERSATIONS.filter(c => c.slaStatus === 'breached');
     const critical = CONVERSATIONS.filter(c => c.slaStatus === 'critical');
     return `SLA Status: ${breached.length} breached, ${critical.length} critical. ${breached.length > 0 ? 'Breached: ' + breached.map(c => { const h = getHousehold(c.householdId); return h ? h.name : c.id; }).join(', ') : 'No breaches.'}`;
+  }
+
+  function getActionTitle(action) {
+    const titles = {
+      'trip-status': 'Trip Status',
+      'loyalty-points': 'Loyalty Points',
+      'suggest-assign': 'Assignment Suggestion',
+      'client-summary': 'Client Summary',
+      'loyalty-redeem': 'Redemption Options',
+      'draft-outreach': 'Draft Outreach',
+      'budget-check': 'Budget Check',
+      'draft-update': 'Client Update',
+      'at-risk': 'At-Risk Trips',
+      'pipeline-summary': 'Pipeline Summary',
+      'needs-attention': 'Needs Attention',
+      'check-avail': 'Availability Check',
+      'compare-programs': 'Program Comparison',
+      'notify-alert': 'Alert Notification',
+      'summarize-unread': 'Unread Summary',
+      'unassigned': 'Unassigned Items',
+    };
+    return titles[action] || 'AI Result';
   }
 
   function getQuickResponse(action) {
@@ -926,7 +1000,7 @@ const MaestroAI = (() => {
                   <span style="font-size:11px;color:var(--text-secondary);">${t.assignee}</span>
                 ` : `
                   <span class="badge" style="background:var(--warning-bg);color:var(--warning);">unassigned</span>
-                  <span style="font-size:11px;color:var(--gold);cursor:pointer;" onclick="showToast('Assignment modal would open','info')">+ Assign</span>
+                  <span style="font-size:11px;color:var(--gold);cursor:pointer;position:relative;" onclick="MaestroAI.showAssignDropdown(this)">+ Assign</span>
                 `}
               </div>
               <div class="ai-human-task-notes">
@@ -1021,6 +1095,67 @@ const MaestroAI = (() => {
     watchConversationChanges();
   }
 
+  // ============================================================
+  // Assign Dropdown (replaces placeholder toast)
+  // ============================================================
+  const TEAM_MEMBERS = [
+    { name: 'Angua von Uberwald', initials: 'AV', color: '#6366f1' },
+    { name: 'Carrot Ironfoundersson', initials: 'CI', color: '#f59e0b' },
+    { name: 'Cheery Littlebottom', initials: 'CL', color: '#10b981' },
+    { name: 'Detritus', initials: 'DE', color: '#ef4444' },
+  ];
+
+  function showAssignDropdown(trigger) {
+    // Remove any existing dropdown
+    document.querySelectorAll('.ai-assign-dropdown').forEach(d => d.remove());
+
+    const dropdown = document.createElement('div');
+    dropdown.className = 'ai-assign-dropdown';
+    dropdown.innerHTML = TEAM_MEMBERS.map(m => `
+      <div class="ai-assign-dropdown-item" data-name="${m.name}" data-initials="${m.initials}" data-color="${m.color}">
+        <span class="avatar" style="width:20px;height:20px;font-size:9px;background:${m.color};color:#fff;">${m.initials}</span>
+        ${m.name}
+      </div>
+    `).join('');
+
+    // Position relative to trigger
+    const rect = trigger.getBoundingClientRect();
+    dropdown.style.position = 'fixed';
+    dropdown.style.top = (rect.bottom + 4) + 'px';
+    dropdown.style.left = rect.left + 'px';
+
+    dropdown.querySelectorAll('.ai-assign-dropdown-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const name = item.dataset.name;
+        const initials = item.dataset.initials;
+        const color = item.dataset.color;
+        // Update the parent task's assign area
+        const taskEl = trigger.closest('.ai-human-task');
+        if (taskEl) {
+          const assignArea = taskEl.querySelector('.ai-human-task-assign');
+          if (assignArea) {
+            assignArea.innerHTML = `
+              <span class="badge" style="background:var(--success-bg);color:var(--success);">assigned</span>
+              <span class="avatar" style="width:18px;height:18px;font-size:8px;background:${color};color:#fff;">${initials}</span>
+              <span style="font-size:11px;color:var(--text-secondary);">${name}</span>
+            `;
+          }
+        }
+        dropdown.remove();
+      });
+    });
+
+    document.body.appendChild(dropdown);
+
+    // Close on outside click
+    setTimeout(() => {
+      const handler = (e) => {
+        if (!dropdown.contains(e.target)) { dropdown.remove(); document.removeEventListener('click', handler); }
+      };
+      document.addEventListener('click', handler);
+    }, 10);
+  }
+
   // Public API
   return {
     init,
@@ -1036,6 +1171,7 @@ const MaestroAI = (() => {
     renderChips,
     getContext,
     getSuggestions,
+    showAssignDropdown,
   };
 })();
 
