@@ -133,10 +133,12 @@
             <div id="conv-agent-avatars" class="flex items-center cursor-pointer" onclick="toggleAssignDropdown()" title="Manage assignment">
               <span class="avatar avatar-sm" style="background:#f97316;color:#fff;">AU</span>
             </div>
-            <!-- Assignment dropdown (placeholder for future implementation) -->
+            <!-- Assignment dropdown -->
             <div id="assign-dropdown" class="absolute right-0 top-full mt-1 w-64 rounded-lg border shadow-lg py-1 hidden" style="background:var(--bg-surface);border-color:var(--border);z-index:50;">
               <div class="px-3 py-1.5 text-xs font-semibold uppercase tracking-wide" style="color:var(--text-muted);">Assign to</div>
               <div id="assign-agent-list"></div>
+              <div class="border-t my-1" style="border-color:var(--border);"></div>
+              <div class="px-3 py-1.5 cursor-pointer text-xs hover:opacity-80" style="color:var(--text-muted);" onclick="removeAllAssignments()">Remove all assignments</div>
             </div>
           </div>
           <!-- Toggle context panel -->
@@ -769,22 +771,111 @@
     container.innerHTML = html || '<div class="text-xs" style="color:var(--text-muted);">No threads yet</div>';
   }
 
-  // ---- Placeholder functions ----
+  // ---- Assignment dropdown ----
   function toggleAssignDropdown() {
-    // Placeholder for assignment dropdown
     const dropdown = document.getElementById('assign-dropdown');
+    const isHidden = dropdown.classList.contains('hidden');
     dropdown.classList.toggle('hidden');
+    if (isHidden) renderAssignDropdown();
+  }
+
+  function renderAssignDropdown() {
+    const conv = CONVERSATIONS.find(c => c.id === currentConversationId);
+    if (!conv) return;
+    const list = document.getElementById('assign-agent-list');
+    list.innerHTML = AGENTS.map(a => {
+      const isPrimary = conv.assignedTo === a.id;
+      const isCollab = (conv.collaborators || []).includes(a.id);
+      const checkIcon = isPrimary
+        ? `<span class="text-[10px] px-1.5 py-0.5 rounded-full font-semibold" style="background:var(--gold-bg);color:var(--gold);">Primary</span>`
+        : isCollab
+          ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>`
+          : `<span class="w-3.5 h-3.5 rounded border" style="border-color:var(--border);"></span>`;
+      return `
+        <div class="flex items-center gap-2 px-3 py-1.5 cursor-pointer" style="color:var(--text-primary);"
+             onmouseenter="this.style.background='var(--bg-active)'" onmouseleave="this.style.background=''"
+             onclick="toggleAgentAssignment('${a.id}')">
+          <span class="w-6 h-6 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0" style="font-size:9px;background:${a.color};">${a.initials}</span>
+          <span class="text-sm flex-1">${a.name}</span>
+          ${checkIcon}
+        </div>`;
+    }).join('');
+  }
+
+  function toggleAgentAssignment(agentId) {
+    const conv = CONVERSATIONS.find(c => c.id === currentConversationId);
+    if (!conv) return;
+
+    if (conv.assignedTo === agentId) {
+      if (conv.collaborators && conv.collaborators.length > 0) {
+        conv.assignedTo = conv.collaborators.shift();
+      } else {
+        conv.assignedTo = null;
+      }
+    } else if (conv.collaborators && conv.collaborators.includes(agentId)) {
+      conv.collaborators = conv.collaborators.filter(id => id !== agentId);
+    } else if (!conv.assignedTo) {
+      conv.assignedTo = agentId;
+    } else {
+      if (!conv.collaborators) conv.collaborators = [];
+      conv.collaborators.push(agentId);
+    }
+
+    updateConvHeaderAgents(conv);
+    renderAssignDropdown();
+    renderConversationCards();
+    // Re-highlight active card
+    const selectedCard = document.querySelector(`[data-conv-id="${currentConversationId}"]`);
+    if (selectedCard) {
+      selectedCard.classList.add('active');
+      selectedCard.style.borderLeft = '3px solid var(--gold)';
+    }
+    // Update unassigned banner
+    document.getElementById('unassigned-banner').classList.toggle('hidden', !!conv.assignedTo);
+    showToast('Assignment updated', 'success');
+  }
+
+  function removeAllAssignments() {
+    const conv = CONVERSATIONS.find(c => c.id === currentConversationId);
+    if (!conv) return;
+    conv.assignedTo = null;
+    conv.collaborators = [];
+    updateConvHeaderAgents(conv);
+    renderAssignDropdown();
+    renderConversationCards();
+    const selectedCard = document.querySelector(`[data-conv-id="${currentConversationId}"]`);
+    if (selectedCard) {
+      selectedCard.classList.add('active');
+      selectedCard.style.borderLeft = '3px solid var(--gold)';
+    }
+    document.getElementById('unassigned-banner').classList.remove('hidden');
+    document.getElementById('assign-dropdown').classList.add('hidden');
+    showToast('All assignments removed', 'info');
   }
 
   function assignToMe() {
-    showToast('Assigned to you', 'success');
     const conv = CONVERSATIONS.find(c => c.id === currentConversationId);
-    if (conv) {
-      conv.assignedTo = 'a1';
-      renderConversationCards();
-      selectConversation(currentConversationId);
+    if (!conv) return;
+    conv.assignedTo = 'a1';
+    updateConvHeaderAgents(conv);
+    renderConversationCards();
+    const selectedCard = document.querySelector(`[data-conv-id="${currentConversationId}"]`);
+    if (selectedCard) {
+      selectedCard.classList.add('active');
+      selectedCard.style.borderLeft = '3px solid var(--gold)';
     }
+    document.getElementById('unassigned-banner').classList.add('hidden');
+    showToast('Assigned to you', 'success');
   }
+
+  // Close dropdown on outside click
+  document.addEventListener('click', (e) => {
+    const wrapper = document.getElementById('agent-assign-wrapper');
+    const dropdown = document.getElementById('assign-dropdown');
+    if (wrapper && !wrapper.contains(e.target) && dropdown) {
+      dropdown.classList.add('hidden');
+    }
+  });
 
   // ---- Composer mode ----
   function switchComposerMode(mode) {
