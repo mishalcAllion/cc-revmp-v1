@@ -302,7 +302,7 @@ body {
 .slide-over {
   position: fixed;
   top: 0;
-  right: -480px;
+  right: -100vw;
   width: 480px;
   height: 100vh;
   background: var(--bg-surface);
