@@ -29,13 +29,19 @@ function closeModal(id) {
 // ---- Slide-over ----
 function openSlideOver(id) {
   const el = document.getElementById(id);
-  if (el) el.classList.add('open');
+  if (el) {
+    el.classList.add('open');
+    el.style.right = '0';
+  }
   const backdrop = document.getElementById(id + '-backdrop');
   if (backdrop) backdrop.style.display = 'block';
 }
 function closeSlideOver(id) {
   const el = document.getElementById(id);
-  if (el) el.classList.remove('open');
+  if (el) {
+    el.classList.remove('open');
+    el.style.right = '';
+  }
   const backdrop = document.getElementById(id + '-backdrop');
   if (backdrop) backdrop.style.display = 'none';
 }
