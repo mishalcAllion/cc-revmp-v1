@@ -14,6 +14,15 @@
     .screen-card { position: relative; }
     .screen-card .card-arrow { position:absolute; top:16px; right:16px; opacity:0.35; transition:opacity 0.15s, transform 0.15s; }
     .screen-card:hover .card-arrow { opacity:1; transform:translateX(2px); }
+    .tag {
+      display:inline-block;
+      padding:2px 7px;
+      border-radius:99px;
+      font-size:10px;
+      font-weight:600;
+      letter-spacing:0.2px;
+      line-height:1.6;
+    }
   </style>
   <script src="js/theme.js"></script>
   <script src="js/responsive.js"></script>
@@ -36,6 +45,10 @@
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
         <span class="text-xs">Theme</span>
       </button>
+      <button onclick="startTour()" class="btn-ghost flex items-center gap-2" style="padding:6px 12px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L9.5 9.5 2 12l7.5 2.5L12 22l2.5-7.5L22 12l-7.5-2.5z" fill="currentColor" stroke="none"/></svg>
+        <span class="text-xs">Tour</span>
+      </button>
       <a href="screens/dashboard.html" class="inline-flex items-center gap-2 text-sm font-semibold px-5 py-2.5 rounded-lg transition-all hover:brightness-110 whitespace-nowrap" style="background:var(--gold);color:#1a1a1a;">
         Enter Command Centre
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
@@ -44,8 +57,8 @@
   </div>
 
   <!-- Overview Stats -->
-  <div class="flex flex-wrap items-center gap-x-6 gap-y-1 mb-8 text-xs" style="color:var(--text-muted);">
-    <span><strong style="color:var(--text-primary);">12</strong> screens</span>
+  <div class="flex flex-wrap items-center gap-x-6 gap-y-1 mb-6 text-xs" style="color:var(--text-muted);">
+    <span><strong style="color:var(--text-primary);">13</strong> screens</span>
     <span style="color:var(--border);">|</span>
     <span><strong style="color:var(--text-primary);">5</strong> workflows</span>
     <span style="color:var(--border);">|</span>
@@ -54,166 +67,153 @@
     <span>All data is mock/demo</span>
   </div>
 
-  <p class="text-xs mb-8" style="color:var(--text-muted);">Click any screen below to explore individually, or use <strong style="color:var(--gold);">Enter Command Centre</strong> above to jump straight into the full prototype.</p>
-
   <!-- Screens by Workflow -->
 
   <!-- Inbox & Triage -->
-  <div class="mb-8">
-    <div class="flex items-center gap-2 mb-1">
+  <div class="mb-6">
+    <div class="flex items-center gap-2 mb-3">
       <div class="w-2 h-2 rounded-full" style="background:var(--gold);"></div>
       <h2 class="text-sm font-semibold uppercase tracking-wide" style="color:var(--gold);">Inbox & Triage</h2>
+      <span class="text-xs" style="color:var(--text-muted);">— 3-pane layout, 3 view variants</span>
     </div>
-    <p class="text-xs mb-3 ml-4" style="color:var(--text-muted);">All three views share the same 3-pane layout (conversation list + chat thread + context panel with AI copilot). The difference is how the conversation list is presented — each view is designed for a different agent workflow and team role.</p>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
       <a href="screens/inbox-compact.html" class="card p-4 hover:shadow-md transition-shadow block group">
-        <div class="text-sm font-semibold mb-1 group-hover:underline" style="color:var(--text-primary);">Compact List</div>
-        <div class="text-xs mb-2" style="color:var(--success);font-weight:600;">For: experienced agents, high-volume days</div>
-        <p class="text-xs" style="color:var(--text-muted);">Dense 44px rows — no message preview, maximum conversations visible at once. For agents who know their clients and need to move fast through a full queue.</p>
+        <div class="text-sm font-semibold mb-1.5 group-hover:underline" style="color:var(--text-primary);">Compact List</div>
+        <p class="text-xs mb-3" style="color:var(--text-muted);">44px rows with no message preview — <strong style="color:var(--text-primary);">maximum conversations visible at once</strong>. Designed for experienced agents who know their clients and need to triage a full queue fast.</p>
+        <div class="flex flex-wrap gap-1.5">
+          <span class="tag" style="background:rgba(212,175,55,0.12);color:var(--gold);">High Volume</span>
+          <span class="tag" style="background:rgba(212,175,55,0.12);color:var(--gold);">Speed</span>
+        </div>
       </a>
       <a href="screens/inbox-cards.html" class="card p-4 hover:shadow-md transition-shadow block group">
-        <div class="text-sm font-semibold mb-1 group-hover:underline" style="color:var(--text-primary);">Card View</div>
-        <div class="text-xs mb-2" style="color:var(--info);font-weight:600;">For: agents handling complex, high-touch trips</div>
-        <p class="text-xs" style="color:var(--text-muted);">Rich cards with last message preview, SLA progress bar, and inline quick actions. For agents managing fewer but more complex conversations where context before responding matters.</p>
+        <div class="text-sm font-semibold mb-1.5 group-hover:underline" style="color:var(--text-primary);">Card View</div>
+        <p class="text-xs mb-3" style="color:var(--text-muted);">Expanded cards showing the last message, <strong style="color:var(--text-primary);">SLA progress bar</strong>, and inline quick actions. Helps agents understand context before responding — fewer but deeper conversations.</p>
+        <div class="flex flex-wrap gap-1.5">
+          <span class="tag" style="background:rgba(59,130,246,0.12);color:var(--info);">Context-Rich</span>
+          <span class="tag" style="background:rgba(59,130,246,0.12);color:var(--info);">High-Touch</span>
+        </div>
       </a>
       <a href="screens/inbox-queue.html" class="card p-4 hover:shadow-md transition-shadow block group">
-        <div class="text-sm font-semibold mb-1 group-hover:underline" style="color:var(--text-primary);">Queue View</div>
-        <div class="text-xs mb-2" style="color:var(--warning);font-weight:600;">For: managers, senior agents doing SLA triage</div>
-        <p class="text-xs" style="color:var(--text-muted);">Swim lanes by urgency: Unassigned → Needs Response → Warning → On Track. Most at-risk conversations surface to the top automatically. Built for shift handoffs and SLA oversight.</p>
+        <div class="text-sm font-semibold mb-1.5 group-hover:underline" style="color:var(--text-primary);">Queue View</div>
+        <p class="text-xs mb-3" style="color:var(--text-muted);">Swim lanes sorted by urgency: Unassigned → Breached → Warning → On Track. <strong style="color:var(--text-primary);">Most at-risk conversations always surface to the top</strong> — built for shift handoffs and SLA oversight.</p>
+        <div class="flex flex-wrap gap-1.5">
+          <span class="tag" style="background:rgba(245,158,11,0.12);color:var(--warning);">SLA Triage</span>
+          <span class="tag" style="background:rgba(245,158,11,0.12);color:var(--warning);">Managers</span>
+        </div>
       </a>
     </div>
   </div>
 
   <!-- Client Management -->
-  <div class="mb-8">
+  <div class="mb-6">
     <div class="flex items-center gap-2 mb-3">
       <div class="w-2 h-2 rounded-full" style="background:var(--info);"></div>
       <h2 class="text-sm font-semibold uppercase tracking-wide" style="color:var(--info);">Client Management</h2>
-      <span class="text-xs" style="color:var(--text-muted);">-- Individual clients + household grouping</span>
+      <span class="text-xs" style="color:var(--text-muted);">— CRM, 360 profiles, onboarding</span>
     </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
       <a href="screens/clients.html" class="card p-4 hover:shadow-md transition-shadow block group">
-        <div class="text-sm font-semibold mb-1 group-hover:underline" style="color:var(--text-primary);">Client List</div>
-        <p class="text-xs" style="color:var(--text-muted);">Full CRM table with toggle between All Clients (12 rows) and Households (6 rows). Click any row for 360 detail.</p>
+        <div class="text-sm font-semibold mb-1.5 group-hover:underline" style="color:var(--text-primary);">Client List</div>
+        <p class="text-xs mb-3" style="color:var(--text-muted);">Sortable CRM table with toggle between <strong style="color:var(--text-primary);">individual clients and household groupings</strong>. Filter by tier, status, and last contact. Click any row to open the 360 profile.</p>
+        <div class="flex flex-wrap gap-1.5">
+          <span class="tag" style="background:rgba(59,130,246,0.12);color:var(--info);">CRM Table</span>
+          <span class="tag" style="background:rgba(59,130,246,0.12);color:var(--info);">Households</span>
+        </div>
       </a>
       <a href="screens/client-detail?id=c1" class="card p-4 hover:shadow-md transition-shadow block group">
-        <div class="text-sm font-semibold mb-1 group-hover:underline" style="color:var(--text-primary);">Client 360 Detail</div>
-        <p class="text-xs" style="color:var(--text-muted);">6 tabs: Overview, Trips, Conversations, Preferences, Points, Activity. Household members sidebar.</p>
+        <div class="text-sm font-semibold mb-1.5 group-hover:underline" style="color:var(--text-primary);">Client 360 Detail</div>
+        <p class="text-xs mb-3" style="color:var(--text-muted);">Everything about a client in one place — active trips, open conversations, travel preferences, <strong style="color:var(--text-primary);">loyalty points, and full activity history</strong>. Household members shown in header.</p>
+        <div class="flex flex-wrap gap-1.5">
+          <span class="tag" style="background:rgba(59,130,246,0.12);color:var(--info);">360 Profile</span>
+          <span class="tag" style="background:rgba(59,130,246,0.12);color:var(--info);">Activity Log</span>
+        </div>
       </a>
       <a href="screens/onboarding.html" class="card p-4 hover:shadow-md transition-shadow block group">
-        <div class="text-sm font-semibold mb-1 group-hover:underline" style="color:var(--text-primary);">Client Onboarding</div>
-        <p class="text-xs" style="color:var(--text-muted);">Progressive disclosure form. Paste a call transcript and AI extracts client preferences automatically.</p>
+        <div class="text-sm font-semibold mb-1.5 group-hover:underline" style="color:var(--text-primary);">Client Onboarding</div>
+        <p class="text-xs mb-3" style="color:var(--text-muted);">3-step wizard to create a new client account. Paste or upload a call transcript and <strong style="color:var(--text-primary);">AI automatically extracts preferences</strong>, loyalty programs, and upcoming trip details.</p>
+        <div class="flex flex-wrap gap-1.5">
+          <span class="tag" style="background:rgba(212,175,55,0.12);color:var(--gold);">AI Extraction</span>
+          <span class="tag" style="background:rgba(59,130,246,0.12);color:var(--info);">3-Step Wizard</span>
+        </div>
       </a>
     </div>
   </div>
 
   <!-- Trip Management -->
-  <div class="mb-8">
+  <div class="mb-6">
     <div class="flex items-center gap-2 mb-3">
       <div class="w-2 h-2 rounded-full" style="background:var(--success);"></div>
       <h2 class="text-sm font-semibold uppercase tracking-wide" style="color:var(--success);">Trip Management</h2>
-      <span class="text-xs" style="color:var(--text-muted);">-- 7-stage pipeline from Lead to Archived</span>
+      <span class="text-xs" style="color:var(--text-muted);">— 7-stage pipeline from Lead to Archived</span>
     </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
       <a href="screens/trip-pipeline.html" class="card p-4 hover:shadow-md transition-shadow block group">
-        <div class="text-sm font-semibold mb-1 group-hover:underline" style="color:var(--text-primary);">Trip Pipeline (Kanban)</div>
-        <p class="text-xs" style="color:var(--text-muted);">7 columns: Lead, Discovery, Planning, Proposal, Booking, Active, Archived. Filter by agent and date range.</p>
+        <div class="text-sm font-semibold mb-1.5 group-hover:underline" style="color:var(--text-primary);">Trip Pipeline</div>
+        <p class="text-xs mb-3" style="color:var(--text-muted);">Visual kanban board across <strong style="color:var(--text-primary);">7 stages (Lead → Archived)</strong> with budget, bookings count, and attention flags on each card. Switch to table view for a sortable list. Filter by agent or date.</p>
+        <div class="flex flex-wrap gap-1.5">
+          <span class="tag" style="background:rgba(34,197,94,0.12);color:var(--success);">Kanban</span>
+          <span class="tag" style="background:rgba(34,197,94,0.12);color:var(--success);">Table View</span>
+        </div>
       </a>
       <a href="screens/trip-detail?id=tr1" class="card p-4 hover:shadow-md transition-shadow block group">
-        <div class="text-sm font-semibold mb-1 group-hover:underline" style="color:var(--text-primary);">Trip Detail</div>
-        <p class="text-xs" style="color:var(--text-muted);">5 tabs: Overview (AI summary + itinerary), Bookings (component cards), Travelers, Tasks, Activity log.</p>
+        <div class="text-sm font-semibold mb-1.5 group-hover:underline" style="color:var(--text-primary);">Trip Detail</div>
+        <p class="text-xs mb-3" style="color:var(--text-muted);">Full trip workspace — <strong style="color:var(--text-primary);">AI-generated summary</strong>, booking itinerary, traveler profiles, open tasks, and activity log. Internal notes kept separate from client-visible content.</p>
+        <div class="flex flex-wrap gap-1.5">
+          <span class="tag" style="background:rgba(212,175,55,0.12);color:var(--gold);">AI Summary</span>
+          <span class="tag" style="background:rgba(34,197,94,0.12);color:var(--success);">Full Workspace</span>
+        </div>
       </a>
-      <div></div>
     </div>
   </div>
 
   <!-- Operations -->
-  <div class="mb-8">
+  <div class="mb-6">
     <div class="flex items-center gap-2 mb-3">
       <div class="w-2 h-2 rounded-full" style="background:var(--warning);"></div>
       <h2 class="text-sm font-semibold uppercase tracking-wide" style="color:var(--warning);">Operations</h2>
-      <span class="text-xs" style="color:var(--text-muted);">-- Manager overview, tasks, alerts, configuration</span>
+      <span class="text-xs" style="color:var(--text-muted);">— Manager overview, tasks, alerts, config</span>
     </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
       <a href="screens/dashboard.html" class="card p-4 hover:shadow-md transition-shadow block group">
-        <div class="text-sm font-semibold mb-1 group-hover:underline" style="color:var(--text-primary);">Dashboard</div>
-        <p class="text-xs" style="color:var(--text-muted);">7 KPI cards, SLA health bar, pipeline summary, team workload table, recent activity feed. Manager home screen.</p>
+        <div class="text-sm font-semibold mb-1.5 group-hover:underline" style="color:var(--text-primary);">Dashboard</div>
+        <p class="text-xs mb-3" style="color:var(--text-muted);">Manager home screen — KPI cards, <strong style="color:var(--text-primary);">SLA health bar</strong>, pipeline summary, team workload, and recent activity feed. Switch between Manager and Member perspectives.</p>
+        <div class="flex flex-wrap gap-1.5">
+          <span class="tag" style="background:rgba(245,158,11,0.12);color:var(--warning);">Manager View</span>
+          <span class="tag" style="background:rgba(245,158,11,0.12);color:var(--warning);">KPIs</span>
+        </div>
       </a>
       <a href="screens/tasks.html" class="card p-4 hover:shadow-md transition-shadow block group">
-        <div class="text-sm font-semibold mb-1 group-hover:underline" style="color:var(--text-primary);">Task List</div>
-        <p class="text-xs" style="color:var(--text-muted);">Priority-striped table with stats bar. Click any row to open slide-over detail panel with activity log.</p>
+        <div class="text-sm font-semibold mb-1.5 group-hover:underline" style="color:var(--text-primary);">Tasks</div>
+        <p class="text-xs mb-3" style="color:var(--text-muted);"><strong style="color:var(--text-primary);">Board and table views</strong> for all ops tasks — filter by My Tasks, Urgent, status, or priority. Click any card to open a detail panel with status controls and activity log.</p>
+        <div class="flex flex-wrap gap-1.5">
+          <span class="tag" style="background:rgba(245,158,11,0.12);color:var(--warning);">Board View</span>
+          <span class="tag" style="background:rgba(245,158,11,0.12);color:var(--warning);">Table View</span>
+        </div>
       </a>
       <a href="screens/ai-history.html" class="card p-4 hover:shadow-md transition-shadow block group">
-        <div class="text-sm font-semibold mb-1 group-hover:underline" style="color:var(--text-primary);">Maestro AI</div>
-        <p class="text-xs" style="color:var(--text-muted);">Persistent AI chat threads. 2-pane browser: filter by context (trips, clients, conversations, global), search, star, archive. Threads linked from trip detail, client detail, and inbox panels.</p>
+        <div class="text-sm font-semibold mb-1.5 group-hover:underline" style="color:var(--text-primary);">Maestro AI</div>
+        <p class="text-xs mb-3" style="color:var(--text-muted);">Browse and search all AI conversation threads by context — trips, clients, or global. Threads are <strong style="color:var(--text-primary);">persistent, starred, and linked</strong> directly from trip detail, client detail, and inbox panels.</p>
+        <div class="flex flex-wrap gap-1.5">
+          <span class="tag" style="background:rgba(212,175,55,0.12);color:var(--gold);">AI History</span>
+          <span class="tag" style="background:rgba(212,175,55,0.12);color:var(--gold);">Context-Aware</span>
+        </div>
       </a>
       <a href="screens/alerts.html" class="card p-4 hover:shadow-md transition-shadow block group">
-        <div class="text-sm font-semibold mb-1 group-hover:underline" style="color:var(--text-primary);">Flight Alerts</div>
-        <p class="text-xs" style="color:var(--text-muted);">Alert monitoring table: route, cabin class, points threshold, trigger history. Points-based award flight tracking.</p>
+        <div class="text-sm font-semibold mb-1.5 group-hover:underline" style="color:var(--text-primary);">Flight Alerts</div>
+        <p class="text-xs mb-3" style="color:var(--text-muted);">Set up <strong style="color:var(--text-primary);">award seat monitors</strong> for specific routes, cabin classes, and points budgets. AI highlights the best available options when availability is found.</p>
+        <div class="flex flex-wrap gap-1.5">
+          <span class="tag" style="background:rgba(212,175,55,0.12);color:var(--gold);">AI-Powered</span>
+          <span class="tag" style="background:rgba(245,158,11,0.12);color:var(--warning);">Award Seats</span>
+        </div>
       </a>
       <a href="screens/settings.html" class="card p-4 hover:shadow-md transition-shadow block group">
-        <div class="text-sm font-semibold mb-1 group-hover:underline" style="color:var(--text-primary);">Settings</div>
-        <p class="text-xs" style="color:var(--text-muted);">5 tabs: Team management, SLA configuration, Channels, Appearance (dark/light), Keyboard shortcuts. Includes AI Assistant settings section and Ctrl+J shortcut reference.</p>
+        <div class="text-sm font-semibold mb-1.5 group-hover:underline" style="color:var(--text-primary);">Settings</div>
+        <p class="text-xs mb-3" style="color:var(--text-muted);">Configure <strong style="color:var(--text-primary);">SLA response targets</strong>, manage team members, connect messaging channels, and customise appearance and AI behaviour. Keyboard shortcut reference included.</p>
+        <div class="flex flex-wrap gap-1.5">
+          <span class="tag" style="background:rgba(245,158,11,0.12);color:var(--warning);">SLA Config</span>
+          <span class="tag" style="background:rgba(245,158,11,0.12);color:var(--warning);">Team & Channels</span>
+        </div>
       </a>
-    </div>
-  </div>
-
-  <!-- Key Features -->
-  <div class="card p-5 mb-8">
-    <h2 class="text-xs font-semibold uppercase tracking-wide mb-4" style="color:var(--gold);">Key Features Implemented</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-2 text-xs">
-      <div class="flex items-start gap-2">
-        <span style="color:var(--success);">&#10003;</span>
-        <div><strong style="color:var(--text-primary);">Multi-agent assignment</strong><br><span style="color:var(--text-muted);">Primary owner + collaborators on every conversation</span></div>
-      </div>
-      <div class="flex items-start gap-2">
-        <span style="color:var(--success);">&#10003;</span>
-        <div><strong style="color:var(--text-primary);">Thread types</strong><br><span style="color:var(--text-muted);">Trip-linked vs general inquiry threads with visual indicators</span></div>
-      </div>
-      <div class="flex items-start gap-2">
-        <span style="color:var(--success);">&#10003;</span>
-        <div><strong style="color:var(--text-primary);">AI copilot</strong><br><span style="color:var(--text-muted);">Inline draft replies + context panel copilot (no separate AI tab)</span></div>
-      </div>
-      <div class="flex items-start gap-2">
-        <span style="color:var(--success);">&#10003;</span>
-        <div><strong style="color:var(--text-primary);">Dark / light theme</strong><br><span style="color:var(--text-muted);">Persistent toggle on every screen, dark-first for shift workers</span></div>
-      </div>
-      <div class="flex items-start gap-2">
-        <span style="color:var(--success);">&#10003;</span>
-        <div><strong style="color:var(--text-primary);">3-pane inbox</strong><br><span style="color:var(--text-muted);">Conversation list + chat thread + context panel with 3 view variants</span></div>
-      </div>
-      <div class="flex items-start gap-2">
-        <span style="color:var(--success);">&#10003;</span>
-        <div><strong style="color:var(--text-primary);">SLA monitoring</strong><br><span style="color:var(--text-muted);">Queue swim lanes, progress bars, breach alerts on dashboard</span></div>
-      </div>
-      <div class="flex items-start gap-2">
-        <span style="color:var(--success);">&#10003;</span>
-        <div><strong style="color:var(--text-primary);">Household data model</strong><br><span style="color:var(--text-muted);">Clients grouped into households sharing trips and conversations</span></div>
-      </div>
-      <div class="flex items-start gap-2">
-        <span style="color:var(--success);">&#10003;</span>
-        <div><strong style="color:var(--text-primary);">Dynamic conversation selection</strong><br><span style="color:var(--text-muted);">Click any conversation to load full thread + adapted context panel</span></div>
-      </div>
-      <div class="flex items-start gap-2">
-        <span style="color:var(--success);">&#10003;</span>
-        <div><strong style="color:var(--text-primary);">Unassigned visibility</strong><br><span style="color:var(--text-muted);">3 layers: list indicator, header banner, context panel prompt</span></div>
-      </div>
-      <div class="flex items-start gap-2">
-        <span style="color:var(--success);">&#10003;</span>
-        <div><strong style="color:var(--text-primary);">Universal AI bar</strong><br><span style="color:var(--text-muted);">Ctrl+J on every screen — context-aware suggestions that change per screen and selected entity</span></div>
-      </div>
-      <div class="flex items-start gap-2">
-        <span style="color:var(--success);">&#10003;</span>
-        <div><strong style="color:var(--text-primary);">AI briefing cards</strong><br><span style="color:var(--text-muted);">Contextual briefings on dashboard, task detail, client detail, trip summary, and alert rows</span></div>
-      </div>
-      <div class="flex items-start gap-2">
-        <span style="color:var(--success);">&#10003;</span>
-        <div><strong style="color:var(--text-primary);">Deep Agent panel</strong><br><span style="color:var(--text-muted);">Multi-step workflows for venue research, activity research, hotel comparison with chip selectors</span></div>
-      </div>
-      <div class="flex items-start gap-2">
-        <span style="color:var(--success);">&#10003;</span>
-        <div><strong style="color:var(--text-primary);">AI task tracker</strong><br><span style="color:var(--text-muted);">Completed / running / queued AI tasks alongside human task assignments with AI notes</span></div>
-      </div>
     </div>
   </div>
 
@@ -314,6 +314,12 @@ function tourStep(dir) {
 function dismissTour() {
   document.getElementById('tour-overlay').style.display = 'none';
   localStorage.setItem('maestro_tour_done', '1');
+}
+
+function startTour() {
+  tourCurrentStep = 0;
+  renderTourStep();
+  document.getElementById('tour-overlay').style.display = 'flex';
 }
 
 // Show tour on first visit
