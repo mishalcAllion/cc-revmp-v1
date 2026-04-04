@@ -162,23 +162,25 @@
       <div id="tab-appearance" style="display:none;">
         <div class="card p-5 space-y-5">
           <div>
-            <div class="text-sm font-medium mb-2" style="color:var(--text-primary);">Theme</div>
+            <div class="text-sm font-medium mb-1" style="color:var(--text-primary);">Theme</div>
+            <div class="text-xs mb-2" style="color:var(--text-muted);">Changes take effect immediately</div>
             <div class="flex gap-3">
-              <button class="btn-ghost flex items-center gap-2" onclick="MaestroTheme.set('light')">
+              <button id="btn-theme-light" class="btn-ghost flex items-center gap-2" onclick="MaestroTheme.set('light');updateThemeBtns('light')">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/></svg>
                 Light
               </button>
-              <button class="btn-ghost flex items-center gap-2" onclick="MaestroTheme.set('dark')">
+              <button id="btn-theme-dark" class="btn-ghost flex items-center gap-2" onclick="MaestroTheme.set('dark');updateThemeBtns('dark')">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
                 Dark
               </button>
             </div>
           </div>
           <div>
-            <div class="text-sm font-medium mb-2" style="color:var(--text-primary);">Density</div>
+            <div class="text-sm font-medium mb-1" style="color:var(--text-primary);">Density</div>
+            <div class="text-xs mb-2" style="color:var(--text-muted);">Controls how compact the lists and tables appear</div>
             <div class="flex gap-3">
-              <button class="btn-ghost">Compact</button>
-              <button class="btn-ghost" style="background:var(--bg-active);">Comfortable</button>
+              <button class="btn-ghost" onclick="showToast('Compact density applied','info')">Compact</button>
+              <button class="btn-ghost" style="background:var(--bg-active);border-color:var(--gold);" onclick="showToast('Comfortable density applied','info')">Comfortable ✓</button>
             </div>
           </div>
           <div>
@@ -226,11 +228,12 @@
             </label>
           </div>
           <div>
-            <div class="text-sm font-medium mb-2" style="color:var(--text-primary);">AI verbosity</div>
+            <div class="text-sm font-medium mb-1" style="color:var(--text-primary);">AI verbosity</div>
+            <div class="text-xs mb-2" style="color:var(--text-muted);">Controls how detailed AI responses are across the platform — affects AI drafts, summaries, and briefing cards</div>
             <select class="select" onchange="localStorage.setItem('ai-verbosity',this.value);showToast('AI verbosity set to '+this.value,'info')">
-              <option value="concise">Concise</option>
-              <option value="standard" selected>Standard</option>
-              <option value="detailed">Detailed</option>
+              <option value="concise">Concise — short bullet points, key facts only</option>
+              <option value="standard" selected>Standard — balanced detail, recommended</option>
+              <option value="detailed">Detailed — full explanations and context</option>
             </select>
           </div>
         </div>
@@ -238,6 +241,10 @@
 
       <!-- Keyboard Shortcuts -->
       <div id="tab-shortcuts" style="display:none;">
+        <div class="flex items-start gap-2 mb-4 p-3 rounded-lg" style="background:var(--info-bg);border:1px solid var(--info);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--info)" stroke-width="2" style="flex-shrink:0;margin-top:1px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <p class="text-xs" style="color:var(--info);">These shortcuts are built-in and cannot be customised. Use them as a reference guide.</p>
+        </div>
         <div class="card p-5">
           <div class="text-xs font-semibold uppercase tracking-wide mb-4" style="color:var(--text-muted);">Global</div>
           <div class="space-y-2">
@@ -305,9 +312,22 @@
 </div>
 
 <script>
+  function updateThemeBtns(active) {
+    const light = document.getElementById('btn-theme-light');
+    const dark  = document.getElementById('btn-theme-dark');
+    if (!light || !dark) return;
+    light.style.background = active === 'light' ? 'var(--bg-active)' : '';
+    light.style.borderColor = active === 'light' ? 'var(--gold)' : '';
+    dark.style.background  = active === 'dark'  ? 'var(--bg-active)' : '';
+    dark.style.borderColor = active === 'dark'  ? 'var(--gold)' : '';
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     MaestroNav.render('sidebar-root');
     document.getElementById('main-wrapper').style.marginLeft = MaestroNav.getSidebarWidth() + 'px';
+    // Reflect current theme on buttons
+    const currentTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+    updateThemeBtns(currentTheme);
 
     const observer = new MutationObserver(() => {
       document.getElementById('main-wrapper').style.marginLeft = MaestroNav.getSidebarWidth() + 'px';

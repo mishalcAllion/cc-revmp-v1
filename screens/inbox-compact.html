@@ -52,16 +52,16 @@
           </div>
         </div>
         <!-- Search -->
-        <input class="input" placeholder="Search conversations..." style="font-size:12px;padding:6px 10px;">
+        <input class="input" placeholder="Search by client name, message or trip..." style="font-size:12px;padding:6px 10px;" aria-label="Search conversations">
         <!-- Filters -->
         <div class="grid grid-cols-2 gap-1.5 mt-2">
-          <select class="select" data-filter="status" onchange="renderConversationList()" style="font-size:11px;padding:4px 6px;">
-            <option value="all">All</option>
+          <select class="select" data-filter="status" onchange="renderConversationList()" style="font-size:11px;padding:4px 6px;" aria-label="Filter by conversation status">
+            <option value="all">All statuses</option>
             <option value="open" selected>Open</option>
             <option value="snoozed">Snoozed</option>
             <option value="closed">Closed</option>
           </select>
-          <select class="select" data-filter="assigned" onchange="renderConversationList()" style="font-size:11px;padding:4px 6px;">
+          <select class="select" data-filter="assigned" onchange="renderConversationList()" style="font-size:11px;padding:4px 6px;" aria-label="Filter by assigned agent">
             <option value="all">All agents</option>
             <option value="me">My conversations</option>
             <option value="unassigned">Unassigned</option>
@@ -73,12 +73,12 @@
               <option value="a5">Tiffany</option>
             </optgroup>
           </select>
-          <select class="select" data-filter="sla" onchange="renderConversationList()" style="font-size:11px;padding:4px 6px;">
+          <select class="select" data-filter="sla" onchange="renderConversationList()" style="font-size:11px;padding:4px 6px;" aria-label="Filter by SLA status — Service Level Agreement response time target">
             <option value="all">All SLA</option>
             <option value="breached">Breached</option>
             <option value="warning">Warning</option>
           </select>
-          <select class="select" data-filter="type" onchange="renderConversationList()" style="font-size:11px;padding:4px 6px;">
+          <select class="select" data-filter="type" onchange="renderConversationList()" style="font-size:11px;padding:4px 6px;" aria-label="Filter by conversation type">
             <option value="all">All types</option>
             <option value="trip">Trip</option>
             <option value="general">General</option>
@@ -102,9 +102,9 @@
         </div>
         <div class="flex items-center gap-2 flex-shrink-0">
           <!-- SLA timer -->
-          <div class="flex items-center gap-1 px-2 py-0.5 rounded-full" style="background:var(--success-bg);" id="sla-badge">
+          <div class="flex items-center gap-1 px-2 py-0.5 rounded-full" style="background:var(--success-bg);" id="sla-badge" title="Service Level Agreement — time remaining before response is overdue">
             <div class="w-1.5 h-1.5 rounded-full" style="background:var(--sla-healthy);"></div>
-            <span class="text-xs font-semibold" style="color:var(--success);">45m</span>
+            <span class="text-xs font-semibold" style="color:var(--success);">Healthy · 45m</span>
           </div>
           <!-- Assigned agents -->
           <div class="relative" id="agent-assign-wrapper">
@@ -116,7 +116,7 @@
               <div class="px-3 py-1.5 text-xs font-semibold uppercase tracking-wide" style="color:var(--text-muted);">Assign to</div>
               <div id="assign-agent-list"></div>
               <div class="border-t my-1" style="border-color:var(--border);"></div>
-              <div class="px-3 py-1.5 cursor-pointer text-xs hover:opacity-80" style="color:var(--text-muted);" onclick="removeAllAssignments()">Remove all assignments</div>
+              <div class="px-3 py-1.5 cursor-pointer text-xs hover:opacity-80" style="color:var(--error);" onclick="if(confirm('Remove all agent assignments from this conversation? It will appear as unassigned.')) removeAllAssignments()">Remove all assignments</div>
             </div>
           </div>
           <!-- Toggle context panel -->
@@ -136,7 +136,7 @@
         <!-- Reply / Note toggle -->
         <div class="flex items-center gap-0 mb-2">
           <button class="composer-tab active px-3 py-1 text-xs font-semibold rounded-l-md border" style="border-color:var(--border);" data-mode="reply" onclick="switchComposerMode('reply')">Reply</button>
-          <button class="composer-tab px-3 py-1 text-xs font-semibold rounded-r-md border-t border-r border-b" style="border-color:var(--border);color:var(--text-muted);background:transparent;" data-mode="note" onclick="switchComposerMode('note')">Internal Note</button>
+          <button class="composer-tab px-3 py-1 text-xs font-semibold rounded-r-md border-t border-r border-b" style="border-color:var(--border);color:var(--text-muted);background:transparent;" data-mode="note" onclick="switchComposerMode('note')" title="Internal notes are only visible to your team — the client will never see these">Internal Note</button>
         </div>
         <div class="flex items-end gap-2">
           <div class="flex-1 relative">
@@ -238,7 +238,7 @@
       <div class="border-b transition-theme" style="border-color:var(--border);">
         <div class="flex items-center justify-between px-4 py-2.5 cursor-pointer" style="background:var(--bg-surface);" onclick="toggleContextSection('components')">
           <span class="text-xs font-semibold uppercase tracking-wide" style="color:var(--text-muted);">
-            COMPONENTS <span id="components-count">6</span> <span id="components-pending" style="color:var(--text-muted);">· 1 needs attention</span>
+            BOOKINGS <span id="components-count">6</span> <span id="components-pending" style="color:var(--text-muted);">· 1 need action</span>
           </span>
           <svg id="components-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted);transition:transform 0.2s;">
             <polyline points="6 9 12 15 18 9"/>
@@ -617,7 +617,7 @@
         // Update components section
         document.getElementById('components-count').textContent = components.length;
         const attentionCount = getComponentsNeedingAttention(trip.id).length;
-        document.getElementById('components-pending').textContent = attentionCount > 0 ? `· ${attentionCount} needs attention` : '';
+        document.getElementById('components-pending').textContent = attentionCount > 0 ? `· ${attentionCount} need action` : '';
       }
 
       // Render components

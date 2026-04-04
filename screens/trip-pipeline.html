@@ -110,7 +110,7 @@
             <th class="py-2 px-3 font-semibold" style="position:sticky;top:0;z-index:10;background:var(--bg-surface);">Stage</th>
             <th class="py-2 px-3 font-semibold" style="position:sticky;top:0;z-index:10;background:var(--bg-surface);">Agent</th>
             <th class="py-2 px-3 font-semibold text-center" style="position:sticky;top:0;z-index:10;background:var(--bg-surface);">Travelers</th>
-            <th class="py-2 px-3 font-semibold text-center" style="position:sticky;top:0;z-index:10;background:var(--bg-surface);">Components</th>
+            <th class="py-2 px-3 font-semibold text-center" style="position:sticky;top:0;z-index:10;background:var(--bg-surface);" title="Stored as 'Components' in the database">Bookings</th>
             <th class="py-2 px-3 font-semibold" style="position:sticky;top:0;z-index:10;background:var(--bg-surface);">Budget</th>
           </tr>
         </thead>
@@ -157,6 +157,16 @@
     }, 100);
   });
 
+  const STAGE_DESCRIPTIONS = {
+    lead:      'Initial inquiry received — client has shown interest but no planning started',
+    discovery: 'Gathering client preferences, dates, and trip requirements',
+    planning:  'Building the itinerary and researching options',
+    proposal:  'Proposal sent to client — awaiting feedback or approval',
+    booking:   'Client approved — confirming reservations with suppliers',
+    active:    'Trip is underway — client is currently travelling',
+    archived:  'Trip completed or cancelled',
+  };
+
   function renderKanban() {
     const board = document.getElementById('kanban-board');
 
@@ -168,7 +178,7 @@
           <div class="flex items-center justify-between mb-3 px-1">
             <div class="flex items-center gap-2">
               <div class="w-2.5 h-2.5 rounded-full" style="background:${stage.color};"></div>
-              <span class="text-xs font-semibold uppercase tracking-wide" style="color:var(--text-secondary);">${stage.label}</span>
+              <span class="text-xs font-semibold uppercase tracking-wide" style="color:var(--text-secondary);" data-tooltip="${STAGE_DESCRIPTIONS[stage.id] || ''}" data-tooltip-dir="below">${stage.label}</span>
               <span class="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold" style="background:var(--bg-surface-alt);color:var(--text-muted);">${trips.length}</span>
             </div>
           </div>
@@ -193,17 +203,18 @@
                       <span class="avatar avatar-sm avatar-silhouette">${clientAvatarSVG()}</span>
                       <span class="text-xs font-semibold" style="color:var(--text-primary);">${household.name}</span>
                     </div>
-                    ${stats.needsAttention > 0 ? `<span class="badge" style="background:var(--warning-bg);color:var(--warning);font-size:9px;">${stats.needsAttention} attention</span>` : ''}
+                    ${stats.needsAttention > 0 ? `<span class="badge" style="background:var(--warning-bg);color:var(--warning);font-size:9px;" title="${stats.needsAttention} booking(s) need your action — pending approval or supplier confirmation required">${stats.needsAttention} need action</span>` : ''}
                   </div>
                   <div class="text-sm font-medium mb-1" style="color:var(--text-primary);">${trip.name}</div>
                   <div class="text-xs mb-2" style="color:var(--text-muted);">${trip.dates}</div>
                   <div class="flex items-center justify-between">
-                    <div class="text-xs" style="color:var(--text-muted);">
-                      ${travelerCount} travelers &#183; ${stats.total} components
+                    <div class="text-xs" style="color:var(--text-muted);" title="Stored as 'Components' in the database">
+                      ${travelerCount} travelers &#183; ${stats.total} bookings
                     </div>
                     ${stats.unreviewed > 0 ? `<span class="w-2 h-2 rounded-full" style="background:var(--error);" title="${stats.unreviewed} unreviewed comments"></span>` : ''}
                     <span class="avatar avatar-sm" style="background:${agent?.color || '#94a3b8'};color:#fff;font-size:9px;" title="${agent?.name}">${agent?.initials || '?'}</span>
                   </div>
+                  ${trip.budget ? `<div class="text-xs mt-1.5" style="color:var(--gold);font-weight:600;">Budget: ${trip.budget}</div>` : ''}
                 </div>`;
             }).join('')}
           </div>

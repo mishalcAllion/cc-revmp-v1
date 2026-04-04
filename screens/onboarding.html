@@ -19,6 +19,23 @@
   <script src="../js/interactions.js"></script>
   <script src="../js/ai-assistant.js"></script>
   <script src="../js/responsive.js"></script>
+  <style>
+    .step-node { display:flex;flex-direction:column;align-items:center;gap:5px; }
+    .step-circle {
+      width:30px;height:30px;border-radius:50%;
+      border:2px solid var(--border);
+      display:flex;align-items:center;justify-content:center;
+      font-size:12px;font-weight:600;
+      color:var(--text-muted);background:var(--bg-surface);
+      transition:all 0.2s;cursor:pointer;
+    }
+    .step-node.active .step-circle { border-color:var(--gold);background:var(--gold);color:#000; }
+    .step-node.done .step-circle { border-color:var(--success);background:var(--success);color:#fff; }
+    .step-label { font-size:11px;color:var(--text-muted);white-space:nowrap; }
+    .step-node.active .step-label,.step-node.done .step-label { color:var(--text-primary);font-weight:500; }
+    .step-connector { flex:1;height:2px;background:var(--border);margin:0 10px;margin-bottom:18px;transition:background 0.2s; }
+    .step-connector.done { background:var(--success); }
+  </style>
 </head>
 <body class="antialiased">
 
@@ -29,16 +46,40 @@
     <div class="max-w-3xl mx-auto py-8 px-6">
 
       <!-- Breadcrumb -->
-      <div class="flex items-center gap-2 text-xs mb-6" style="color:var(--text-muted);">
-        <a href="clients.html" class="hover:underline" style="color:var(--gold);">Clients</a>
+      <div class="flex items-center gap-2 text-xs mb-5" style="color:var(--text-muted);">
+        <a href="dashboard.html" class="hover:underline" style="color:var(--text-muted);">Dashboard</a>
         <span>/</span>
-        <span>New Client</span>
+        <a href="clients.html" class="hover:underline" style="color:var(--text-muted);">Clients</a>
+        <span>/</span>
+        <span style="color:var(--text-primary);font-weight:500;">New Client</span>
       </div>
 
       <h1 class="text-xl font-semibold mb-1" style="color:var(--text-primary);">Create New Client</h1>
-      <p class="text-sm mb-6" style="color:var(--text-secondary);">Enter client details to create an account. A concierge group will be auto-created.</p>
+      <p class="text-sm mb-5" style="color:var(--text-secondary);">Enter client details to create an account. <span class="text-xs" style="color:var(--text-muted);">* Required fields</span></p>
+
+      <!-- Step wizard indicator -->
+      <div class="flex items-center mb-6">
+        <div class="step-node active" id="sn-1" onclick="goToStep(1)">
+          <div class="step-circle" id="sc-1">1</div>
+          <div class="step-label">Contact Info</div>
+        </div>
+        <div class="step-connector" id="sl-1"></div>
+        <div class="step-node" id="sn-2" onclick="goToStep(2)">
+          <div class="step-circle" id="sc-2">2</div>
+          <div class="step-label">Preferences</div>
+        </div>
+        <div class="step-connector" id="sl-2"></div>
+        <div class="step-node" id="sn-3" onclick="goToStep(3)">
+          <div class="step-circle" id="sc-3">3</div>
+          <div class="step-label">Review</div>
+        </div>
+      </div>
 
       <!-- Form -->
+      <div class="space-y-6">
+
+      <!-- ===== STEP 1: Contact Info ===== -->
+      <div id="step-content-1">
       <div class="space-y-6">
 
         <!-- Section 1: Required fields (always visible) -->
@@ -132,6 +173,16 @@
             </div>
           </div>
         </div>
+
+      </div> <!-- end step-content-1 inner -->
+      <div class="flex justify-end mt-4">
+        <button class="btn-gold" onclick="goToStep(2)">Next: Preferences →</button>
+      </div>
+      </div> <!-- end step-content-1 -->
+
+      <!-- ===== STEP 2: Preferences ===== -->
+      <div id="step-content-2" style="display:none;">
+      <div class="space-y-6">
 
         <!-- Section 4: AI Extraction Preview (appears after upload) -->
         <div id="ai-extraction" class="card overflow-hidden" style="display:none;">
@@ -235,6 +286,17 @@
           </div>
         </div>
 
+      </div> <!-- end step-content-2 inner -->
+      <div class="flex justify-between mt-4">
+        <button class="btn-ghost" onclick="goToStep(1)">← Back</button>
+        <button class="btn-gold" onclick="goToStep(3)">Next: Review →</button>
+      </div>
+      </div> <!-- end step-content-2 -->
+
+      <!-- ===== STEP 3: Review & Submit ===== -->
+      <div id="step-content-3" style="display:none;">
+      <div class="space-y-6">
+
         <!-- Submit -->
         <div class="card p-5">
           <div class="text-xs font-semibold uppercase tracking-wide mb-3" style="color:var(--text-muted);">Preview</div>
@@ -252,12 +314,41 @@
           </div>
         </div>
 
+      </div> <!-- end step-content-3 inner -->
+      <div class="flex justify-between mt-4">
+        <button class="btn-ghost" onclick="goToStep(2)">← Back</button>
       </div>
+      </div> <!-- end step-content-3 -->
+
+      </div> <!-- end outer form wrapper -->
     </div>
   </div>
 </div>
 
 <script>
+  let currentStep = 1;
+
+  function goToStep(step) {
+    // Update step content visibility
+    [1, 2, 3].forEach(s => {
+      const el = document.getElementById('step-content-' + s);
+      if (el) el.style.display = s === step ? '' : 'none';
+      const sn = document.getElementById('sn-' + s);
+      if (sn) {
+        sn.classList.remove('active', 'done');
+        if (s === step) sn.classList.add('active');
+        else if (s < step) sn.classList.add('done');
+      }
+    });
+    // Update connector lines
+    [1, 2].forEach(s => {
+      const sl = document.getElementById('sl-' + s);
+      if (sl) sl.classList.toggle('done', s < step);
+    });
+    currentStep = step;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     MaestroNav.render('sidebar-root');
     document.getElementById('main-wrapper').style.marginLeft = MaestroNav.getSidebarWidth() + 'px';

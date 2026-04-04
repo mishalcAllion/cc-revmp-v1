@@ -30,12 +30,15 @@
     <!-- Trip header -->
     <div class="px-4 sm:px-6 py-3 sm:py-5 border-b transition-theme flex-shrink-0" style="background:var(--bg-surface);border-color:var(--border);">
 
-      <!-- Row 1: Back nav + actions on same line -->
+      <!-- Row 1: Breadcrumb + actions on same line -->
       <div class="flex items-center justify-between mb-2.5">
-        <a href="trip-pipeline.html" class="flex items-center gap-1.5 text-sm font-medium hover:underline" style="color:var(--text-muted);">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
-          Pipeline
-        </a>
+        <nav class="flex items-center gap-1.5 text-xs" style="color:var(--text-muted);">
+          <a href="dashboard.html" class="hover:underline" style="color:var(--text-muted);">Dashboard</a>
+          <span>/</span>
+          <a href="trip-pipeline.html" class="hover:underline" style="color:var(--text-muted);">Trips</a>
+          <span>/</span>
+          <span id="breadcrumb-trip-name" class="font-medium" style="color:var(--text-primary);">Trip</span>
+        </nav>
         <div class="flex gap-1.5">
           <button class="btn-ghost flex items-center gap-1 text-xs" id="trip-chat-btn" onclick="navigateToInbox()">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
@@ -45,10 +48,10 @@
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
             Task
           </button>
-          <button class="btn-gold flex items-center gap-1 text-xs" onclick="openBookingTypeModal()">
+          <button class="btn-gold flex items-center gap-1 text-xs" onclick="openBookingTypeModal()" title="Add a flight, hotel, transfer, dining reservation, or other booking to this trip">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
             <span class="sm:hidden">+ Add</span>
-            <span class="hidden sm:inline">+ Component</span>
+            <span class="hidden sm:inline">+ Add Booking</span>
           </button>
         </div>
       </div>
@@ -100,11 +103,11 @@
 
       <!-- Row 4: Stat pills — horizontally scrollable, no wrap -->
       <div class="flex items-center gap-2 overflow-x-auto" style="-webkit-overflow-scrolling:touch;scrollbar-width:none;">
-        <span class="stat-pill flex-shrink-0" id="stat-components">0 components</span>
-        <span class="stat-pill flex-shrink-0" id="stat-attention" style="background:var(--warning-bg);color:var(--warning);">0 need attention</span>
-        <span class="stat-pill flex-shrink-0" id="stat-approved" style="background:var(--success-bg);color:var(--success);">0 approved</span>
+        <span class="stat-pill flex-shrink-0" id="stat-components" title="Stored as 'Components' in the database">0 bookings</span>
+        <span class="stat-pill flex-shrink-0" id="stat-attention" style="background:var(--warning-bg);color:var(--warning);" title="Bookings that need your action — pending approval or supplier confirmation">0 need action</span>
+        <span class="stat-pill flex-shrink-0" id="stat-approved" style="background:var(--success-bg);color:var(--success);" title="Bookings confirmed with the supplier and approved by the client">0 approved</span>
         <span class="stat-pill flex-shrink-0" id="stat-tasks">0 tasks</span>
-        <span class="stat-pill flex-shrink-0" id="stat-unreviewed" style="background:var(--info-bg);color:var(--info);">0 unreviewed</span>
+        <span class="stat-pill flex-shrink-0" id="stat-unreviewed" style="background:var(--info-bg);color:var(--info);" title="Client comments on bookings that your team hasn't reviewed yet">0 pending reviews</span>
       </div>
     </div>
 
@@ -114,7 +117,7 @@
       <div class="px-6 border-b flex-shrink-0 transition-theme" style="background:var(--bg-surface);border-color:var(--border);">
         <div class="tab-bar" style="border:none;padding:0;">
           <div class="tab-item active" data-tab="overview" onclick="switchTab('overview')">Overview</div>
-          <div class="tab-item" data-tab="components" onclick="switchTab('components')">Components</div>
+          <div class="tab-item" data-tab="components" onclick="switchTab('components')" title="Stored as 'Components' in the database">Bookings</div>
           <div class="tab-item" data-tab="travelers" onclick="switchTab('travelers')">Travelers</div>
           <div class="tab-item" data-tab="tasks" onclick="switchTab('tasks')">Tasks</div>
           <div class="tab-item" data-tab="activity" onclick="switchTab('activity')">Activity</div>
@@ -140,9 +143,12 @@
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
                     <span class="text-xs font-semibold" style="color:var(--gold);">AI TRIP SUMMARY</span>
                   </div>
-                  <button class="text-xs px-2 py-1 rounded" style="background:var(--bg-surface-alt);color:var(--text-muted);" onclick="this.textContent='Regenerating...';setTimeout(()=>{this.textContent='Regenerate';showToast('Summary regenerated','success')},1500)">
-                    Regenerate
-                  </button>
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs" style="color:var(--text-muted);">Last generated: 2h ago</span>
+                    <button class="text-xs px-2 py-1 rounded" style="background:var(--bg-surface-alt);color:var(--text-muted);" onclick="this.textContent='Refreshing...';setTimeout(()=>{this.textContent='Refresh Summary';showToast('AI summary refreshed','success')},1500)" title="Re-generate the AI summary based on the latest trip data">
+                      Refresh Summary
+                    </button>
+                  </div>
                 </div>
                 <p class="text-sm leading-relaxed" style="color:var(--text-secondary);" id="ai-summary">
                   14-night Greece itinerary for 4 travelers (2 couples). Anchors in Athens (3n, Grande Bretagne), Mykonos (5n, Cavo Tagoo), and Santorini (4n, pending Canaves Oia confirmation). Key highlight: private yacht day on May 15 around Delos/Rhenia. Waitlist risk on primary Santorini hotel — Grace Hotel held as backup. Helicopter transfer Mykonos-Santorini being arranged. Budget tracking at $22,000 against $22,000 target.
@@ -162,7 +168,13 @@
               <!-- Notes -->
               <div class="card p-5">
                 <div class="flex items-center justify-between mb-3">
-                  <div class="text-sm font-semibold" style="color:var(--text-primary);">Internal Notes</div>
+                  <div>
+                    <div class="flex items-center gap-1.5">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted);"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                      <div class="text-sm font-semibold" style="color:var(--text-primary);">Internal Notes</div>
+                    </div>
+                    <div class="text-xs mt-0.5" style="color:var(--text-muted);">Only visible to your team — not shown to the client</div>
+                  </div>
                   <button class="text-xs" style="color:var(--gold);" onclick="openNoteModal()">+ Note</button>
                 </div>
                 <div class="space-y-3">
@@ -238,8 +250,11 @@
              ============================================================ -->
         <div id="tab-components" class="p-6" style="display:none;">
           <div class="flex items-center justify-between mb-4">
-            <div class="text-sm font-semibold" style="color:var(--text-primary);">All Components</div>
-            <button class="btn-gold text-xs" onclick="openBookingTypeModal()">+ Add Component</button>
+            <div>
+              <div class="text-sm font-semibold" style="color:var(--text-primary);">All Bookings</div>
+              <div class="text-xs mt-0.5" style="color:var(--text-muted);">Flights, hotels, transfers, dining, and other trip components</div>
+            </div>
+            <button class="btn-gold text-xs" onclick="openBookingTypeModal()">+ Add Booking</button>
           </div>
 
           <!-- Category filter -->
@@ -266,8 +281,8 @@
 
           <!-- Empty placeholder -->
           <div class="mt-6 p-6 rounded-xl border-2 border-dashed text-center" style="border-color:var(--border);" id="add-component-placeholder">
-            <div class="text-sm font-medium mb-1" style="color:var(--text-muted);">Add more components to this trip</div>
-            <button class="text-xs mt-2" style="color:var(--gold);" onclick="openBookingTypeModal()">+ New component</button>
+            <div class="text-sm font-medium mb-1" style="color:var(--text-muted);">No bookings yet — add flights, hotels, or other arrangements</div>
+            <button class="text-xs mt-2" style="color:var(--gold);" onclick="openBookingTypeModal()">+ Add first booking</button>
           </div>
         </div>
 
@@ -513,6 +528,7 @@
 
     document.title = currentTrip.name + ' -- Maestro Command Centre';
     document.getElementById('trip-name').textContent = currentTrip.name;
+    document.getElementById('breadcrumb-trip-name').textContent = currentTrip.name;
     document.getElementById('trip-dates').textContent = currentTrip.dates;
     document.getElementById('trip-destinations').textContent = currentTrip.destinations;
     document.getElementById('trip-travelers').textContent = travelers.length + ' travelers';
@@ -553,8 +569,8 @@
     // Stats
     const stats = getComponentStats(tripId);
     const openTasks = tasks.filter(t => t.status !== 'Done').length;
-    document.getElementById('stat-components').textContent = stats.total + ' components';
-    document.getElementById('stat-attention').textContent = stats.needsAttention + ' need attention';
+    document.getElementById('stat-components').textContent = stats.total + ' bookings';
+    document.getElementById('stat-attention').textContent = stats.needsAttention + ' need action';
     document.getElementById('stat-approved').textContent = stats.approved + ' approved';
     document.getElementById('stat-tasks').textContent = openTasks + ' open tasks';
     document.getElementById('stat-unreviewed').textContent = stats.unreviewed + ' unreviewed';

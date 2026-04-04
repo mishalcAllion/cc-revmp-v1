@@ -208,7 +208,7 @@
         <!-- Components section (trip threads) -->
         <div id="components-wrapper" class="mb-4">
           <button class="flex items-center justify-between w-full text-left" onclick="toggleSection('components-section')">
-            <span id="components-header" class="text-xs font-semibold uppercase tracking-wide" style="color:var(--text-muted);">COMPONENTS (0)</span>
+            <span id="components-header" class="text-xs font-semibold uppercase tracking-wide" style="color:var(--text-muted);">BOOKINGS (0)</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
           <div id="components-section" class="mt-2 space-y-2"></div>
@@ -332,17 +332,28 @@
     }
   }
 
+  const LANE_DESCRIPTIONS = {
+    unassigned:  'No agent assigned — these conversations have no owner and are not being monitored',
+    error:       'Response time exceeded — client is waiting and SLA target has been breached',
+    warning:     'Response time running low — reply soon to avoid breaching the SLA target',
+    success:     'Within response time target — no immediate action required',
+  };
+
   function renderSwimLane(title, conversations, color, type) {
     const count = conversations.length;
-    const badgeBg = type === 'error' ? 'var(--error)' : type === 'warning' ? 'var(--warning)' : 'var(--success)';
+    const badgeBg = type === 'error' ? 'var(--error)' : type === 'warning' ? 'var(--warning)' : type === 'unassigned' ? 'var(--warning)' : 'var(--success)';
+    const description = LANE_DESCRIPTIONS[type] || '';
 
     return `
       <div class="mb-4">
         <!-- Lane header -->
-        <div class="flex items-center gap-2 px-4 py-2 border-b transition-theme" style="border-color:var(--border);">
-          <div class="w-2 h-2 rounded-full" style="background:${color};"></div>
-          <span class="text-xs font-semibold uppercase tracking-wide flex-1" style="color:var(--text-primary);">${title}</span>
-          <span class="text-xs px-2 py-0.5 rounded-full font-medium" style="background:${badgeBg};color:#fff;">${count}</span>
+        <div class="px-4 py-2 border-b transition-theme" style="border-color:var(--border);">
+          <div class="flex items-center gap-2">
+            <div class="w-2 h-2 rounded-full flex-shrink-0" style="background:${color};"></div>
+            <span class="text-xs font-semibold uppercase tracking-wide flex-1" style="color:var(--text-primary);">${title}</span>
+            <span class="text-xs px-2 py-0.5 rounded-full font-medium" style="background:${badgeBg};color:#fff;">${count}</span>
+          </div>
+          ${description ? `<p class="text-xs mt-0.5 ml-4" style="color:var(--text-muted);">${description}</p>` : ''}
         </div>
         <!-- Lane items -->
         <div class="space-y-0">
@@ -667,7 +678,7 @@
     const container = document.getElementById('components-section');
 
     const header = document.getElementById('components-header');
-    if (header) header.textContent = `COMPONENTS (${components.length})`;
+    if (header) header.textContent = `BOOKINGS (${components.length})`;
 
     const categoryColors = {
       flight: 'var(--info)', hotel: 'var(--success)', dining: '#f97316',
