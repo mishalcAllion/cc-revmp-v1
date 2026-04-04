@@ -12,11 +12,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/theme.css">
   <link rel="stylesheet" href="../css/ai-assistant.css">
+  <link rel="stylesheet" href="../css/responsive.css">
   <script src="../js/data.js"></script>
   <script src="../js/theme.js"></script>
   <script src="../js/nav.js"></script>
   <script src="../js/interactions.js"></script>
   <script src="../js/ai-assistant.js"></script>
+  <script src="../js/responsive.js"></script>
 </head>
 <body class="antialiased">
 
@@ -42,7 +44,7 @@
         <!-- Section 1: Required fields (always visible) -->
         <div class="card p-5">
           <div class="text-xs font-semibold uppercase tracking-wide mb-4" style="color:var(--text-muted);">Required Information</div>
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="block text-xs font-medium mb-1.5" style="color:var(--text-secondary);">First Name *</label>
               <input class="input" placeholder="First name" value="Samuel">
@@ -141,7 +143,7 @@
             </div>
           </div>
           <div class="p-5">
-            <div class="grid grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <!-- Left: Traveler Preferences -->
               <div>
                 <div class="text-xs font-semibold uppercase tracking-wide mb-3" style="color:var(--text-muted);">Traveler Preferences</div>

@@ -12,11 +12,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/theme.css">
   <link rel="stylesheet" href="../css/ai-assistant.css">
+  <link rel="stylesheet" href="../css/responsive.css">
   <script src="../js/data.js"></script>
   <script src="../js/theme.js"></script>
   <script src="../js/nav.js"></script>
   <script src="../js/interactions.js"></script>
   <script src="../js/ai-assistant.js"></script>
+  <script src="../js/responsive.js"></script>
 </head>
 <body class="antialiased">
 
@@ -25,10 +27,10 @@
 
 <!-- Main content (shifts right based on sidebar width) -->
 <div id="main-wrapper" class="transition-all duration-200" style="margin-left:240px;">
-  <div class="flex h-screen overflow-hidden">
+  <div id="inbox-layout" class="flex h-screen overflow-hidden">
 
     <!-- ============ LEFT: Conversation List (280px) ============ -->
-    <div class="flex flex-col border-r transition-theme" style="width:280px;min-width:280px;background:var(--bg-app);border-color:var(--border);">
+    <div id="conv-list-pane" class="flex flex-col border-r transition-theme" style="width:280px;min-width:280px;background:var(--bg-app);border-color:var(--border);">
       <!-- List header -->
       <div class="px-3 py-2.5 border-b transition-theme" style="border-color:var(--border);">
         <div class="flex items-center justify-between mb-2">
@@ -91,7 +93,7 @@
     </div>
 
     <!-- ============ CENTER: Conversation Thread ============ -->
-    <div class="flex-1 flex flex-col transition-theme" style="background:var(--bg-app);">
+    <div id="thread-pane" class="flex-1 flex flex-col transition-theme" style="background:var(--bg-app);">
       <!-- Conversation header — compact single row -->
       <div class="flex items-center px-4 h-11 border-b transition-theme" style="background:var(--bg-app);border-color:var(--border);">
         <div class="flex items-center gap-2 flex-1 min-w-0">

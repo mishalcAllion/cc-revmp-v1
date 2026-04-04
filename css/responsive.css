@@ -1,0 +1,345 @@
+/* ============================================================
+   Maestro Command Centre — Responsive Overrides
+   Mobile-first responsive layer. Loaded AFTER theme.css.
+   Breakpoints: mobile <640px, tablet 640-1023px, desktop 1024px+
+   ============================================================ */
+
+/* ---- Mobile Hamburger Button ---- */
+.mobile-hamburger {
+  display: none;
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 60;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  color: var(--text-primary);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ---- Sidebar Overlay ---- */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 29;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.sidebar-overlay.open {
+  display: block;
+  opacity: 1;
+}
+
+/* ---- Mobile Back Button (inbox panes) ---- */
+.mobile-back-btn {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  min-height: 44px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  border: none;
+  background: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.mobile-back-btn svg {
+  flex-shrink: 0;
+}
+
+/* ---- Table Responsive Wrapper ---- */
+.table-responsive-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+}
+.table-responsive-wrapper::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 24px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+/* ============================================================
+   TABLET + MOBILE (max-width: 1023px)
+   Sidebar becomes drawer overlay, main-wrapper loses margin
+   ============================================================ */
+@media (max-width: 1023px) {
+  /* --- Sidebar drawer --- */
+  #sidebar:not(.mobile-open) {
+    visibility: hidden !important;
+    pointer-events: none !important;
+    z-index: -1 !important;
+  }
+  #sidebar {
+    width: 240px !important;
+    min-width: 240px !important;
+  }
+  #sidebar.mobile-open {
+    visibility: visible !important;
+    pointer-events: auto !important;
+    z-index: 50 !important;
+  }
+  #sidebar.collapsed {
+    width: 240px !important;
+    min-width: 240px !important;
+  }
+  #sidebar.collapsed .nav-label,
+  #sidebar.collapsed .nav-badge,
+  #sidebar.collapsed .sidebar-logo + span {
+    display: inline !important;
+    opacity: 1 !important;
+    width: auto !important;
+  }
+
+  /* --- Main wrapper margin reset --- */
+  #main-wrapper {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+
+  /* --- Show hamburger --- */
+  .mobile-hamburger {
+    display: flex;
+  }
+
+  /* --- Touch target enlargement --- */
+  .nav-item {
+    min-height: 44px;
+    padding: 10px 12px;
+  }
+  .tab-item {
+    min-height: 44px;
+    padding: 12px 16px;
+  }
+  .btn-gold, .btn-ghost {
+    min-height: 44px;
+    padding: 10px 16px;
+  }
+  .select {
+    min-height: 40px;
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+  .input {
+    min-height: 44px;
+    font-size: 16px; /* prevents iOS auto-zoom */
+    padding: 10px 14px;
+  }
+  input[type="checkbox"],
+  input[type="radio"] {
+    width: 22px;
+    height: 22px;
+  }
+
+  /* --- Header padding for hamburger clearance --- */
+  .mobile-header-pad {
+    padding-left: 56px !important;
+  }
+}
+
+/* ============================================================
+   MOBILE ONLY (max-width: 767px)
+   Inbox single-pane, tables scroll, kanban accordion
+   ============================================================ */
+@media (max-width: 767px) {
+  /* --- Inbox single-pane mode --- */
+  .inbox-layout > div {
+    display: none !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+  }
+  .inbox-layout > div.pane-active {
+    display: flex !important;
+  }
+  .inbox-layout {
+    flex-direction: column !important;
+  }
+
+  /* --- Show mobile back buttons --- */
+  .mobile-back-btn {
+    display: flex;
+  }
+
+  /* --- Message bubbles wider on mobile --- */
+  .msg-bubble {
+    max-width: 85% !important;
+  }
+
+  /* --- Table scroll hint gradient --- */
+  .table-responsive-wrapper::after {
+    opacity: 1;
+    background: linear-gradient(to left, var(--bg-surface) 0%, transparent 100%);
+  }
+
+  /* --- Kanban vertical accordion --- */
+  .kanban-board-mobile .kanban-col {
+    min-width: unset !important;
+    max-width: unset !important;
+    width: 100% !important;
+    flex-shrink: 1 !important;
+  }
+  .kanban-board-mobile {
+    min-width: unset !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  .kanban-board-mobile .kanban-col .kanban-cards {
+    display: none;
+  }
+  .kanban-board-mobile .kanban-col.expanded .kanban-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .kanban-col-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    min-height: 48px;
+    cursor: pointer;
+    border-radius: var(--radius);
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .kanban-col-toggle .chevron {
+    transition: transform 0.2s;
+  }
+  .kanban-col.expanded .kanban-col-toggle .chevron {
+    transform: rotate(180deg);
+  }
+
+  /* --- Filter rows wrap --- */
+  .filter-row {
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+  .filter-row > * {
+    flex: 1 1 calc(50% - 4px);
+    min-width: 120px;
+  }
+
+  /* --- AI history 2-pane → single pane --- */
+  .ai-history-layout > div {
+    display: none !important;
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+  .ai-history-layout > div.pane-active {
+    display: flex !important;
+  }
+}
+
+/* ============================================================
+   SMALL MOBILE (max-width: 639px)
+   Fullscreen overlays, compact spacing
+   ============================================================ */
+@media (max-width: 639px) {
+  /* --- Slide-over fullscreen --- */
+  .slide-over {
+    width: 100vw !important;
+  }
+
+  /* --- Command palette edge-to-edge --- */
+  .cmd-palette {
+    width: calc(100vw - 32px) !important;
+    left: 16px !important;
+    transform: none !important;
+    top: 16px !important;
+  }
+
+  /* --- Modal fullscreen --- */
+  .modal-panel,
+  .modal-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 0 !important;
+    max-height: 100vh !important;
+  }
+
+  /* --- AI bar full-width bottom --- */
+  .ai-bar {
+    left: 12px !important;
+    right: 12px !important;
+    bottom: 12px !important;
+  }
+  .ai-bar-input-wrapper {
+    width: 100% !important;
+  }
+
+  /* --- Tab bar scrollable --- */
+  .tab-bar {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    flex-wrap: nowrap !important;
+  }
+  .tab-bar::-webkit-scrollbar {
+    display: none;
+  }
+  .tab-item {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* --- Compact header spacing --- */
+  .page-header {
+    padding: 12px 16px !important;
+  }
+  .page-header h1 {
+    font-size: 18px !important;
+  }
+}
+
+/* ============================================================
+   TABLET RANGE (640px - 1023px)
+   Context panel as slide-over, moderate layout adjustments
+   ============================================================ */
+@media (min-width: 640px) and (max-width: 1023px) {
+  /* --- Slide-over capped --- */
+  .slide-over {
+    width: min(480px, 85vw) !important;
+  }
+
+  /* --- Command palette capped --- */
+  .cmd-palette {
+    width: min(560px, 90vw) !important;
+  }
+
+  /* --- Context panel as overlay on tablet --- */
+  .inbox-layout #context-panel {
+    position: fixed !important;
+    right: -340px;
+    top: 0;
+    height: 100vh;
+    z-index: 45;
+    box-shadow: var(--shadow-lg);
+    transition: right 0.3s ease;
+    width: 340px !important;
+    min-width: 340px !important;
+    background: var(--bg-surface);
+  }
+  .inbox-layout #context-panel.tablet-open {
+    right: 0;
+  }
+}

@@ -12,11 +12,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/theme.css">
   <link rel="stylesheet" href="../css/ai-assistant.css">
+  <link rel="stylesheet" href="../css/responsive.css">
   <script src="../js/data.js"></script>
   <script src="../js/theme.js"></script>
   <script src="../js/nav.js"></script>
   <script src="../js/interactions.js"></script>
   <script src="../js/ai-assistant.js"></script>
+  <script src="../js/responsive.js"></script>
 </head>
 <body class="antialiased">
 
@@ -50,17 +52,17 @@
       </div>
 
       <!-- Stats bar -->
-      <div class="flex items-center gap-3 mb-3" id="stats-bar"></div>
+      <div class="flex flex-wrap items-center gap-3 mb-3" id="stats-bar"></div>
 
       <!-- Tabs -->
-      <div class="flex items-center gap-4 mb-3">
+      <div class="flex flex-wrap items-center gap-4 mb-3">
         <button class="task-tab active text-sm font-semibold pb-1" style="border-bottom:2px solid var(--gold);color:var(--text-primary);" data-filter="all">All Tasks (<span id="all-count">0</span>)</button>
         <button class="task-tab text-sm font-medium pb-1" style="color:var(--text-muted);border-bottom:2px solid transparent;" data-filter="mine">My Tasks (<span id="mine-count">0</span>)</button>
         <button class="task-tab text-sm font-medium pb-1" style="color:var(--text-muted);border-bottom:2px solid transparent;" data-filter="urgent">Urgent (<span id="urgent-count">0</span>)</button>
       </div>
 
       <!-- Filters -->
-      <div class="flex items-center gap-2 min-w-0">
+      <div class="flex flex-wrap items-center gap-2 min-w-0">
         <select class="select" data-filter="status">
           <option value="all">Status</option>
           <option>Not Started</option>
@@ -228,6 +230,7 @@
 
     container.innerHTML = `
       <div class="px-6 overflow-y-auto h-full">
+        <div class="table-responsive-wrapper">
         <table class="data-table">
           <thead>
             <tr>
@@ -274,6 +277,7 @@
             }).join('')}
           </tbody>
         </table>
+        </div>
       </div>`;
   }
 

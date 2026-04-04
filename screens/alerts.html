@@ -12,11 +12,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/theme.css">
   <link rel="stylesheet" href="../css/ai-assistant.css">
+  <link rel="stylesheet" href="../css/responsive.css">
   <script src="../js/data.js"></script>
   <script src="../js/theme.js"></script>
   <script src="../js/nav.js"></script>
   <script src="../js/interactions.js"></script>
   <script src="../js/ai-assistant.js"></script>
+  <script src="../js/responsive.js"></script>
 </head>
 <body class="antialiased">
 
@@ -33,7 +35,7 @@
       </div>
 
       <!-- Stats -->
-      <div class="flex items-center gap-3 mb-3">
+      <div class="flex flex-wrap items-center gap-3 mb-3">
         <div class="text-sm" style="color:var(--text-secondary);">
           <span class="font-semibold" id="stat-active" style="color:var(--text-primary);">–</span> active
           <span class="mx-2" style="color:var(--border);">|</span>
@@ -44,7 +46,7 @@
       </div>
 
       <!-- Filters -->
-      <div class="flex items-center gap-2">
+      <div class="flex flex-wrap items-center gap-2">
         <select class="select">
           <option>All Statuses</option>
           <option>Active</option>
@@ -61,21 +63,23 @@
 
     <!-- Alerts table -->
     <div class="flex-1 overflow-y-auto px-6">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>Route</th>
-            <th>Dates</th>
-            <th>Cabin</th>
-            <th>Max Points</th>
-            <th>Program</th>
-            <th>Client</th>
-            <th>Status</th>
-            <th>Triggered</th>
-          </tr>
-        </thead>
-        <tbody id="alerts-body"></tbody>
-      </table>
+      <div class="table-responsive-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Route</th>
+              <th>Dates</th>
+              <th>Cabin</th>
+              <th>Max Points</th>
+              <th>Program</th>
+              <th>Client</th>
+              <th>Status</th>
+              <th>Triggered</th>
+            </tr>
+          </thead>
+          <tbody id="alerts-body"></tbody>
+        </table>
+      </div>
     </div>
 
   </div>

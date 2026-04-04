@@ -12,11 +12,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/theme.css">
   <link rel="stylesheet" href="../css/ai-assistant.css">
+  <link rel="stylesheet" href="../css/responsive.css">
   <script src="../js/data.js"></script>
   <script src="../js/theme.js"></script>
   <script src="../js/nav.js"></script>
   <script src="../js/interactions.js"></script>
   <script src="../js/ai-assistant.js"></script>
+  <script src="../js/responsive.js"></script>
   <style>
     @keyframes pulse-sla {
       0%, 100% { opacity: 1; }
@@ -43,10 +45,10 @@
 
 <!-- Main content (shifts right based on sidebar width) -->
 <div id="main-wrapper" class="transition-all duration-200" style="margin-left:240px;">
-  <div class="flex h-screen overflow-hidden">
+  <div id="inbox-layout" class="flex h-screen overflow-hidden">
 
     <!-- ============ LEFT: Conversation Cards (320px) ============ -->
-    <div class="flex flex-col border-r transition-theme" style="width:320px;min-width:320px;background:var(--bg-surface);border-color:var(--border);">
+    <div id="conv-list-pane" class="flex flex-col border-r transition-theme" style="width:320px;min-width:320px;background:var(--bg-surface);border-color:var(--border);">
       <!-- List header -->
       <div class="px-4 py-3 border-b transition-theme" style="border-color:var(--border);">
         <div class="flex items-center justify-between mb-3">
@@ -109,7 +111,7 @@
     </div>
 
     <!-- ============ CENTER: Conversation Thread ============ -->
-    <div class="flex-1 flex flex-col transition-theme" style="background:var(--bg-app);">
+    <div id="thread-pane" class="flex-1 flex flex-col transition-theme" style="background:var(--bg-app);">
       <!-- Conversation header -->
       <div class="flex items-center px-5 h-14 border-b transition-theme" style="background:var(--bg-surface);border-color:var(--border);">
         <div class="flex items-center gap-3 flex-1">

@@ -134,6 +134,7 @@
   }
 
   function getSidebarWidth() {
+    if (window.matchMedia && window.matchMedia('(max-width: 1023px)').matches) return 0;
     return isCollapsed() ? 56 : 240;
   }
 

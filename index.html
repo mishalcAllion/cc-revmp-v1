@@ -9,12 +9,14 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/theme.css">
+  <link rel="stylesheet" href="css/responsive.css">
   <style>
     .screen-card { position: relative; }
     .screen-card .card-arrow { position:absolute; top:16px; right:16px; opacity:0.35; transition:opacity 0.15s, transform 0.15s; }
     .screen-card:hover .card-arrow { opacity:1; transform:translateX(2px); }
   </style>
   <script src="js/theme.js"></script>
+  <script src="js/responsive.js"></script>
 </head>
 <body class="antialiased" style="background:var(--bg-app);">
 
@@ -63,7 +65,7 @@
       <h2 class="text-sm font-semibold uppercase tracking-wide" style="color:var(--gold);">Inbox & Triage</h2>
     </div>
     <p class="text-xs mb-3 ml-4" style="color:var(--text-muted);">All three views share the same 3-pane layout (conversation list + chat thread + context panel with AI copilot). The difference is how the conversation list is presented — each view is designed for a different agent workflow and team role.</p>
-    <div class="grid grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       <a href="screens/inbox-compact.html" class="card p-4 hover:shadow-md transition-shadow block group">
         <div class="text-sm font-semibold mb-1 group-hover:underline" style="color:var(--text-primary);">Compact List</div>
         <div class="text-xs mb-2" style="color:var(--success);font-weight:600;">For: experienced agents, high-volume days</div>
@@ -89,7 +91,7 @@
       <h2 class="text-sm font-semibold uppercase tracking-wide" style="color:var(--info);">Client Management</h2>
       <span class="text-xs" style="color:var(--text-muted);">-- Individual clients + household grouping</span>
     </div>
-    <div class="grid grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       <a href="screens/clients.html" class="card p-4 hover:shadow-md transition-shadow block group">
         <div class="text-sm font-semibold mb-1 group-hover:underline" style="color:var(--text-primary);">Client List</div>
         <p class="text-xs" style="color:var(--text-muted);">Full CRM table with toggle between All Clients (12 rows) and Households (6 rows). Click any row for 360 detail.</p>
@@ -112,7 +114,7 @@
       <h2 class="text-sm font-semibold uppercase tracking-wide" style="color:var(--success);">Trip Management</h2>
       <span class="text-xs" style="color:var(--text-muted);">-- 7-stage pipeline from Lead to Archived</span>
     </div>
-    <div class="grid grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       <a href="screens/trip-pipeline.html" class="card p-4 hover:shadow-md transition-shadow block group">
         <div class="text-sm font-semibold mb-1 group-hover:underline" style="color:var(--text-primary);">Trip Pipeline (Kanban)</div>
         <p class="text-xs" style="color:var(--text-muted);">7 columns: Lead, Discovery, Planning, Proposal, Booking, Active, Archived. Filter by agent and date range.</p>
@@ -132,7 +134,7 @@
       <h2 class="text-sm font-semibold uppercase tracking-wide" style="color:var(--warning);">Operations</h2>
       <span class="text-xs" style="color:var(--text-muted);">-- Manager overview, tasks, alerts, configuration</span>
     </div>
-    <div class="grid grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       <a href="screens/dashboard.html" class="card p-4 hover:shadow-md transition-shadow block group">
         <div class="text-sm font-semibold mb-1 group-hover:underline" style="color:var(--text-primary);">Dashboard</div>
         <p class="text-xs" style="color:var(--text-muted);">7 KPI cards, SLA health bar, pipeline summary, team workload table, recent activity feed. Manager home screen.</p>
@@ -159,7 +161,7 @@
   <!-- Key Features -->
   <div class="card p-5 mb-8">
     <h2 class="text-xs font-semibold uppercase tracking-wide mb-4" style="color:var(--gold);">Key Features Implemented</h2>
-    <div class="grid grid-cols-3 gap-x-8 gap-y-2 text-xs">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-2 text-xs">
       <div class="flex items-start gap-2">
         <span style="color:var(--success);">&#10003;</span>
         <div><strong style="color:var(--text-primary);">Multi-agent assignment</strong><br><span style="color:var(--text-muted);">Primary owner + collaborators on every conversation</span></div>

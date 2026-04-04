@@ -12,11 +12,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/theme.css">
   <link rel="stylesheet" href="../css/ai-assistant.css">
+  <link rel="stylesheet" href="../css/responsive.css">
   <script src="../js/data.js"></script>
   <script src="../js/theme.js"></script>
   <script src="../js/nav.js"></script>
   <script src="../js/interactions.js"></script>
   <script src="../js/ai-assistant.js"></script>
+  <script src="../js/responsive.js"></script>
 </head>
 <body class="antialiased">
 
@@ -35,15 +37,15 @@
           Back to Clients
         </a>
       </div>
-      <div class="flex items-start gap-4">
+      <div class="flex flex-col sm:flex-row items-start sm:items-start gap-4">
         <span class="avatar avatar-lg avatar-silhouette" id="client-avatar"></span>
         <div class="flex-1">
-          <div class="flex items-center gap-3 mb-2">
+          <div class="flex items-center gap-3 mb-2 flex-wrap">
             <h1 class="text-2xl font-semibold" style="color:var(--text-primary);" id="client-name">Samuel Vimes</h1>
             <span class="badge" id="client-status-badge" style="background:var(--success-bg);color:var(--success);">Active</span>
             <span class="badge" id="client-tier-badge" style="background:var(--gold-bg);color:var(--gold);">VIP</span>
           </div>
-          <div class="flex items-center gap-6 text-sm" style="color:var(--text-secondary);">
+          <div class="flex items-center gap-6 text-sm flex-wrap" style="color:var(--text-secondary);">
             <div class="flex items-center gap-2">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
               <span id="client-phone">+1 (720) 555-0411</span>
@@ -86,7 +88,7 @@
 
       <!-- OVERVIEW TAB -->
       <div data-tab-content="overview">
-        <div class="grid grid-cols-4 gap-4 mb-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <!-- Summary cards -->
           <div class="card p-4">
             <div class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:var(--text-muted);">Active Trips</div>
@@ -240,7 +242,7 @@
             <h2 class="text-lg font-semibold" style="color:var(--text-primary);">Travel Preferences</h2>
             <button class="btn-ghost" onclick="openPreferencesModal()">Edit Preferences</button>
           </div>
-          <div class="grid grid-cols-2 gap-6" id="preferences-grid">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6" id="preferences-grid">
             <!-- Populated by JS -->
           </div>
         </div>
@@ -248,7 +250,7 @@
 
       <!-- POINTS & LOYALTY TAB -->
       <div data-tab-content="points" style="display:none;">
-        <div class="grid grid-cols-3 gap-4" id="points-grid">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="points-grid">
           <!-- Populated by JS -->
         </div>
       </div>

@@ -12,11 +12,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/theme.css">
   <link rel="stylesheet" href="../css/ai-assistant.css">
+  <link rel="stylesheet" href="../css/responsive.css">
   <script src="../js/data.js"></script>
   <script src="../js/theme.js"></script>
   <script src="../js/nav.js"></script>
   <script src="../js/interactions.js"></script>
   <script src="../js/ai-assistant.js"></script>
+  <script src="../js/responsive.js"></script>
 </head>
 <body class="antialiased">
 
@@ -63,7 +65,7 @@
 
     <!-- Kanban board -->
     <div class="flex-1 overflow-x-auto overflow-y-hidden px-4 py-4">
-      <div class="flex gap-4 h-full" id="kanban-board" style="min-width:max-content;">
+      <div class="flex gap-4 h-full" id="kanban-board">
         <!-- Columns rendered by JS -->
       </div>
     </div>
@@ -84,7 +86,7 @@
       btnKanban.style.color = 'var(--text-primary)';
       btnTable.style.background = 'transparent';
       btnTable.style.color = 'var(--text-muted)';
-      board.style.minWidth = 'max-content';
+      board.style.minWidth = '';
       renderKanban();
     } else {
       btnTable.style.background = 'var(--bg-active)';
