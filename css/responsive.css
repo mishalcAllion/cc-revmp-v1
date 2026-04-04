@@ -168,6 +168,10 @@
   }
   .inbox-layout > div.pane-active {
     display: flex !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    overflow: hidden !important;
+    flex-direction: column !important;
   }
   .inbox-layout {
     flex-direction: column !important;
@@ -257,6 +261,10 @@
   }
   .ai-history-layout > div.pane-active {
     display: flex !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    overflow: hidden !important;
+    flex-direction: column !important;
   }
 }
 
