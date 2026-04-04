@@ -29,17 +29,22 @@
 
     <!-- Header -->
     <div class="px-6 py-4 border-b transition-theme" style="background:var(--bg-surface);border-color:var(--border);">
-      <div class="flex items-center justify-between mb-3">
-        <h1 class="text-lg font-semibold" style="color:var(--text-primary);">Flight Alerts</h1>
+      <div class="flex items-center justify-between mb-1">
+        <div>
+          <h1 class="text-lg font-semibold" style="color:var(--text-primary);">Flight Alerts</h1>
+          <p class="text-xs mt-0.5" style="color:var(--text-muted);">Monitor award seat availability — get notified when points bookings open up</p>
+        </div>
         <button class="btn-gold" onclick="openAlertModal()">+ New Alert</button>
       </div>
 
       <!-- Stats -->
-      <div class="flex flex-wrap items-center gap-3 mb-3">
+      <div class="flex flex-wrap items-center gap-3 mb-3 mt-3">
         <div class="text-sm" style="color:var(--text-secondary);">
-          <span class="font-semibold" id="stat-active" style="color:var(--text-primary);">–</span> active
+          <span class="font-semibold" id="stat-active" style="color:var(--text-primary);">–</span>
+          <span data-tooltip="Actively monitoring for matching award seat availability"> active</span>
           <span class="mx-2" style="color:var(--border);">|</span>
-          <span class="font-semibold" id="stat-triggered" style="color:var(--success);">–</span> triggered
+          <span class="font-semibold" id="stat-triggered" style="color:var(--success);">–</span>
+          <span data-tooltip="A matching flight was found — check the AI insight below the row"> availability found</span>
           <span class="mx-2" style="color:var(--border);">|</span>
           <span class="font-semibold" id="stat-paused" style="color:var(--text-primary);">–</span> paused
         </div>
@@ -50,14 +55,14 @@
         <select class="select">
           <option>All Statuses</option>
           <option>Active</option>
-          <option>Triggered</option>
+          <option>Availability Found</option>
           <option>Paused</option>
           <option>Expired</option>
         </select>
         <select id="client-filter" class="select">
           <option>All Clients</option>
         </select>
-        <input class="input" placeholder="Search by route..." style="width:200px;font-size:12px;padding:5px 10px;">
+        <input class="input" placeholder="Search by route, client or program..." style="width:260px;font-size:12px;padding:5px 10px;">
       </div>
     </div>
 
@@ -69,12 +74,12 @@
             <tr>
               <th>Route</th>
               <th>Dates</th>
-              <th>Cabin</th>
-              <th>Max Points</th>
+              <th data-tooltip="F = First, J = Business, Y = Economy">Cabin</th>
+              <th data-tooltip="Maximum points you're willing to spend on this booking">Points Budget</th>
               <th>Program</th>
               <th>Client</th>
               <th>Status</th>
-              <th>Triggered</th>
+              <th data-tooltip="Number of times a matching award seat was found">Times Found</th>
             </tr>
           </thead>
           <tbody id="alerts-body"></tbody>
@@ -102,10 +107,10 @@
 
   function renderAlerts() {
     const statusStyles = {
-      'Active':    { bg: 'var(--success-bg)', color: 'var(--success)' },
-      'Triggered': { bg: 'var(--gold-bg)',    color: 'var(--gold)' },
-      'Paused':    { bg: 'var(--bg-surface-alt)', color: 'var(--text-muted)' },
-      'Expired':   { bg: 'var(--error-bg)',   color: 'var(--error)' },
+      'Active':    { bg: 'var(--success-bg)', color: 'var(--success)',   label: 'Active',             tooltip: 'Monitoring for matching award seat availability' },
+      'Triggered': { bg: 'var(--gold-bg)',    color: 'var(--gold)',      label: 'Availability Found', tooltip: 'A matching flight was found — see the AI Insight below' },
+      'Paused':    { bg: 'var(--bg-surface-alt)', color: 'var(--text-muted)', label: 'Paused',        tooltip: 'Monitoring paused — no notifications will be sent' },
+      'Expired':   { bg: 'var(--error-bg)',   color: 'var(--error)',     label: 'Expired',            tooltip: 'Alert date has passed' },
     };
 
     const programAbbreviations = {
@@ -125,6 +130,21 @@
       clientSelect.appendChild(opt);
     });
 
+    if (!ALERTS || ALERTS.length === 0) {
+      document.getElementById('alerts-body').innerHTML = `
+        <tr>
+          <td colspan="8" style="padding:48px 24px;text-align:center;border-bottom:none;">
+            <div style="color:var(--text-muted);">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto 12px;display:block;opacity:0.4;"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+              <div style="font-size:14px;font-weight:600;margin-bottom:6px;color:var(--text-secondary);">No alerts configured yet</div>
+              <div style="font-size:12px;margin-bottom:16px;">Set up an alert to get notified when award seats become available for your clients</div>
+              <button class="btn-gold" style="font-size:12px;padding:6px 16px;" onclick="openAlertModal()">+ Create First Alert</button>
+            </div>
+          </td>
+        </tr>`;
+      return;
+    }
+
     document.getElementById('alerts-body').innerHTML = ALERTS.map(a => {
       const client = getClient(a.clientId);
       const ss = statusStyles[a.status] || statusStyles['Active'];
@@ -132,9 +152,12 @@
       const aiNote = a.status === 'Triggered' ? `
         <tr>
           <td colspan="8" style="padding:4px 12px 10px;border-bottom:1px solid var(--border);">
-            <div style="display:flex;align-items:center;gap:6px;padding:6px 10px;background:var(--ai-bg);border-radius:var(--radius);border-left:2px solid var(--gold);">
-              <svg viewBox="0 0 24 24" width="12" height="12" fill="var(--gold)"><path d="M12 2L9.5 9.5 2 12l7.5 2.5L12 22l2.5-7.5L22 12l-7.5-2.5z"/></svg>
-              <span style="font-size:11px;color:var(--ai-text);">AI: Found ${a.triggered} availability window${a.triggered > 1 ? 's' : ''}. Best: ${a.dates.split('-')[0].trim()}, ${a.maxPoints} pts via ${programDisplay}.</span>
+            <div style="display:flex;align-items:center;gap:8px;padding:7px 12px;background:var(--gold-bg);border-radius:var(--radius);border-left:3px solid var(--gold);">
+              <span style="display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:9999px;background:var(--gold);color:#000;font-size:10px;font-weight:700;white-space:nowrap;">
+                <svg viewBox="0 0 24 24" width="10" height="10" fill="currentColor"><path d="M12 2L9.5 9.5 2 12l7.5 2.5L12 22l2.5-7.5L22 12l-7.5-2.5z"/></svg>
+                AI Insight
+              </span>
+              <span style="font-size:12px;color:var(--text-secondary);">Found ${a.triggered} availability window${a.triggered > 1 ? 's' : ''}. Best option: ${a.dates.split('-')[0].trim()}, ${a.maxPoints} pts via ${programDisplay}.</span>
             </div>
           </td>
         </tr>` : '';
@@ -151,7 +174,7 @@
               <a href="client-detail?id=${client?.id}" class="text-xs hover:underline" style="color:var(--text-primary);" onclick="event.stopPropagation()">${client?.name?.split(' ').slice(0,2).join(' ')}</a>
             </div>
           </td>
-          <td><span class="badge" style="background:${ss.bg};color:${ss.color};">${a.status}</span></td>
+          <td><span class="badge" style="background:${ss.bg};color:${ss.color};" title="${ss.tooltip}">${ss.label}</span></td>
           <td>
             <span class="font-semibold" style="color:${a.triggered > 0 ? 'var(--gold)' : 'var(--text-muted)'};">${a.triggered}</span>
           </td>
