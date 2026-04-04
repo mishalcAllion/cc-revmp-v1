@@ -109,6 +109,7 @@
 <script>
   let currentView = 'clients'; // 'clients' or 'households'
   let expandedHouseholds = new Set(); // Track which households are expanded
+  let currentSort = { col: 'name', dir: 'asc' };
 
   // ---- Render sidebar ----
   document.addEventListener('DOMContentLoaded', () => {
@@ -173,22 +174,53 @@
     }
   }
 
+  function sortIcon(col) {
+    if (currentSort.col !== col) return '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:0.25;vertical-align:middle;margin-left:3px;"><path d="M12 5v14M5 10l7-5 7 5M5 14l7 5 7-5"/></svg>';
+    return currentSort.dir === 'asc'
+      ? '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-left:3px;color:var(--gold);"><path d="M12 19V5M5 12l7-7 7 7"/></svg>'
+      : '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-left:3px;color:var(--gold);"><path d="M12 5v14M5 12l7 7 7-7"/></svg>';
+  }
+
+  function toggleSort(col) {
+    if (currentSort.col === col) {
+      currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
+    } else {
+      currentSort.col = col;
+      currentSort.dir = 'asc';
+    }
+    renderClientsTable();
+  }
+
+  function applySortToClients(clients) {
+    return clients.slice().sort((a, b) => {
+      let va, vb;
+      if (currentSort.col === 'name') { va = a.name; vb = b.name; }
+      else if (currentSort.col === 'tier') { va = a.tier; vb = b.tier; }
+      else if (currentSort.col === 'status') { va = a.status; vb = b.status; }
+      else { return 0; }
+      const cmp = String(va).localeCompare(String(vb));
+      return currentSort.dir === 'asc' ? cmp : -cmp;
+    });
+  }
+
+  const thStyle = 'cursor:pointer;user-select:none;white-space:nowrap;';
+
   // ---- Render clients table (individual view) ----
   function renderClientsTable() {
     const thead = document.getElementById('table-header');
     const tbody = document.getElementById('clients-table-body');
-    const clients = getFilteredClients();
+    const clients = applySortToClients(getFilteredClients());
 
-    // Update header
+    // Update header with sortable columns
     thead.innerHTML = `
       <tr>
-        <th>Name</th>
+        <th style="${thStyle}" onclick="toggleSort('name')">Name ${sortIcon('name')}</th>
         <th>Household</th>
         <th>Phone</th>
         <th>Email</th>
-        <th>Tier</th>
-        <th>Status</th>
-        <th>Last Activity</th>
+        <th style="${thStyle}" onclick="toggleSort('tier')">Tier ${sortIcon('tier')}</th>
+        <th style="${thStyle}" onclick="toggleSort('status')">Status ${sortIcon('status')}</th>
+        <th>Last Contact</th>
       </tr>`;
 
     if (clients.length === 0) {
@@ -244,7 +276,7 @@
           <td>
             <span class="badge" style="background:${sc.bg};color:${sc.color};">${client.status}</span>
           </td>
-          <td style="color:var(--text-muted);">${lastActivity}</td>
+          <td style="color:var(--text-muted);" title="Most recent conversation or trip activity">${lastActivity}</td>
         </tr>`;
     }).join('');
 

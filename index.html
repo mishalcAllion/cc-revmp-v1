@@ -225,6 +225,26 @@
 
 </div>
 
+<!-- First-visit walkthrough overlay -->
+<div id="tour-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:100;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px);">
+  <div style="background:var(--bg-surface);border:1px solid var(--border);border-radius:16px;padding:32px;max-width:440px;width:90%;box-shadow:0 24px 64px rgba(0,0,0,0.3);position:relative;">
+    <!-- Step dots -->
+    <div style="display:flex;gap:6px;margin-bottom:24px;" id="tour-dots"></div>
+    <!-- Content -->
+    <div id="tour-icon" style="font-size:28px;margin-bottom:12px;"></div>
+    <h2 id="tour-title" style="font-size:18px;font-weight:700;color:var(--text-primary);margin-bottom:8px;"></h2>
+    <p id="tour-body" style="font-size:13px;color:var(--text-secondary);line-height:1.6;margin-bottom:24px;"></p>
+    <!-- Actions -->
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <button onclick="dismissTour()" style="font-size:12px;color:var(--text-muted);cursor:pointer;text-decoration:underline;background:none;border:none;">Skip tour</button>
+      <div style="display:flex;gap:8px;">
+        <button id="tour-back-btn" onclick="tourStep(-1)" style="display:none;" class="btn-ghost">← Back</button>
+        <button id="tour-next-btn" onclick="tourStep(1)" style="background:var(--gold);color:#000;border:none;padding:8px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
 // Add arrow indicator to all screen cards
 document.querySelectorAll('.grid a.card').forEach(a => {
@@ -234,6 +254,73 @@ document.querySelectorAll('.grid a.card').forEach(a => {
   arrow.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted)"><path d="m9 18 6-6-6-6"/></svg>';
   a.appendChild(arrow);
 });
+
+// ---- First-visit walkthrough ----
+const TOUR_STEPS = [
+  {
+    icon: '✦',
+    title: 'Welcome to Command Centre',
+    body: 'This is Maestro\'s internal ops platform — everything your team needs to manage clients, trips, and conversations in one place. This tour takes 30 seconds.'
+  },
+  {
+    icon: '💬',
+    title: 'Start with the Inbox',
+    body: 'The Inbox is where your ops team spends most of their time. Three views for different working styles: Compact List for speed, Card View for context, Queue View for SLA triage.'
+  },
+  {
+    icon: '✈️',
+    title: 'Track trips in the Pipeline',
+    body: 'The Trip Pipeline shows every booking in a 7-stage Kanban board — from Lead to Archived. Click any card to open the full trip detail with bookings, tasks, and AI summary.'
+  },
+  {
+    icon: '✦',
+    title: 'AI is everywhere',
+    body: 'Press Cmd+J (or Ctrl+J) on any screen to open the AI assistant. It\'s context-aware — if you\'re looking at a trip, it already knows which trip. You can also ask it to draft replies, summarise threads, or research venues.'
+  },
+  {
+    icon: '🚀',
+    title: 'You\'re ready to explore',
+    body: 'Click "Enter Command Centre" to jump straight into the Dashboard, or pick any screen below. All data is mock/demo — nothing you do will affect real clients.'
+  }
+];
+
+let tourCurrentStep = 0;
+
+function renderTourDots() {
+  document.getElementById('tour-dots').innerHTML = TOUR_STEPS.map((_, i) =>
+    `<div style="width:${i === tourCurrentStep ? 18 : 6}px;height:6px;border-radius:3px;background:${i === tourCurrentStep ? 'var(--gold)' : 'var(--border)'};transition:all 0.2s;"></div>`
+  ).join('');
+}
+
+function renderTourStep() {
+  const step = TOUR_STEPS[tourCurrentStep];
+  document.getElementById('tour-icon').textContent = step.icon;
+  document.getElementById('tour-title').textContent = step.title;
+  document.getElementById('tour-body').textContent = step.body;
+  document.getElementById('tour-back-btn').style.display = tourCurrentStep > 0 ? '' : 'none';
+  const nextBtn = document.getElementById('tour-next-btn');
+  nextBtn.textContent = tourCurrentStep === TOUR_STEPS.length - 1 ? 'Start exploring →' : 'Next →';
+  renderTourDots();
+}
+
+function tourStep(dir) {
+  const next = tourCurrentStep + dir;
+  if (next >= TOUR_STEPS.length) { dismissTour(); return; }
+  if (next < 0) return;
+  tourCurrentStep = next;
+  renderTourStep();
+}
+
+function dismissTour() {
+  document.getElementById('tour-overlay').style.display = 'none';
+  localStorage.setItem('maestro_tour_done', '1');
+}
+
+// Show tour on first visit
+if (!localStorage.getItem('maestro_tour_done')) {
+  document.getElementById('tour-overlay').style.display = 'flex';
+  renderTourStep();
+}
 </script>
 </body>
 </html>
