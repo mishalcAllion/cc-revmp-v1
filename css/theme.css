@@ -415,6 +415,10 @@ body {
   letter-spacing: 0.05em;
   color: var(--text-muted);
   border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--bg-surface);
 }
 .data-table td {
   padding: 10px 12px;

@@ -28,87 +28,83 @@
   <div class="flex flex-col h-screen overflow-hidden" style="background:var(--bg-app);">
 
     <!-- Trip header -->
-    <div class="px-6 py-5 border-b transition-theme flex-shrink-0" style="background:var(--bg-surface);border-color:var(--border);">
-      <div class="flex items-center gap-2 mb-4">
+    <div class="px-4 sm:px-6 py-3 sm:py-5 border-b transition-theme flex-shrink-0" style="background:var(--bg-surface);border-color:var(--border);">
+
+      <!-- Row 1: Back nav + actions on same line -->
+      <div class="flex items-center justify-between mb-2.5">
         <a href="trip-pipeline.html" class="flex items-center gap-1.5 text-sm font-medium hover:underline" style="color:var(--text-muted);">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
-          Back to Pipeline
+          Pipeline
         </a>
+        <div class="flex gap-1.5">
+          <button class="btn-ghost flex items-center gap-1 text-xs" id="trip-chat-btn" onclick="navigateToInbox()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+            Chat
+          </button>
+          <button class="btn-ghost flex items-center gap-1 text-xs" onclick="openTaskModal()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            Task
+          </button>
+          <button class="btn-gold flex items-center gap-1 text-xs" onclick="openBookingTypeModal()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            <span class="sm:hidden">+ Add</span>
+            <span class="hidden sm:inline">+ Component</span>
+          </button>
+        </div>
       </div>
 
-      <div class="flex flex-col lg:flex-row items-start gap-4">
-        <!-- Destination icon -->
-        <div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style="background:var(--gold-bg);">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21 4 19.5 2.5c-1.5-1.5-3.5-1.5-5 0L11 6 2.8 4.2C2.3 4.1 1.8 4.4 1.6 4.9l-.5 1.7c-.2.6.1 1.2.7 1.5L8 11l-2 3H4l-1 1 3 2 2 3 1-1v-2l3-2 3.5 6.2c.3.6.9.9 1.5.7l1.7-.5c.6-.2.9-.7.8-1.2z"/></svg>
+      <!-- Row 2: Icon + name + badge | client + agent -->
+      <div class="flex items-center gap-2.5 mb-2">
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background:var(--gold-bg);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21 4 19.5 2.5c-1.5-1.5-3.5-1.5-5 0L11 6 2.8 4.2C2.3 4.1 1.8 4.4 1.6 4.9l-.5 1.7c-.2.6.1 1.2.7 1.5L8 11l-2 3H4l-1 1 3 2 2 3 1-1v-2l3-2 3.5 6.2c.3.6.9.9 1.5.7l1.7-.5c.6-.2.9-.7.8-1.2z"/></svg>
         </div>
-
         <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-3 mb-1.5 flex-wrap">
-            <h1 class="text-xl font-semibold truncate" style="color:var(--text-primary);" id="trip-name">Loading...</h1>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base font-semibold truncate min-w-0 flex-1" style="color:var(--text-primary);" id="trip-name">Loading...</h1>
             <span class="badge flex-shrink-0" id="trip-stage-badge">Lead</span>
           </div>
-          <div class="flex items-center gap-5 text-sm flex-wrap" style="color:var(--text-secondary);">
-            <div class="flex items-center gap-1.5">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
-              <span id="trip-dates">-</span>
-            </div>
-            <div class="flex items-center gap-1.5">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-              <span id="trip-destinations">-</span>
-            </div>
-            <div class="flex items-center gap-1.5">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-              <span id="trip-travelers">-</span>
-            </div>
-            <div class="flex items-center gap-1.5" style="color:var(--gold);">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-              <span id="trip-budget" class="font-semibold">-</span>
-            </div>
-          </div>
         </div>
-
-        <!-- Right: client + agent + actions -->
-        <div class="flex items-center gap-3 flex-shrink-0">
-          <div class="text-right">
-            <div class="text-xs font-medium mb-0.5" style="color:var(--text-muted);">Client</div>
-            <a id="trip-client-link" href="#" class="flex items-center gap-2 hover:underline">
-              <span class="text-sm font-semibold" id="trip-client-name" style="color:var(--text-primary);">-</span>
-              <span class="avatar avatar-sm avatar-silhouette" id="trip-client-avatar"></span>
-            </a>
-          </div>
-          <div class="w-px h-8" style="background:var(--border);"></div>
-          <div class="text-right">
-            <div class="text-xs font-medium mb-0.5" style="color:var(--text-muted);">Agent</div>
-            <div class="flex items-center gap-2">
-              <span class="text-sm font-semibold" id="trip-agent-name" style="color:var(--text-primary);">-</span>
-              <span class="avatar avatar-sm" id="trip-agent-avatar" style="background:#f97316;color:#fff;">CR</span>
-            </div>
-          </div>
-          <div class="w-px h-8" style="background:var(--border);"></div>
-          <div class="flex gap-2">
-            <button class="btn-ghost flex items-center gap-1.5 text-xs" id="trip-chat-btn" onclick="navigateToInbox()">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
-              Chat
-            </button>
-            <button class="btn-ghost flex items-center gap-1.5 text-xs" onclick="openTaskModal()">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-              Add Task
-            </button>
-            <button class="btn-gold flex items-center gap-1.5 text-xs" onclick="openBookingTypeModal()">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-              Add Component
-            </button>
+        <!-- Client + Agent — avatars only on mobile, names on sm+ -->
+        <div class="flex items-center gap-1.5 flex-shrink-0">
+          <a id="trip-client-link" href="#" class="flex items-center gap-1 hover:underline" title="Client">
+            <span class="avatar avatar-sm avatar-silhouette" id="trip-client-avatar"></span>
+            <span class="text-xs font-medium hidden sm:inline" id="trip-client-name" style="color:var(--text-primary);">-</span>
+          </a>
+          <div class="w-px h-4" style="background:var(--border);"></div>
+          <div class="flex items-center gap-1" title="Agent">
+            <span class="avatar avatar-sm" id="trip-agent-avatar" style="background:#f97316;color:#fff;">CR</span>
+            <span class="text-xs font-medium hidden sm:inline" id="trip-agent-name" style="color:var(--text-primary);">-</span>
           </div>
         </div>
       </div>
 
-      <!-- Stats row -->
-      <div class="flex items-center gap-3 mt-4">
-        <span class="stat-pill" id="stat-components">0 components</span>
-        <span class="stat-pill" id="stat-attention" style="background:var(--warning-bg);color:var(--warning);">0 need attention</span>
-        <span class="stat-pill" id="stat-approved" style="background:var(--success-bg);color:var(--success);">0 approved</span>
-        <span class="stat-pill" id="stat-tasks">0 tasks</span>
-        <span class="stat-pill" id="stat-unreviewed" style="background:var(--info-bg);color:var(--info);">0 unreviewed</span>
+      <!-- Row 3: Meta info on one compact line -->
+      <div class="flex items-center gap-3 text-xs flex-wrap mb-2.5" style="color:var(--text-secondary);">
+        <div class="flex items-center gap-1">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+          <span id="trip-dates">-</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span id="trip-destinations">-</span>
+        </div>
+        <div class="flex items-center gap-1">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span id="trip-travelers">-</span>
+        </div>
+        <div class="flex items-center gap-1" style="color:var(--gold);">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          <span id="trip-budget" class="font-semibold">-</span>
+        </div>
+      </div>
+
+      <!-- Row 4: Stat pills — horizontally scrollable, no wrap -->
+      <div class="flex items-center gap-2 overflow-x-auto" style="-webkit-overflow-scrolling:touch;scrollbar-width:none;">
+        <span class="stat-pill flex-shrink-0" id="stat-components">0 components</span>
+        <span class="stat-pill flex-shrink-0" id="stat-attention" style="background:var(--warning-bg);color:var(--warning);">0 need attention</span>
+        <span class="stat-pill flex-shrink-0" id="stat-approved" style="background:var(--success-bg);color:var(--success);">0 approved</span>
+        <span class="stat-pill flex-shrink-0" id="stat-tasks">0 tasks</span>
+        <span class="stat-pill flex-shrink-0" id="stat-unreviewed" style="background:var(--info-bg);color:var(--info);">0 unreviewed</span>
       </div>
     </div>
 
