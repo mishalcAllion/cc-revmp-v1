@@ -285,7 +285,9 @@
 
     _activate() {
       // Re-scan every time to pick up dynamically rendered boards
-      this.boards = Array.from(document.querySelectorAll('[id*="kanban"], .flex.gap-4.h-full, [style*="min-width:max-content"]'));
+      // Use specific selectors to avoid false matches (e.g. #btn-kanban)
+      this.boards = Array.from(document.querySelectorAll('#kanban-board, .kanban-board, [style*="min-width:max-content"]'))
+        .filter(el => el.querySelector('.kanban-col'));
 
       this.boards.forEach(board => {
         board.classList.add('kanban-board-mobile');
