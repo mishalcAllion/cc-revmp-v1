@@ -7,7 +7,7 @@
   const STORAGE_KEY = 'maestro-cc-theme';
 
   function getTheme() {
-    return localStorage.getItem(STORAGE_KEY) || 'light';
+    return localStorage.getItem(STORAGE_KEY) || 'dark';
   }
 
   function setTheme(theme) {
