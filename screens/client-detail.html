@@ -113,6 +113,22 @@
         <!-- AI Briefing -->
         <div id="client-ai-briefing"></div>
 
+        <!-- AI Conversations -->
+        <div class="card p-5" id="client-ai-threads-card">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-1.5">
+              <span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;color:var(--gold);">
+                <svg viewBox="0 0 24 24" fill="currentColor" style="width:14px;height:14px;"><path d="M12 2L9.5 9.5 2 12l7.5 2.5L12 22l2.5-7.5L22 12l-7.5-2.5z"/></svg>
+              </span>
+              <div class="text-sm font-semibold" style="color:var(--text-primary);">AI Conversations</div>
+            </div>
+            <a id="client-ai-view-all" href="#" class="text-xs" style="color:var(--gold);">View all</a>
+          </div>
+          <div id="client-ai-threads-list">
+            <div class="text-xs py-2" style="color:var(--text-muted);">No AI conversations for this client yet</div>
+          </div>
+        </div>
+
         <!-- Recent activity timeline -->
         <div class="card p-5">
           <div class="text-sm font-semibold mb-4" style="color:var(--text-primary);">Recent Activity</div>
@@ -442,6 +458,9 @@
     document.getElementById('overview-tasks').textContent = tasks.length;
     document.getElementById('overview-points').textContent = (totalPoints / 1000).toFixed(0) + 'K';
 
+    // AI Conversations section
+    renderClientAIThreads(clientId, household ? household.id : null);
+
     // Wire Message button to correct conversation
     const clientConvs = household ? getConversationsByHousehold(household.id) : [];
     if (clientConvs.length > 0) {
@@ -461,6 +480,55 @@
   }
 
   // ---- Household section ----
+  function renderClientAIThreads(clientId, householdId) {
+    const listEl = document.getElementById('client-ai-threads-list');
+    const viewAllEl = document.getElementById('client-ai-view-all');
+    if (!listEl) return;
+
+    // Link to ai-history filtered by household (broadest context for client)
+    if (viewAllEl) {
+      viewAllEl.href = householdId
+        ? `ai-history?context=client&id=${clientId}`
+        : `ai-history?context=client&id=${clientId}`;
+    }
+
+    let threads = [];
+    if (typeof getAIThreadsByClient === 'function') threads = getAIThreadsByClient(clientId);
+    if (threads.length === 0 && householdId && typeof getAIThreadsByHousehold === 'function') {
+      threads = getAIThreadsByHousehold(householdId);
+    }
+    threads = threads.slice(0, 3);
+
+    if (threads.length === 0) {
+      listEl.innerHTML = `<div class="text-xs py-2" style="color:var(--text-muted);">No AI conversations for this client yet</div>`;
+      return;
+    }
+
+    listEl.innerHTML = threads.map(t => {
+      const msgs = typeof getAIThreadMessages === 'function' ? getAIThreadMessages(t.id) : [];
+      const preview = msgs.length > 0 ? msgs[msgs.length - 1].text.substring(0, 60) + (msgs[msgs.length - 1].text.length > 60 ? '...' : '') : '';
+      const ms = Date.now() - new Date(t.updatedAt);
+      const m = Math.floor(ms / 60000), h = Math.floor(ms / 3600000), d = Math.floor(ms / 86400000);
+      const timeAgo = m < 1 ? 'just now' : m < 60 ? m + 'm ago' : h < 24 ? h + 'h ago' : d === 1 ? 'Yesterday' : d + 'd ago';
+      const ctxColors = { trip: '#10b981', client: '#6366f1', conversation: '#3b82f6', global: 'var(--gold)' };
+      return `
+        <a href="ai-history?thread=${t.id}" class="flex flex-col gap-0.5 py-2 border-b hover:opacity-80 transition-opacity" style="border-color:var(--border);text-decoration:none;">
+          <div class="flex items-center gap-1.5">
+            <span style="display:inline-flex;align-items:center;color:var(--gold);flex-shrink:0;">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L9.5 9.5 2 12l7.5 2.5L12 22l2.5-7.5L22 12l-7.5-2.5z"/></svg>
+            </span>
+            <span class="text-xs font-medium" style="color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">${t.title || 'New conversation'}</span>
+            <span class="text-xs flex-shrink-0" style="color:var(--text-muted);">${timeAgo}</span>
+          </div>
+          <div class="flex items-center gap-1 pl-3.5">
+            <span style="font-size:11px;padding:1px 5px;border-radius:3px;font-weight:500;background:${ctxColors[t.contextType] ? ctxColors[t.contextType] + '20' : 'var(--bg-hover)'};color:${ctxColors[t.contextType] || 'var(--text-muted)'};">${t.contextType}</span>
+          </div>
+          ${preview ? `<div class="text-xs pl-3.5" style="color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${preview}</div>` : ''}
+        </a>
+      `;
+    }).join('');
+  }
+
   function renderHouseholdSection() {
     const section = document.getElementById('household-section');
     const household = getHouseholdByClient(currentClient.id);

@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maestro AI — Maestro Command Centre</title>
+  <link href="https://framerusercontent.com/images/IpIhMdzyXKNL7tkqGF51UsTfpk.png" rel="icon" media="(prefers-color-scheme: light)">
+  <link href="https://framerusercontent.com/images/ps9lnUCtneok5DwSUeXm6INQAw.png" rel="icon" media="(prefers-color-scheme: dark)">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/theme.css">
+  <link rel="stylesheet" href="../css/ai-assistant.css">
+  <script src="../js/data.js"></script>
+  <script src="../js/theme.js"></script>
+  <script src="../js/nav.js"></script>
+  <script src="../js/interactions.js"></script>
+  <script src="../js/ai-assistant.js"></script>
+  <style>
+    /* Page-level AI History layout */
+    .aih-filter-chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 500;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    .aih-filter-chip:hover {
+      border-color: var(--gold);
+      color: var(--text-primary);
+    }
+    .aih-filter-chip.active {
+      background: var(--gold);
+      border-color: var(--gold);
+      color: #000;
+    }
+    .aih-status-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: background 0.15s, color 0.15s;
+    }
+    .aih-status-pill:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+    }
+    .aih-status-pill.active {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+      border-color: var(--border);
+    }
+    /* Message rendering in full-page view */
+    .aih-msg-user {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 12px;
+    }
+    .aih-msg-user-bubble {
+      background: var(--gold);
+      color: #000;
+      padding: 10px 14px;
+      border-radius: 12px 12px 2px 12px;
+      font-size: 13px;
+      max-width: 75%;
+      line-height: 1.5;
+    }
+    .aih-msg-ai {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 12px;
+      align-items: flex-start;
+    }
+    .aih-msg-ai-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--ai-bg);
+      border: 1px solid var(--ai-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .aih-msg-ai-body {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 2px 12px 12px 12px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: var(--text-primary);
+      max-width: 75%;
+      line-height: 1.6;
+    }
+    .aih-result-card {
+      background: var(--bg-app);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      margin-top: 6px;
+    }
+    /* Input row */
+    .aih-input-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      background: var(--bg-surface);
+    }
+    .aih-input {
+      flex: 1;
+      padding: 9px 14px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg-app);
+      color: var(--text-primary);
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .aih-input:focus {
+      border-color: var(--gold);
+    }
+    .aih-input::placeholder {
+      color: var(--text-muted);
+    }
+    .aih-send-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: var(--gold);
+      color: #000;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      flex-shrink: 0;
+    }
+    .aih-send-btn:hover { opacity: 0.85; }
+    /* Thread detail header */
+    .aih-detail-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-surface);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .aih-detail-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .aih-icon-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      background: transparent;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      flex-shrink: 0;
+    }
+    .aih-icon-btn:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+      border-color: var(--border);
+    }
+    .aih-icon-btn.starred {
+      color: var(--gold);
+      border-color: var(--gold);
+    }
+    .aih-icon-btn.archived {
+      opacity: 0.5;
+    }
+    /* New chat button */
+    .aih-new-chat-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      background: var(--gold);
+      color: #000;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.15s;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+    .aih-new-chat-btn:hover { opacity: 0.85; }
+  </style>
+</head>
+<body class="antialiased">
+
+<div id="sidebar-root"></div>
+
+<div id="main-wrapper" class="transition-all duration-200" style="margin-left:240px;">
+  <div style="height:100vh;display:flex;overflow:hidden;background:var(--bg-app);">
+
+    <!-- ===================== LEFT PANE ===================== -->
+    <div style="width:340px;min-width:340px;display:flex;flex-direction:column;border-right:1px solid var(--border);background:var(--bg-surface);overflow:hidden;">
+
+      <!-- Header -->
+      <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-shrink:0;">
+        <span class="ai-sparkle" style="width:18px;height:18px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L9.5 9.5 2 12l7.5 2.5L12 22l2.5-7.5L22 12l-7.5-2.5z" fill="currentColor" stroke="none"/></svg>
+        </span>
+        <h1 style="font-size:15px;font-weight:600;color:var(--text-primary);">Maestro AI</h1>
+        <span id="thread-count" style="font-size:11px;color:var(--text-muted);padding:2px 6px;border-radius:9999px;background:var(--bg-hover);border:1px solid var(--border);">0</span>
+        <div style="margin-left:auto;">
+          <a href="inbox-compact.html" class="aih-new-chat-btn">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            New Chat
+          </a>
+        </div>
+      </div>
+
+      <!-- Context filter chips -->
+      <div style="padding:10px 12px;border-bottom:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0;">
+        <button class="aih-filter-chip active" data-context="all" onclick="setContextFilter('all', this)">All</button>
+        <button class="aih-filter-chip" data-context="trip" onclick="setContextFilter('trip', this)">Trips</button>
+        <button class="aih-filter-chip" data-context="client" onclick="setContextFilter('client', this)">Clients</button>
+        <button class="aih-filter-chip" data-context="conversation" onclick="setContextFilter('conversation', this)">Conversations</button>
+        <button class="aih-filter-chip" data-context="global" onclick="setContextFilter('global', this)">Global</button>
+      </div>
+
+      <!-- Status pills -->
+      <div style="padding:8px 12px;border-bottom:1px solid var(--border);display:flex;gap:4px;flex-shrink:0;">
+        <button class="aih-status-pill active" data-status="all" onclick="setStatusFilter('all', this)">All</button>
+        <button class="aih-status-pill" data-status="active" onclick="setStatusFilter('active', this)">Active</button>
+        <button class="aih-status-pill" data-status="completed" onclick="setStatusFilter('completed', this)">Completed</button>
+        <button class="aih-status-pill" data-status="starred" onclick="setStatusFilter('starred', this)">Starred</button>
+      </div>
+
+      <!-- Search -->
+      <div class="ai-history-search-wrapper" style="flex-shrink:0;">
+        <input id="page-search" class="ai-history-search" placeholder="Search conversations..." oninput="renderPageList()">
+      </div>
+
+      <!-- Thread list -->
+      <div id="page-history-list" class="ai-history-list"></div>
+    </div>
+
+    <!-- ===================== RIGHT PANE ===================== -->
+    <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+
+      <!-- Empty state -->
+      <div id="page-empty-state" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;">
+        <span class="ai-sparkle" style="width:48px;height:48px;opacity:0.25;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L9.5 9.5 2 12l7.5 2.5L12 22l2.5-7.5L22 12l-7.5-2.5z" fill="currentColor" stroke="none"/></svg>
+        </span>
+        <p style="font-size:14px;color:var(--text-muted);">Select a conversation to view it</p>
+        <p style="font-size:12px;color:var(--text-muted);opacity:0.6;">or start a new chat from any screen with Ctrl+J</p>
+      </div>
+
+      <!-- Thread detail view (hidden until thread selected) -->
+      <div id="page-thread-view" style="flex:1;display:none;flex-direction:column;overflow:hidden;">
+
+        <!-- Detail header -->
+        <div class="aih-detail-header">
+          <span id="page-thread-title" class="aih-detail-title">Untitled</span>
+          <span id="page-thread-context" style="font-size:12px;"></span>
+          <a id="page-thread-entity-link" href="#" style="display:none;font-size:12px;color:var(--gold);text-decoration:none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">View →</a>
+          <button id="page-star-btn" class="aih-icon-btn" onclick="togglePageStar()" title="Star">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </button>
+          <button id="page-archive-btn" class="aih-icon-btn" onclick="togglePageArchive()" title="Archive">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="21 8 21 21 3 21 3 8"/><rect width="22" height="5" x="1" y="3"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+          </button>
+        </div>
+
+        <!-- Messages area -->
+        <div id="page-messages" style="flex:1;overflow-y:auto;padding:20px 24px;"></div>
+
+        <!-- Continuation input -->
+        <div class="aih-input-row">
+          <input id="page-input" class="aih-input" placeholder="Continue the conversation..."
+                 onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendPageMessage();}">
+          <button class="aih-send-btn" onclick="sendPageMessage()" title="Send (Enter)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- AI bar rendered by ai-assistant.js -->
+<div id="ai-bar-root"></div>
+
+<script>
+  // ---- Page State ----
+  let selectedThreadId = null;
+  let contextFilter = 'all';
+  let statusFilter = 'all';
+
+  const SPARKLE_SVG = `<svg viewBox="0 0 24 24" fill="none"><path d="M12 2L9.5 9.5 2 12l7.5 2.5L12 22l2.5-7.5L22 12l-7.5-2.5z" fill="currentColor" stroke="none"/></svg>`;
+  const STAR_SVG = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+  const STAR_FILLED_SVG = `<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+
+  // ---- Filters ----
+  function setContextFilter(val, btn) {
+    contextFilter = val;
+    document.querySelectorAll('.aih-filter-chip').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderPageList();
+  }
+
+  function setStatusFilter(val, btn) {
+    statusFilter = val;
+    document.querySelectorAll('.aih-status-pill').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderPageList();
+  }
+
+  // ---- Build filtered thread list ----
+  function getFilteredThreads() {
+    const query = document.getElementById('page-search')?.value?.trim() || '';
+    let threads = query ? searchAIThreads(query, 'a1') : getAIThreadsByAgent('a1');
+
+    if (contextFilter !== 'all') {
+      threads = threads.filter(t => t.contextType === contextFilter);
+    }
+    if (statusFilter === 'starred') {
+      threads = threads.filter(t => t.starred);
+    } else if (statusFilter !== 'all') {
+      threads = threads.filter(t => t.status === statusFilter);
+    }
+    return threads;
+  }
+
+  // ---- Render thread list ----
+  function renderPageList() {
+    const list = document.getElementById('page-history-list');
+    if (!list) return;
+
+    const threads = getFilteredThreads();
+    const countEl = document.getElementById('thread-count');
+    if (countEl) countEl.textContent = threads.length;
+
+    if (threads.length === 0) {
+      list.innerHTML = `
+        <div class="ai-history-empty">
+          <span class="ai-sparkle" style="width:32px;height:32px;opacity:0.3;">${SPARKLE_SVG}</span>
+          <p style="color:var(--text-muted);font-size:13px;margin-top:12px;">No conversations found</p>
+        </div>
+      `;
+      return;
+    }
+
+    const groups = groupByDate(threads);
+    let html = '';
+    groups.forEach(group => {
+      html += `<div class="ai-history-group-label">${group.label}</div>`;
+      group.threads.forEach(thread => {
+        const isActive = thread.id === selectedThreadId;
+        const contextLabel = getContextLabel(thread);
+        const msgs = getAIThreadMessages(thread.id);
+        const lastMsg = msgs.length > 0 ? msgs[msgs.length - 1] : null;
+        const preview = lastMsg ? (lastMsg.text.length > 80 ? lastMsg.text.substring(0, 80) + '...' : lastMsg.text) : '';
+
+        html += `
+          <div class="ai-history-item ${isActive ? 'active' : ''} ${thread.starred ? 'starred' : ''}"
+               onclick="selectThread('${thread.id}')" data-thread-id="${thread.id}">
+            <div class="ai-history-item-top">
+              <button class="ai-history-star"
+                      onclick="event.stopPropagation(); toggleStar('${thread.id}')"
+                      title="${thread.starred ? 'Unstar' : 'Star'}">
+                ${thread.starred ? STAR_FILLED_SVG : STAR_SVG}
+              </button>
+              <span class="ai-history-item-title">${thread.title || 'New conversation'}</span>
+              <span class="ai-history-item-time">${relTime(thread.updatedAt)}</span>
+            </div>
+            <div class="ai-history-item-meta">
+              <span class="ai-history-context-badge" data-type="${thread.contextType}">${contextLabel}</span>
+              ${thread.status === 'active' ? '<span class="ai-history-status-dot"></span>' : ''}
+              ${thread.status === 'archived' ? '<span style="font-size:10px;color:var(--text-muted);opacity:0.6">archived</span>' : ''}
+            </div>
+            ${preview ? `<div class="ai-history-item-preview">${preview}</div>` : ''}
+          </div>
+        `;
+      });
+    });
+
+    list.innerHTML = html;
+  }
+
+  // ---- Select and display a thread ----
+  function selectThread(threadId) {
+    selectedThreadId = threadId;
+    renderPageList(); // re-render to update active state
+
+    const thread = getAIThread(threadId);
+    if (!thread) return;
+
+    // Show thread view
+    document.getElementById('page-empty-state').style.display = 'none';
+    const view = document.getElementById('page-thread-view');
+    view.style.display = 'flex';
+
+    // Update header
+    document.getElementById('page-thread-title').textContent = thread.title || 'New conversation';
+
+    const ctxEl = document.getElementById('page-thread-context');
+    const linkEl = document.getElementById('page-thread-entity-link');
+    const label = getContextLabel(thread);
+    ctxEl.innerHTML = `<span class="ai-history-context-badge" data-type="${thread.contextType}" style="margin-right:4px;">${label}</span>`;
+
+    // Entity link
+    if (thread.tripId) {
+      linkEl.href = `trip-detail?id=${thread.tripId}`;
+      linkEl.textContent = 'View Trip →';
+      linkEl.style.display = 'inline';
+    } else if (thread.clientId) {
+      linkEl.href = `client-detail?id=${thread.clientId}`;
+      linkEl.textContent = 'View Client →';
+      linkEl.style.display = 'inline';
+    } else if (thread.conversationId) {
+      linkEl.href = `inbox-compact?conv=${thread.conversationId}`;
+      linkEl.textContent = 'View Conversation →';
+      linkEl.style.display = 'inline';
+    } else {
+      linkEl.style.display = 'none';
+    }
+
+    // Star button
+    const starBtn = document.getElementById('page-star-btn');
+    starBtn.innerHTML = thread.starred ? STAR_FILLED_SVG : STAR_SVG;
+    starBtn.classList.toggle('starred', !!thread.starred);
+
+    // Archive button
+    const archiveBtn = document.getElementById('page-archive-btn');
+    archiveBtn.classList.toggle('archived', thread.status === 'archived');
+    archiveBtn.title = thread.status === 'archived' ? 'Unarchive' : 'Archive';
+
+    // Render messages
+    renderPageMessages(threadId);
+
+    // Focus input
+    const input = document.getElementById('page-input');
+    if (input) input.focus();
+  }
+
+  function renderPageMessages(threadId) {
+    const container = document.getElementById('page-messages');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const messages = getAIThreadMessages(threadId);
+
+    if (messages.length === 0) {
+      container.innerHTML = `
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:8px;opacity:0.5;">
+          <span class="ai-sparkle" style="width:28px;height:28px;">${SPARKLE_SVG}</span>
+          <p style="font-size:13px;color:var(--text-muted);">No messages yet — continue below</p>
+        </div>
+      `;
+      return;
+    }
+
+    messages.forEach(msg => {
+      const el = document.createElement('div');
+      if (msg.role === 'user') {
+        el.className = 'aih-msg-user';
+        el.innerHTML = `<div class="aih-msg-user-bubble">${msg.text}</div>`;
+      } else {
+        el.className = 'aih-msg-ai';
+        let bodyHtml = '';
+        if (msg.contentType === 'results' && msg.cards && msg.cards.length > 0) {
+          bodyHtml = `<p style="margin-bottom:8px;">${msg.text}</p>`;
+          msg.cards.forEach(card => {
+            bodyHtml += `
+              <div class="aih-result-card">
+                <div style="display:flex;justify-content:space-between;align-items:start;">
+                  <strong style="color:var(--text-primary);font-size:13px;">${card.name}</strong>
+                  <span style="color:var(--gold);font-weight:600;font-size:12px;">${card.price || ''}</span>
+                </div>
+                <p style="font-size:12px;color:var(--text-secondary);margin:3px 0 0;">${card.description || ''}</p>
+                ${card.rating ? `<span style="font-size:11px;color:var(--text-muted);">${card.rating}</span>` : ''}
+              </div>
+            `;
+          });
+        } else {
+          bodyHtml = msg.text;
+        }
+        el.innerHTML = `
+          <div class="aih-msg-ai-avatar">
+            <span class="ai-sparkle" style="width:14px;height:14px;">${SPARKLE_SVG}</span>
+          </div>
+          <div class="aih-msg-ai-body">${bodyHtml}</div>
+        `;
+      }
+      container.appendChild(el);
+    });
+
+    // Scroll to bottom
+    container.scrollTop = container.scrollHeight;
+  }
+
+  // ---- Actions ----
+  function toggleStar(threadId) {
+    const thread = getAIThread(threadId);
+    if (!thread) return;
+    thread.starred = !thread.starred;
+    saveAIThreads();
+    renderPageList();
+    // Update header star if this is the selected thread
+    if (threadId === selectedThreadId) {
+      const starBtn = document.getElementById('page-star-btn');
+      if (starBtn) {
+        starBtn.innerHTML = thread.starred ? STAR_FILLED_SVG : STAR_SVG;
+        starBtn.classList.toggle('starred', !!thread.starred);
+      }
+    }
+  }
+
+  function togglePageStar() {
+    if (!selectedThreadId) return;
+    toggleStar(selectedThreadId);
+  }
+
+  function togglePageArchive() {
+    if (!selectedThreadId) return;
+    const thread = getAIThread(selectedThreadId);
+    if (!thread) return;
+    thread.status = thread.status === 'archived' ? 'active' : 'archived';
+    saveAIThreads();
+    const archiveBtn = document.getElementById('page-archive-btn');
+    if (archiveBtn) {
+      archiveBtn.classList.toggle('archived', thread.status === 'archived');
+      archiveBtn.title = thread.status === 'archived' ? 'Unarchive' : 'Archive';
+    }
+    renderPageList();
+  }
+
+  // ---- Send a follow-up message ----
+  function sendPageMessage() {
+    if (!selectedThreadId) return;
+    const input = document.getElementById('page-input');
+    const text = input?.value?.trim();
+    if (!text) return;
+    input.value = '';
+
+    // Add user message to thread
+    addMessageToThread_page(selectedThreadId, 'user', text);
+    renderPageMessages(selectedThreadId);
+
+    // Simulate AI response after a short delay
+    setTimeout(() => {
+      const responses = [
+        "I'll look into that right away. Let me pull up the relevant details for this context.",
+        "Great question. Based on the current trip details, here's what I'd suggest...",
+        "I've reviewed the situation. Here are my recommendations for next steps.",
+        "Noted. I can help with that — let me cross-reference the client profile and trip history.",
+        "That's an important consideration. I'll factor that into the analysis."
+      ];
+      const reply = responses[Math.floor(Math.random() * responses.length)];
+      addMessageToThread_page(selectedThreadId, 'assistant', reply);
+      renderPageMessages(selectedThreadId);
+      renderPageList(); // update preview
+    }, 800);
+  }
+
+  // Local wrapper that also handles title generation and save
+  function addMessageToThread_page(threadId, role, text) {
+    const thread = getAIThread(threadId);
+    if (!thread) return;
+    const msgs = AI_THREAD_MESSAGES[threadId] || [];
+    const msg = {
+      id: 'aim' + Date.now() + '_' + msgs.length,
+      role: role,
+      contentType: 'text',
+      text: text,
+      timestamp: new Date().toISOString(),
+      cards: null
+    };
+    msgs.push(msg);
+    AI_THREAD_MESSAGES[threadId] = msgs;
+    thread.messageCount = msgs.length;
+    thread.updatedAt = new Date().toISOString();
+    if (role === 'user' && !thread.title) {
+      const clean = text.replace(/\s+/g, ' ').trim();
+      thread.title = clean.length <= 60 ? clean : clean.substring(0, 60).replace(/ \S*$/, '') + '...';
+      document.getElementById('page-thread-title').textContent = thread.title;
+    }
+    saveAIThreads();
+    saveAIMessages();
+  }
+
+  // ---- Date grouping + relative time ----
+  function groupByDate(threads) {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+    const weekAgo = new Date(today); weekAgo.setDate(today.getDate() - 7);
+
+    const starred = threads.filter(t => t.starred);
+    const unstarred = threads.filter(t => !t.starred);
+
+    const groups = [
+      { label: 'Today', threads: [] },
+      { label: 'Yesterday', threads: [] },
+      { label: 'This Week', threads: [] },
+      { label: 'Earlier', threads: [] },
+    ];
+
+    unstarred.forEach(t => {
+      const d = new Date(t.updatedAt);
+      if (d >= today) groups[0].threads.push(t);
+      else if (d >= yesterday) groups[1].threads.push(t);
+      else if (d >= weekAgo) groups[2].threads.push(t);
+      else groups[3].threads.push(t);
+    });
+
+    const result = groups.filter(g => g.threads.length > 0);
+    if (starred.length > 0) result.unshift({ label: 'Starred', threads: starred });
+    return result;
+  }
+
+  function relTime(iso) {
+    const now = new Date();
+    const d = new Date(iso);
+    const diffMs = now - d;
+    const m = Math.floor(diffMs / 60000);
+    const h = Math.floor(diffMs / 3600000);
+    const days = Math.floor(diffMs / 86400000);
+    if (m < 1) return 'just now';
+    if (m < 60) return m + 'm ago';
+    if (h < 24) return h + 'h ago';
+    if (days === 1) return 'Yesterday';
+    if (days < 7) return days + 'd ago';
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  function getContextLabel(thread) {
+    if (!thread) return '';
+    if (thread.tripId) {
+      const trip = typeof getTrip === 'function' ? getTrip(thread.tripId) : null;
+      return trip ? trip.name : 'Trip';
+    }
+    if (thread.householdId) {
+      const h = typeof getHousehold === 'function' ? getHousehold(thread.householdId) : null;
+      return h ? h.name : 'Household';
+    }
+    if (thread.conversationId) return 'Conversation';
+    if (thread.clientId) {
+      const c = typeof getClient === 'function' ? getClient(thread.clientId) : null;
+      return c ? c.firstName + ' ' + c.lastName : 'Client';
+    }
+    return 'Global';
+  }
+
+  // ---- Init ----
+  document.addEventListener('DOMContentLoaded', () => {
+    MaestroNav.render('sidebar-root');
+    MaestroAI.init();
+
+    // Handle URL params: ?context=trip&id=tr2 or ?thread=ait1
+    const params = new URLSearchParams(window.location.search);
+    const preThread = params.get('thread');
+    const preContext = params.get('context');
+
+    if (preContext) {
+      contextFilter = preContext;
+      const chip = document.querySelector(`.aih-filter-chip[data-context="${preContext}"]`);
+      if (chip) {
+        document.querySelectorAll('.aih-filter-chip').forEach(b => b.classList.remove('active'));
+        chip.classList.add('active');
+      }
+    }
+
+    renderPageList();
+
+    if (preThread) {
+      selectThread(preThread);
+    } else if (preContext && params.get('id')) {
+      // Auto-select first matching thread for this entity
+      const entityId = params.get('id');
+      let match = null;
+      if (preContext === 'trip') match = (getAIThreadsByTrip ? getAIThreadsByTrip(entityId) : [])[0];
+      else if (preContext === 'client') match = (getAIThreadsByClient ? getAIThreadsByClient(entityId) : [])[0];
+      if (match) selectThread(match.id);
+    }
+
+    // Sync sidebar margin
+    const main = document.getElementById('main-wrapper');
+    if (main && typeof MaestroNav.getSidebarWidth === 'function') {
+      main.style.marginLeft = MaestroNav.getSidebarWidth() + 'px';
+    }
+  });
+
+  // Sidebar collapse sync
+  window.addEventListener('maestro-sidebar-toggle', () => {
+    const main = document.getElementById('main-wrapper');
+    if (main && typeof MaestroNav.getSidebarWidth === 'function') {
+      main.style.marginLeft = MaestroNav.getSidebarWidth() + 'px';
+    }
+  });
+</script>
+
+</body>
+</html>

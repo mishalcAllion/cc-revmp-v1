@@ -793,3 +793,674 @@ function getTaskStats() {
   const myTasks = TASKS.filter(t => t.assignedTo === 'a1').length; // Default to Angua
   return { open, urgent, blocked, overdue, myTasks };
 }
+
+// ============================================================
+// AI CHAT THREADS
+// ============================================================
+
+const AI_THREADS = [
+  {
+    id: 'ait1',
+    title: 'Research anniversary dinner venues in Paris',
+    agentId: 'a1',
+    contextType: 'trip',
+    tripId: 'tr2',
+    householdId: 'h2',
+    clientId: null,
+    conversationId: null,
+    taskId: null,
+    status: 'completed',
+    starred: false,
+    messageCount: 6,
+    createdAt: '2026-04-01T09:15:00Z',
+    updatedAt: '2026-04-01T09:42:00Z'
+  },
+  {
+    id: 'ait2',
+    title: 'Compare Santorini hotel alternatives',
+    agentId: 'a1',
+    contextType: 'trip',
+    tripId: 'tr1',
+    householdId: 'h1',
+    clientId: null,
+    conversationId: null,
+    taskId: null,
+    status: 'active',
+    starred: true,
+    messageCount: 8,
+    createdAt: '2026-04-02T14:08:00Z',
+    updatedAt: '2026-04-03T08:55:00Z'
+  },
+  {
+    id: 'ait3',
+    title: 'Maldives villa upgrade negotiation strategy',
+    agentId: 'a2',
+    contextType: 'trip',
+    tripId: 'tr3',
+    householdId: 'h3',
+    clientId: null,
+    conversationId: null,
+    taskId: null,
+    status: 'completed',
+    starred: false,
+    messageCount: 5,
+    createdAt: '2026-03-30T11:20:00Z',
+    updatedAt: '2026-03-30T11:54:00Z'
+  },
+  {
+    id: 'ait4',
+    title: 'SLA breach triage and priority analysis',
+    agentId: 'a1',
+    contextType: 'global',
+    tripId: null,
+    householdId: null,
+    clientId: null,
+    conversationId: null,
+    taskId: null,
+    status: 'completed',
+    starred: false,
+    messageCount: 4,
+    createdAt: '2026-03-29T10:05:00Z',
+    updatedAt: '2026-03-29T10:28:00Z'
+  },
+  {
+    id: 'ait5',
+    title: 'Amex points transfer strategy for Vimes',
+    agentId: 'a1',
+    contextType: 'conversation',
+    tripId: null,
+    householdId: 'h1',
+    clientId: null,
+    conversationId: 'conv9',
+    taskId: null,
+    status: 'active',
+    starred: false,
+    messageCount: 6,
+    createdAt: '2026-04-02T08:30:00Z',
+    updatedAt: '2026-04-03T09:10:00Z'
+  },
+  {
+    id: 'ait6',
+    title: 'Family-friendly Panama activities research',
+    agentId: 'a2',
+    contextType: 'trip',
+    tripId: 'tr4',
+    householdId: 'h4',
+    clientId: null,
+    conversationId: null,
+    taskId: null,
+    status: 'completed',
+    starred: true,
+    messageCount: 5,
+    createdAt: '2026-03-28T13:45:00Z',
+    updatedAt: '2026-03-28T14:12:00Z'
+  },
+  {
+    id: 'ait7',
+    title: 'Japan cherry blossom ryokan comparison',
+    agentId: 'a4',
+    contextType: 'trip',
+    tripId: 'tr7',
+    householdId: 'h3',
+    clientId: null,
+    conversationId: null,
+    taskId: null,
+    status: 'active',
+    starred: false,
+    messageCount: 6,
+    createdAt: '2026-04-03T07:50:00Z',
+    updatedAt: '2026-04-03T08:25:00Z'
+  },
+  {
+    id: 'ait8',
+    title: 'End-of-day summary Mar 29',
+    agentId: 'a1',
+    contextType: 'global',
+    tripId: null,
+    householdId: null,
+    clientId: null,
+    conversationId: null,
+    taskId: null,
+    status: 'completed',
+    starred: false,
+    messageCount: 4,
+    createdAt: '2026-03-29T17:00:00Z',
+    updatedAt: '2026-03-29T17:18:00Z'
+  }
+];
+
+const AI_THREAD_MESSAGES = {
+  ait1: [
+    {
+      id: 'aim1-1',
+      role: 'user',
+      contentType: 'text',
+      text: 'I need to find a great anniversary dinner spot for the Ridcullys in Paris. They\'re staying near the Eiffel Tower area. Any recommendations?',
+      timestamp: '2026-04-01T09:15:00Z',
+      cards: null
+    },
+    {
+      id: 'aim1-2',
+      role: 'assistant',
+      contentType: 'text',
+      text: 'Happy to help with that. A few quick questions to narrow it down: What\'s the budget per person, and do they have a preferred cuisine style? Also, is this a lunch or dinner reservation, and do they have a date in mind so I can check availability?',
+      timestamp: '2026-04-01T09:16:00Z',
+      cards: null
+    },
+    {
+      id: 'aim1-3',
+      role: 'user',
+      contentType: 'text',
+      text: 'Dinner. French cuisine, classic but elevated. Budget is around $300-500 per person. Their anniversary is May 14th so availability around that date.',
+      timestamp: '2026-04-01T09:19:00Z',
+      cards: null
+    },
+    {
+      id: 'aim1-4',
+      role: 'assistant',
+      contentType: 'results',
+      text: 'Here are three top picks for a classic French anniversary dinner in the 7th/8th arrondissement. All three hold Michelin stars and are known for exceptional anniversary experiences.',
+      timestamp: '2026-04-01T09:21:00Z',
+      cards: [
+        {
+          name: 'Le Jules Verne',
+          description: 'Michelin-starred restaurant inside the Eiffel Tower, second floor. Iconic setting with sweeping views of Paris. Chef Frederic Anton oversees the kitchen. Exceptional for milestone anniversaries.',
+          price: '$380-450pp',
+          rating: '4.8/5',
+          status: 'Bookable'
+        },
+        {
+          name: 'L\'Ambroisie',
+          description: 'Three Michelin stars, Place des Vosges. One of Paris\'s most revered dining rooms — intimate, hushed, impeccably formal. Bernard Pacaud\'s cooking is timeless French haute cuisine. Very hard to book.',
+          price: '$420-500pp',
+          rating: '4.9/5',
+          status: 'Limited availability'
+        },
+        {
+          name: 'Le Cinq — Four Seasons George V',
+          description: 'Three Michelin stars in the George V\'s grand dining room. Chef Christian Le Squer. Lavish Belle Epoque setting, world-class wine cellar. Popular anniversary choice with white-glove service.',
+          price: '$350-440pp',
+          rating: '4.8/5',
+          status: 'Bookable'
+        }
+      ]
+    },
+    {
+      id: 'aim1-5',
+      role: 'user',
+      contentType: 'text',
+      text: 'The Jules Verne looks perfect for the occasion. Can you check if they can do a reservation for 2 on May 14th around 8pm?',
+      timestamp: '2026-04-01T09:35:00Z',
+      cards: null
+    },
+    {
+      id: 'aim1-6',
+      role: 'assistant',
+      contentType: 'text',
+      text: 'Le Jules Verne shows availability for 2 guests on May 14th at 20:00 and 20:30. The restaurant\'s concierge team recommends booking directly through their site or via a luxury travel agent line — they do hold tables for trade partners. I\'d suggest noting the anniversary in the booking notes, they\'ll typically arrange a small surprise. Want me to draft the reservation request?',
+      timestamp: '2026-04-01T09:42:00Z',
+      cards: null
+    }
+  ],
+
+  ait2: [
+    {
+      id: 'aim2-1',
+      role: 'user',
+      contentType: 'text',
+      text: 'The Vimes trip to Santorini — Samuel flagged that Canaves Oia is fully booked for their dates. I need alternatives that are in a similar tier. What are my options?',
+      timestamp: '2026-04-02T14:08:00Z',
+      cards: null
+    },
+    {
+      id: 'aim2-2',
+      role: 'assistant',
+      contentType: 'text',
+      text: 'Noted. Before I pull alternatives, a couple of questions: What\'s the priority for Samuel and Sybil — infinity pool, caldera/sunset view, spa, or a combination? And are they flexible on the location within Santorini, or specifically set on the Oia area?',
+      timestamp: '2026-04-02T14:09:00Z',
+      cards: null
+    },
+    {
+      id: 'aim2-3',
+      role: 'user',
+      contentType: 'text',
+      text: 'Sunset view is non-negotiable. Pool is important too. They\'re open to anywhere on the caldera rim — not locked to Oia specifically.',
+      timestamp: '2026-04-02T14:12:00Z',
+      cards: null
+    },
+    {
+      id: 'aim2-4',
+      role: 'assistant',
+      contentType: 'results',
+      text: 'All three options below are caldera-facing with private or semi-private pools and strong sunset positioning. These are the closest match to Canaves Oia\'s profile.',
+      timestamp: '2026-04-02T14:14:00Z',
+      cards: [
+        {
+          name: 'Grace Hotel Santorini',
+          description: 'Perched on the caldera rim in Imerovigli, arguably the best sunset vantage point on the island. Infinity pool, Michelin-recognized restaurant, and cave suite rooms. Adults-only, intimate scale.',
+          price: 'From $1,100/night',
+          rating: '4.8/5',
+          status: 'Check availability'
+        },
+        {
+          name: 'Mystique — Autograph Collection',
+          description: 'Carved into the volcanic cliff in Oia with direct caldera views. Iconic cave suites with private plunge pools. Raw, dramatic aesthetic. One of Marriott\'s flagship luxury properties in Greece.',
+          price: 'From $950/night',
+          rating: '4.7/5',
+          status: 'Check availability'
+        },
+        {
+          name: 'Andronis Luxury Suites',
+          description: 'Cave-style boutique in Oia with panoramic caldera pool and award-winning Lauda restaurant. Very quiet and exclusive — only 18 suites. Strong choice for a couple seeking privacy.',
+          price: 'From $1,050/night',
+          rating: '4.9/5',
+          status: 'Limited availability'
+        }
+      ]
+    },
+    {
+      id: 'aim2-5',
+      role: 'user',
+      contentType: 'text',
+      text: 'These all look strong. What\'s the price difference vs. Canaves Oia? Canaves was coming in around $1,200/night for the cave suite.',
+      timestamp: '2026-04-02T14:22:00Z',
+      cards: null
+    },
+    {
+      id: 'aim2-6',
+      role: 'assistant',
+      contentType: 'text',
+      text: 'Grace and Andronis are slightly below Canaves at peak season rates — roughly $1,100-1,150/night for comparable suite categories. Mystique runs $950-1,050 depending on the room tier but sits slightly behind on suite size. If matching the exact experience level is the priority, Grace or Andronis are the closer substitutes. Andronis has the edge on privacy; Grace wins on restaurant quality.',
+      timestamp: '2026-04-02T14:26:00Z',
+      cards: null
+    },
+    {
+      id: 'aim2-7',
+      role: 'user',
+      contentType: 'text',
+      text: 'Samuel\'s trip is June 18-25. Can you check Grace Hotel availability for those dates?',
+      timestamp: '2026-04-03T08:48:00Z',
+      cards: null
+    },
+    {
+      id: 'aim2-8',
+      role: 'assistant',
+      contentType: 'text',
+      text: 'Grace Hotel shows availability for June 18-25 (7 nights). The Caldera Junior Suite with private plunge pool is available at $1,140/night, totaling approximately $7,980 before taxes. They have a preferred partner contact — I can draft an inquiry with Vimes\'s profile details and request their trade rate. Should I go ahead?',
+      timestamp: '2026-04-03T08:55:00Z',
+      cards: null
+    }
+  ],
+
+  ait3: [
+    {
+      id: 'aim3-1',
+      role: 'user',
+      contentType: 'text',
+      text: 'The Vetinaris are booked into a beach villa at Soneva Fushi but they want to explore upgrading to a water villa. What\'s the best negotiation angle here?',
+      timestamp: '2026-03-30T11:20:00Z',
+      cards: null
+    },
+    {
+      id: 'aim3-2',
+      role: 'assistant',
+      contentType: 'text',
+      text: 'Good timing to raise this — Soneva is generally flexible with repeat guests and partner-referred bookings. The strongest angles are: (1) loyalty status if the Vetinaris have stayed at any Soneva property before, (2) your agency\'s partner rate tier which may include a complimentary upgrade policy, and (3) low-season leverage if their dates fall outside peak Maldives season (typically mid-November to March is peak; April-May shoulders are more negotiable).',
+      timestamp: '2026-03-30T11:24:00Z',
+      cards: null
+    },
+    {
+      id: 'aim3-3',
+      role: 'user',
+      contentType: 'text',
+      text: 'They\'re traveling in late April so that works in our favour. What\'s the typical rate difference between a beach villa and a water villa at Soneva Fushi?',
+      timestamp: '2026-03-30T11:35:00Z',
+      cards: null
+    },
+    {
+      id: 'aim3-4',
+      role: 'assistant',
+      contentType: 'text',
+      text: 'For late April, Soneva Fushi beach villas typically run $2,200-2,800/night while water villas (overwater) are $3,400-4,200/night — roughly a $1,200-1,500/night premium. Given the shoulder timing and a multi-night stay (assuming 7+ nights), there\'s a real case for requesting a complimentary category upgrade or a reduced differential. The ask is legitimate and Soneva\'s reservations team is known to work with preferred partners on this.',
+      timestamp: '2026-03-30T11:44:00Z',
+      cards: null
+    },
+    {
+      id: 'aim3-5',
+      role: 'user',
+      contentType: 'text',
+      text: 'Let\'s go with that. Can you draft a polite upgrade request for me to send to their reservations team?',
+      timestamp: '2026-03-30T11:50:00Z',
+      cards: null
+    }
+  ],
+
+  ait4: [
+    {
+      id: 'aim4-1',
+      role: 'user',
+      contentType: 'text',
+      text: 'I just started my shift. What should I be prioritizing right now?',
+      timestamp: '2026-03-29T10:05:00Z',
+      cards: null
+    },
+    {
+      id: 'aim4-2',
+      role: 'assistant',
+      contentType: 'text',
+      text: 'Based on current inbox state, here\'s what needs immediate attention:\n\n**SLA Breached (2):**\n• Ridcully thread (conv2) — Paris trip, unanswered 4h 22m. Client asked about flight upgrade options.\n• Ogg thread (conv4) — Panama trip, unanswered 3h 58m. Pending activity confirmation.\n\n**SLA Warning (1):**\n• Vetinari thread (conv3) — Maldives, 2h 10m since last response. Client shared villa preferences.\n\n**Recommended priority order:** Ridcully → Ogg → Vetinari. Ridcully has the longest breach and is a Standard tier client with an active booking decision pending.',
+      timestamp: '2026-03-29T10:08:00Z',
+      cards: null
+    },
+    {
+      id: 'aim4-3',
+      role: 'user',
+      contentType: 'text',
+      text: 'What exactly did Ridcully ask about? Give me a quick summary so I can respond.',
+      timestamp: '2026-03-29T10:18:00Z',
+      cards: null
+    },
+    {
+      id: 'aim4-4',
+      role: 'assistant',
+      contentType: 'text',
+      text: 'Juliana Ridcully asked whether it\'s worth paying to upgrade their outbound flight from United Polaris to Air France La Premiere for the Paris leg. She mentioned they have 210,000 Amex MR points and wants to know if transferring to Flying Blue to cover the upgrade makes sense vs. paying cash. The household profile shows she prefers aisle seating and fine dining — La Premiere would align well. I can draft a response with a brief points vs. cash breakdown if helpful.',
+      timestamp: '2026-03-29T10:28:00Z',
+      cards: null
+    }
+  ],
+
+  ait5: [
+    {
+      id: 'aim5-1',
+      role: 'user',
+      contentType: 'text',
+      text: 'Samuel Vimes is asking about the best way to use his Amex MR points for their upcoming trip. He has 320,000 MR and wants to maximise value on flights. What are the best transfer options right now?',
+      timestamp: '2026-04-02T08:30:00Z',
+      cards: null
+    },
+    {
+      id: 'aim5-2',
+      role: 'assistant',
+      contentType: 'text',
+      text: 'For maximising MR value on premium cabin flights, the top transfer partners right now are ANA Mileage Club, Singapore KrisFlyer, and Virgin Atlantic Flying Club. The sweet spot depends on the route. Where are Samuel and Sybil flying, and are they flexible on airlines or set on Delta One (which isn\'t a direct MR partner)?',
+      timestamp: '2026-04-02T08:32:00Z',
+      cards: null
+    },
+    {
+      id: 'aim5-3',
+      role: 'user',
+      contentType: 'text',
+      text: 'They\'re going to Athens via Europe. Open to airlines as long as it\'s business or first. Preferably non-stop from JFK if possible.',
+      timestamp: '2026-04-02T08:38:00Z',
+      cards: null
+    },
+    {
+      id: 'aim5-4',
+      role: 'assistant',
+      contentType: 'text',
+      text: 'For JFK-Athens in business/first, the strongest MR transfer plays are:\n\n• **ANA → Lufthansa First** via Star Alliance: JFK-MUC-ATH, ~88,000 ANA miles roundtrip per person in First. Outstanding value at ~2.8 cpp.\n• **Virgin Atlantic → ANA The Room** (if routed via Tokyo, complex but exceptional product): not practical for Athens routing.\n• **Singapore KrisFlyer → Lufthansa Business**: ~78,000 miles RT per person. More available awards than First.\n\nWith 320K MR, Samuel could cover 2 First Class roundtrips via ANA (176K points) with points remaining. There\'s also a current 30% transfer bonus to ANA running until April 15.',
+      timestamp: '2026-04-02T08:44:00Z',
+      cards: null
+    },
+    {
+      id: 'aim5-5',
+      role: 'user',
+      contentType: 'text',
+      text: 'Wait — there\'s a transfer bonus to ANA active right now? When does it end?',
+      timestamp: '2026-04-02T08:50:00Z',
+      cards: null
+    },
+    {
+      id: 'aim5-6',
+      role: 'assistant',
+      contentType: 'text',
+      text: 'Yes — Amex is running a 30% transfer bonus to ANA Mileage Club through April 15, 2026. This means 320,000 MR would transfer as 416,000 ANA miles. At the standard Lufthansa First redemption rate (~88,000 miles RT per person), that covers 4 roundtrip First Class tickets — well beyond what Samuel needs. I\'d strongly recommend acting before April 15 to capture the bonus. Want me to walk through the transfer and award booking steps?',
+      timestamp: '2026-04-03T09:10:00Z',
+      cards: null
+    }
+  ],
+
+  ait6: [
+    {
+      id: 'aim6-1',
+      role: 'user',
+      contentType: 'text',
+      text: 'The Oggs are heading to Panama City and Bocas del Toro. They have two kids. I need ideas for family-friendly activities that still feel premium — not too touristy.',
+      timestamp: '2026-03-28T13:45:00Z',
+      cards: null
+    },
+    {
+      id: 'aim6-2',
+      role: 'assistant',
+      contentType: 'text',
+      text: 'Great trip. How old are the kids? It makes a big difference between what\'s engaging vs. just tolerated at 6 vs. 12.',
+      timestamp: '2026-03-28T13:46:00Z',
+      cards: null
+    },
+    {
+      id: 'aim6-3',
+      role: 'user',
+      contentType: 'text',
+      text: 'Ages 9 and 12. Both active, the older one is really into wildlife. Parents want experiences that feel exclusive, not tour bus stuff.',
+      timestamp: '2026-03-28T13:49:00Z',
+      cards: null
+    },
+    {
+      id: 'aim6-4',
+      role: 'assistant',
+      contentType: 'results',
+      text: 'Perfect ages for Panama. Here are three curated options — all can be arranged as private experiences to keep it exclusive.',
+      timestamp: '2026-03-28T13:52:00Z',
+      cards: [
+        {
+          name: 'Panama Canal — Private Expert Tour',
+          description: 'Private guided tour of Miraflores Locks with a canal historian. Watch cargo ships transit live, access the observation deck, and visit the museum. Can be arranged outside peak crowd hours. The 12-year-old wildlife enthusiast will love the surrounding rainforest birds.',
+          price: 'From $280 (private group)',
+          rating: '4.7/5',
+          status: 'Available'
+        },
+        {
+          name: 'Zip-lining & Canopy Tour — Boquete Highlands',
+          description: 'High-altitude zip-line through cloud forest canopy above Boquete — 14 platforms, coffee farm visit included. Both ages are well within the weight/height limits. Private booking available for just the four of them. 3-hour drive from Panama City but worth it for the landscape.',
+          price: 'From $195/person',
+          rating: '4.8/5',
+          status: 'Available'
+        },
+        {
+          name: 'Private Island Hopping — Bocas del Toro Archipelago',
+          description: 'Private speedboat charter around the Bocas archipelago — snorkeling at Starfish Beach, dolphin watching in Dolphin Bay, lunch at a floating restaurant. Full day, tailored pace. Perfect for active families who don\'t want a group tour environment.',
+          price: 'From $620 (private boat)',
+          rating: '4.9/5',
+          status: 'Available'
+        }
+      ]
+    },
+    {
+      id: 'aim6-5',
+      role: 'user',
+      contentType: 'text',
+      text: 'The island hopping and the canal tour are both going in. Can you add these as task notes on the Ogg trip so I remember to book them?',
+      timestamp: '2026-03-28T14:12:00Z',
+      cards: null
+    }
+  ],
+
+  ait7: [
+    {
+      id: 'aim7-1',
+      role: 'user',
+      contentType: 'text',
+      text: 'Working on the Vetinari Japan trip. They want to stay in a traditional ryokan in Kyoto during cherry blossom season. Can you compare the top options?',
+      timestamp: '2026-04-03T07:50:00Z',
+      cards: null
+    },
+    {
+      id: 'aim7-2',
+      role: 'assistant',
+      contentType: 'text',
+      text: 'Cherry blossom season in Kyoto is late March to early April — extremely high demand. A couple of questions: How many guests, and what\'s the budget tier? Also, is the priority the onsen experience, location (central vs. garden setting), or a specific aesthetic?',
+      timestamp: '2026-04-03T07:52:00Z',
+      cards: null
+    },
+    {
+      id: 'aim7-3',
+      role: 'user',
+      contentType: 'text',
+      text: '2 adults. High-end, no real budget ceiling — the Vetinaris are VIP clients. They want authenticity but not at the expense of comfort. Private onsen would be ideal.',
+      timestamp: '2026-04-03T07:56:00Z',
+      cards: null
+    },
+    {
+      id: 'aim7-4',
+      role: 'assistant',
+      contentType: 'results',
+      text: 'These are the three most prestigious traditional ryokans in Kyoto. All three are registered as important cultural properties and offer private onsen.',
+      timestamp: '2026-04-03T07:59:00Z',
+      cards: [
+        {
+          name: 'Tawaraya',
+          description: 'Founded 1716, the most revered ryokan in Japan. Extremely private — only 18 rooms. Every Japanese prime minister and foreign dignitary stays here. Garden kaiseki dinners, private onsen baths per room. Reservations require introduction in advance but Maestro\'s contacts can arrange.',
+          price: 'From ¥120,000/night (~$790)',
+          rating: '5.0/5',
+          status: 'Very limited — inquire'
+        },
+        {
+          name: 'Hiiragiya',
+          description: 'Founded 1818, sits in the heart of central Kyoto near Nijo Castle. Blend of traditional and modern — the new wing offers larger rooms with private indoor/outdoor onsen. Known for its seasonal kaiseki cuisine and immaculate service.',
+          price: 'From ¥95,000/night (~$625)',
+          rating: '4.9/5',
+          status: 'Available'
+        },
+        {
+          name: 'Gora Kadan',
+          description: 'Technically in Hakone rather than Kyoto — former Imperial villa, extraordinary onsen, forest setting. If the Vetinaris are open to splitting the trip (Kyoto + Hakone), this pairs beautifully and is easier to book for peak season.',
+          price: 'From ¥88,000/night (~$580)',
+          rating: '4.9/5',
+          status: 'Available'
+        }
+      ]
+    },
+    {
+      id: 'aim7-5',
+      role: 'user',
+      contentType: 'text',
+      text: 'Tawaraya is the obvious choice for them. Is the private onsen in every room or just certain categories?',
+      timestamp: '2026-04-03T08:18:00Z',
+      cards: null
+    },
+    {
+      id: 'aim7-6',
+      role: 'assistant',
+      contentType: 'text',
+      text: 'At Tawaraya, the private in-room onsen (hinoki cypress bath with natural spring water) is available in their premium room categories — approximately 8 of the 18 rooms. The entry rooms have private baths but not onsen-fed water. For the Vetinaris, I\'d specify requesting a room with the private onsen feed when making the inquiry. It\'s worth noting that Tawaraya does not take direct bookings from individuals — reservations are typically handled through a connected travel agent or concierge service, which puts Maestro in a strong position to secure a room.',
+      timestamp: '2026-04-03T08:25:00Z',
+      cards: null
+    }
+  ],
+
+  ait8: [
+    {
+      id: 'aim8-1',
+      role: 'user',
+      contentType: 'text',
+      text: 'Give me my end of day summary.',
+      timestamp: '2026-03-29T17:00:00Z',
+      cards: null
+    },
+    {
+      id: 'aim8-2',
+      role: 'assistant',
+      contentType: 'text',
+      text: 'Here\'s your summary for March 29:\n\n**Conversations:** 8 handled today, 6 closed, 2 still open (Selachii — waiting on hotel confirmation; Sto Helit — pending client reply).\n\n**SLA:** 2 breaches earlier today — Ridcully and Ogg — both resolved within 45 minutes of shift start. No active breaches at EOD.\n\n**Bookings confirmed:** 3 — Vetinari Maldives villa deposit, Vimes flight itinerary locked, Ogg hotel in Panama City.\n\n**Tasks:** 5 active today, 3 completed. 2 still open: (1) Selachii — source Bali spa options; (2) Vimes — confirm Santorini hotel backup.',
+      timestamp: '2026-03-29T17:06:00Z',
+      cards: null
+    },
+    {
+      id: 'aim8-3',
+      role: 'user',
+      contentType: 'text',
+      text: 'What do I need to pick up tomorrow morning when I start?',
+      timestamp: '2026-03-29T17:12:00Z',
+      cards: null
+    },
+    {
+      id: 'aim8-4',
+      role: 'assistant',
+      contentType: 'text',
+      text: 'Priority items for tomorrow morning:\n\n1. **Selachii thread** — Bali spa shortlist is overdue. Client expects options by Monday EOD.\n2. **Vimes Santorini backup** — Canaves is fully booked for their dates, need an alternative confirmed and presented to Samuel.\n3. **Sto Helit** — no client reply yet on the Amalfi itinerary draft sent yesterday. If no response by 10am, send a gentle follow-up.\n4. **Ridcully flight upgrade** — Juliana asked about Air France La Premiere vs. points transfer. Brief analysis still outstanding.\n\nNothing else is time-critical overnight.',
+      timestamp: '2026-03-29T17:18:00Z',
+      cards: null
+    }
+  ]
+};
+
+// ---- AI Thread helpers ----
+function getAIThread(id) { return AI_THREADS.find(t => t.id === id); }
+function getAIThreadsByAgent(agentId) { return AI_THREADS.filter(t => t.agentId === agentId).sort((a,b) => new Date(b.updatedAt) - new Date(a.updatedAt)); }
+function getAIThreadsByTrip(tripId) { return AI_THREADS.filter(t => t.tripId === tripId).sort((a,b) => new Date(b.updatedAt) - new Date(a.updatedAt)); }
+function getAIThreadsByClient(clientId) {
+  const client = getClient(clientId);
+  return client ? getAIThreadsByHousehold(client.householdId) : [];
+}
+function getAIThreadsByHousehold(householdId) { return AI_THREADS.filter(t => t.householdId === householdId).sort((a,b) => new Date(b.updatedAt) - new Date(a.updatedAt)); }
+function getAIThreadsByContext(contextType) { return AI_THREADS.filter(t => t.contextType === contextType).sort((a,b) => new Date(b.updatedAt) - new Date(a.updatedAt)); }
+function getAIThreadMessages(threadId) { return AI_THREAD_MESSAGES[threadId] || []; }
+function searchAIThreads(query, agentId) {
+  const q = query.toLowerCase();
+  return AI_THREADS.filter(t => {
+    if (agentId && t.agentId !== agentId) return false;
+    if (t.title.toLowerCase().includes(q)) return true;
+    const msgs = getAIThreadMessages(t.id);
+    return msgs.some(m => m.text.toLowerCase().includes(q));
+  }).sort((a,b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+}
+
+// ---- AI Thread localStorage persistence ----
+const AI_STORAGE_KEYS = {
+  threads: 'maestro-ai-threads',
+  messages: 'maestro-ai-messages',
+  activeThread: 'maestro-ai-active-thread'
+};
+
+function loadAIThreadsFromStorage() {
+  try {
+    const stored = localStorage.getItem(AI_STORAGE_KEYS.threads);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      // Merge: localStorage wins, add any new mock threads not in storage
+      const storedIds = new Set(parsed.map(t => t.id));
+      const newMocks = AI_THREADS.filter(t => !storedIds.has(t.id));
+      AI_THREADS.length = 0;
+      AI_THREADS.push(...parsed, ...newMocks);
+    }
+    const storedMsgs = localStorage.getItem(AI_STORAGE_KEYS.messages);
+    if (storedMsgs) {
+      const parsed = JSON.parse(storedMsgs);
+      // Merge: localStorage wins for existing, keep mock for new
+      Object.keys(parsed).forEach(k => { AI_THREAD_MESSAGES[k] = parsed[k]; });
+    }
+  } catch (e) { console.warn('Failed to load AI threads from storage:', e); }
+}
+
+function saveAIThreads() {
+  try { localStorage.setItem(AI_STORAGE_KEYS.threads, JSON.stringify(AI_THREADS)); }
+  catch (e) { console.warn('Failed to save AI threads:', e); }
+}
+
+function saveAIMessages() {
+  try { localStorage.setItem(AI_STORAGE_KEYS.messages, JSON.stringify(AI_THREAD_MESSAGES)); }
+  catch (e) { console.warn('Failed to save AI messages:', e); }
+}
+
+function saveActiveThreadId(threadId) {
+  try { localStorage.setItem(AI_STORAGE_KEYS.activeThread, threadId || ''); }
+  catch (e) { console.warn('Failed to save active thread:', e); }
+}
+
+function getActiveThreadId() {
+  return localStorage.getItem(AI_STORAGE_KEYS.activeThread) || null;
+}
+
+// Boot: load from localStorage on page load
+loadAIThreadsFromStorage();

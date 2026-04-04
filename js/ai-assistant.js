@@ -10,6 +10,11 @@ const MaestroAI = (() => {
   const SEND_SVG = `<svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>`;
   const CLOSE_SVG = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M18 6L6 18M6 6l12 12"/></svg>`;
   const MINIMIZE_SVG = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M6 12h12"/></svg>`;
+  const PLUS_SVG = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M12 5v14M5 12h14"/></svg>`;
+  const CLOCK_SVG = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
+  const BACK_SVG = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>`;
+  const STAR_SVG = `<svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+  const STAR_FILLED_SVG = `<svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
 
   // ---- State ----
   let isBarOpen = false;
@@ -19,6 +24,8 @@ const MaestroAI = (() => {
   let agentThread = [];
   let agentWorkflowStep = 0;
   let agentContext = '';
+  let currentThreadId = null;
+  let panelMode = 'chat'; // 'chat' | 'history'
 
   // ============================================================
   // Context Engine
@@ -623,6 +630,12 @@ const MaestroAI = (() => {
     agentThread = [];
     agentWorkflowStep = 0;
     agentContext = workflowId;
+    panelMode = 'chat';
+
+    // Create a new persistent thread if we don't already have one active
+    if (!currentThreadId || !getAIThread(currentThreadId) || getAIThread(currentThreadId).status !== 'active') {
+      createNewThread(ctx || getContext());
+    }
 
     // Hide minimized tab
     const minTab = document.getElementById('ai-agent-minimized');
@@ -635,12 +648,22 @@ const MaestroAI = (() => {
       panel.id = 'ai-agent-panel';
       panel.className = 'ai-agent-panel';
       panel.innerHTML = `
-        <div class="ai-agent-header">
+        <div class="ai-agent-header" id="ai-agent-header-chat">
           <span class="ai-sparkle">${SPARKLE_SVG}</span>
           <span class="ai-agent-title">Maestro AI</span>
           <span class="ai-agent-context" id="ai-agent-context-label"></span>
           <div class="ai-agent-actions">
+            <button class="ai-agent-btn" title="New chat" onclick="MaestroAI.startNewChat()">${PLUS_SVG}</button>
+            <button class="ai-agent-btn" title="History" onclick="MaestroAI.switchToHistory()">${CLOCK_SVG}</button>
             <button class="ai-agent-btn" title="Minimize" onclick="MaestroAI.minimizeAgent()">${MINIMIZE_SVG}</button>
+            <button class="ai-agent-btn" title="Close" onclick="MaestroAI.closeAgentPanel()">${CLOSE_SVG}</button>
+          </div>
+        </div>
+        <div class="ai-agent-header ai-agent-header-history" id="ai-agent-header-history" style="display:none">
+          <button class="ai-agent-btn" title="Back" onclick="MaestroAI.switchToChat()">${BACK_SVG}</button>
+          <span class="ai-agent-title">AI History</span>
+          <div class="ai-agent-actions">
+            <button class="ai-agent-btn" title="New chat" onclick="MaestroAI.startNewChat()">${PLUS_SVG}</button>
             <button class="ai-agent-btn" title="Close" onclick="MaestroAI.closeAgentPanel()">${CLOSE_SVG}</button>
           </div>
         </div>
@@ -653,6 +676,12 @@ const MaestroAI = (() => {
             </div>
           </div>
           <div class="ai-task-tracker" id="ai-task-tracker" style="display:none;"></div>
+        </div>
+        <div class="ai-agent-history" id="ai-agent-history" style="display:none">
+          <div class="ai-history-search-wrapper">
+            <input type="text" class="ai-history-search" id="ai-history-search" placeholder="Search AI conversations..." autocomplete="off">
+          </div>
+          <div class="ai-history-list" id="ai-history-list"></div>
         </div>
       `;
       document.body.appendChild(panel);
@@ -706,8 +735,20 @@ const MaestroAI = (() => {
     if (panel) panel.classList.remove('open', 'with-tracker');
     isAgentOpen = false;
     isAgentMinimized = false;
+    panelMode = 'chat';
     const minTab = document.getElementById('ai-agent-minimized');
     if (minTab) minTab.classList.remove('visible');
+
+    // Mark current thread as completed if it has messages
+    if (currentThreadId) {
+      const thread = getAIThread(currentThreadId);
+      if (thread && thread.messageCount > 0) {
+        thread.status = 'completed';
+        saveAIThreads();
+      }
+      currentThreadId = null;
+      saveActiveThreadId(null);
+    }
   }
 
   function minimizeAgent() {
@@ -739,6 +780,13 @@ const MaestroAI = (() => {
     `;
     thread.appendChild(msg);
     thread.scrollTop = thread.scrollHeight;
+
+    // Persist to thread (strip HTML for storage)
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+    const plainText = tempDiv.textContent || tempDiv.innerText || html;
+    addMessageToThread('assistant', plainText, 'text');
+
     return msg;
   }
 
@@ -750,6 +798,9 @@ const MaestroAI = (() => {
     msg.innerHTML = `<div class="ai-agent-user-bubble">${text}</div>`;
     thread.appendChild(msg);
     thread.scrollTop = thread.scrollHeight;
+
+    // Persist to thread
+    addMessageToThread('user', text, 'text');
   }
 
   function startAgentThinking(callback) {
@@ -1156,6 +1207,434 @@ const MaestroAI = (() => {
     }, 10);
   }
 
+  // ============================================================
+  // Thread Lifecycle (persistent AI chat threads)
+  // ============================================================
+
+  function createNewThread(ctx) {
+    const id = 'ait' + Date.now();
+    const thread = {
+      id: id,
+      title: '',  // Set after first user message
+      agentId: 'a1', // Default logged-in agent
+      contextType: 'global',
+      tripId: null,
+      householdId: null,
+      clientId: null,
+      conversationId: null,
+      taskId: null,
+      status: 'active',
+      starred: false,
+      messageCount: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    // Map context to thread fields
+    if (ctx) {
+      if (ctx.tripId) {
+        thread.contextType = 'trip';
+        thread.tripId = ctx.tripId;
+      } else if (ctx.clientId) {
+        thread.contextType = 'client';
+        thread.clientId = ctx.clientId;
+      } else if (ctx.convId) {
+        thread.contextType = 'conversation';
+        thread.conversationId = ctx.convId;
+      }
+      if (ctx.householdId) thread.householdId = ctx.householdId;
+    }
+
+    AI_THREADS.unshift(thread);
+    AI_THREAD_MESSAGES[id] = [];
+    currentThreadId = id;
+    saveAIThreads();
+    saveAIMessages();
+    saveActiveThreadId(id);
+    return id;
+  }
+
+  function generateThreadTitle(text) {
+    // Truncate first user message to 60 chars at word boundary
+    if (!text) return 'New conversation';
+    const clean = text.replace(/\s+/g, ' ').trim();
+    if (clean.length <= 60) return clean;
+    const truncated = clean.substring(0, 60);
+    const lastSpace = truncated.lastIndexOf(' ');
+    return (lastSpace > 30 ? truncated.substring(0, lastSpace) : truncated) + '...';
+  }
+
+  function addMessageToThread(role, text, contentType, cards) {
+    if (!currentThreadId) return;
+    const thread = getAIThread(currentThreadId);
+    if (!thread) return;
+
+    const msgs = AI_THREAD_MESSAGES[currentThreadId] || [];
+    const msg = {
+      id: 'aim' + Date.now() + '_' + msgs.length,
+      role: role,
+      contentType: contentType || 'text',
+      text: text,
+      timestamp: new Date().toISOString(),
+      cards: cards || null
+    };
+    msgs.push(msg);
+    AI_THREAD_MESSAGES[currentThreadId] = msgs;
+
+    // Update thread metadata
+    thread.messageCount = msgs.length;
+    thread.updatedAt = new Date().toISOString();
+
+    // Auto-title from first user message
+    if (role === 'user' && !thread.title) {
+      thread.title = generateThreadTitle(text);
+    }
+
+    saveAIThreads();
+    saveAIMessages();
+  }
+
+  function resumeThread(threadId) {
+    const thread = getAIThread(threadId);
+    if (!thread) return;
+
+    currentThreadId = threadId;
+    panelMode = 'chat';
+    saveActiveThreadId(threadId);
+
+    // Ensure panel is open
+    let panel = document.getElementById('ai-agent-panel');
+    if (!panel) {
+      // Build panel first via openAgentPanel flow, then load
+      const ctx = getContext();
+      openAgentPanel(null, ctx);
+    }
+
+    // Clear thread DOM
+    const threadEl = document.getElementById('ai-agent-thread');
+    if (threadEl) threadEl.innerHTML = '';
+
+    // Update header
+    updatePanelHeader(thread);
+
+    // Load saved messages
+    const messages = getAIThreadMessages(threadId);
+    messages.forEach(msg => {
+      renderThreadMessage(msg);
+    });
+
+    // Show panel
+    if (panel) {
+      panel.classList.add('open');
+      panel.setAttribute('data-mode', 'chat');
+    }
+    isAgentOpen = true;
+    isAgentMinimized = false;
+
+    // Hide history if shown
+    const historyEl = document.getElementById('ai-agent-history');
+    if (historyEl) historyEl.style.display = 'none';
+    const chatBody = panel ? panel.querySelector('.ai-agent-body-split') : null;
+    if (chatBody) chatBody.style.display = 'flex';
+
+    // Scroll to bottom
+    if (threadEl) threadEl.scrollTop = threadEl.scrollHeight;
+  }
+
+  function renderThreadMessage(msg) {
+    const thread = document.getElementById('ai-agent-thread');
+    if (!thread) return;
+
+    if (msg.role === 'user') {
+      const el = document.createElement('div');
+      el.className = 'ai-agent-user-msg';
+      el.innerHTML = `<div class="ai-agent-user-bubble">${msg.text}</div>`;
+      thread.appendChild(el);
+    } else {
+      const el = document.createElement('div');
+      el.className = 'ai-agent-msg';
+
+      let bodyHtml = '';
+      if (msg.contentType === 'results' && msg.cards && msg.cards.length > 0) {
+        bodyHtml = `<p style="margin-bottom:12px">${msg.text}</p>`;
+        msg.cards.forEach(card => {
+          bodyHtml += `
+            <div class="ai-result-card-inline" style="background:var(--bg-surface);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;">
+              <div style="display:flex;justify-content:space-between;align-items:start">
+                <strong style="color:var(--text-primary)">${card.name}</strong>
+                <span style="color:var(--gold);font-weight:600;font-size:13px">${card.price || ''}</span>
+              </div>
+              <p style="font-size:12px;color:var(--text-secondary);margin:4px 0">${card.description || ''}</p>
+              ${card.rating ? `<span style="font-size:11px;color:var(--text-tertiary)">${card.rating}</span>` : ''}
+              ${card.status ? `<span style="font-size:11px;color:var(--gold);margin-left:8px">${card.status}</span>` : ''}
+            </div>
+          `;
+        });
+      } else {
+        bodyHtml = msg.text;
+      }
+
+      el.innerHTML = `
+        <div class="ai-agent-msg-avatar"><span class="ai-sparkle">${SPARKLE_SVG}</span></div>
+        <div class="ai-agent-msg-body">${bodyHtml}</div>
+      `;
+      thread.appendChild(el);
+    }
+
+    thread.scrollTop = thread.scrollHeight;
+  }
+
+  function updatePanelHeader(thread) {
+    const titleEl = document.querySelector('#ai-agent-header-chat .ai-agent-title');
+    const contextEl = document.getElementById('ai-agent-context-label');
+    if (titleEl) titleEl.textContent = thread && thread.title ? thread.title : 'Maestro AI';
+    if (contextEl) {
+      if (thread) {
+        if (thread.tripId) {
+          const trip = getTrip(thread.tripId);
+          contextEl.textContent = trip ? '-- ' + trip.name : '';
+        } else if (thread.householdId) {
+          const h = getHousehold(thread.householdId);
+          contextEl.textContent = h ? '-- ' + h.name : '';
+        } else {
+          contextEl.textContent = '';
+        }
+      } else {
+        contextEl.textContent = '';
+      }
+    }
+  }
+
+  function starThread(threadId) {
+    const thread = getAIThread(threadId);
+    if (thread) {
+      thread.starred = !thread.starred;
+      saveAIThreads();
+    }
+  }
+
+  function archiveThread(threadId) {
+    const thread = getAIThread(threadId);
+    if (thread) {
+      thread.status = thread.status === 'archived' ? 'active' : 'archived';
+      saveAIThreads();
+    }
+  }
+
+  function getContextLabel(thread) {
+    if (!thread) return '';
+    if (thread.tripId) {
+      const trip = getTrip(thread.tripId);
+      return trip ? trip.name : 'Trip';
+    }
+    if (thread.householdId) {
+      const h = getHousehold(thread.householdId);
+      return h ? h.name + ' household' : 'Household';
+    }
+    if (thread.conversationId) return 'Conversation';
+    return 'General';
+  }
+
+  function getRelativeTime(isoDate) {
+    const now = new Date();
+    const date = new Date(isoDate);
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    if (diffMins < 1) return 'just now';
+    if (diffMins < 60) return diffMins + 'm ago';
+    if (diffHours < 24) return diffHours + 'h ago';
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return diffDays + 'd ago';
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  // ============================================================
+  // Panel History Mode
+  // ============================================================
+
+  function switchToHistory() {
+    panelMode = 'history';
+
+    // Toggle headers
+    const chatHeader = document.getElementById('ai-agent-header-chat');
+    const historyHeader = document.getElementById('ai-agent-header-history');
+    if (chatHeader) chatHeader.style.display = 'none';
+    if (historyHeader) historyHeader.style.display = 'flex';
+
+    // Toggle bodies
+    const chatBody = document.querySelector('.ai-agent-body-split');
+    const historyBody = document.getElementById('ai-agent-history');
+    if (chatBody) chatBody.style.display = 'none';
+    if (historyBody) historyBody.style.display = 'flex';
+
+    // Render history list
+    renderHistoryList();
+
+    // Setup search
+    const searchInput = document.getElementById('ai-history-search');
+    if (searchInput) {
+      searchInput.value = '';
+      searchInput.oninput = () => renderHistoryList(searchInput.value);
+      searchInput.focus();
+    }
+  }
+
+  function switchToChat(threadId) {
+    panelMode = 'chat';
+
+    // Toggle headers
+    const chatHeader = document.getElementById('ai-agent-header-chat');
+    const historyHeader = document.getElementById('ai-agent-header-history');
+    if (chatHeader) chatHeader.style.display = 'flex';
+    if (historyHeader) historyHeader.style.display = 'none';
+
+    // Toggle bodies
+    const chatBody = document.querySelector('.ai-agent-body-split');
+    const historyBody = document.getElementById('ai-agent-history');
+    if (chatBody) chatBody.style.display = 'flex';
+    if (historyBody) historyBody.style.display = 'none';
+
+    if (threadId) {
+      resumeThread(threadId);
+    }
+  }
+
+  function startNewChat() {
+    // Mark current thread as completed if it has messages
+    if (currentThreadId) {
+      const thread = getAIThread(currentThreadId);
+      if (thread && thread.messageCount > 0) {
+        thread.status = 'completed';
+        saveAIThreads();
+      }
+    }
+
+    const ctx = getContext();
+    currentThreadId = null;
+    createNewThread(ctx);
+
+    // Ensure we're in chat mode
+    switchToChat();
+
+    // Clear the thread display
+    const threadEl = document.getElementById('ai-agent-thread');
+    if (threadEl) threadEl.innerHTML = '';
+
+    // Update header
+    const titleEl = document.querySelector('#ai-agent-header-chat .ai-agent-title');
+    if (titleEl) titleEl.textContent = 'Maestro AI';
+    const contextEl = document.getElementById('ai-agent-context-label');
+    if (contextEl) {
+      if (ctx.tripName) contextEl.textContent = '-- ' + ctx.tripName;
+      else if (ctx.householdName) contextEl.textContent = '-- ' + ctx.householdName;
+      else contextEl.textContent = '';
+    }
+
+    // Focus input
+    const input = document.getElementById('ai-agent-input');
+    if (input) { input.value = ''; input.focus(); }
+  }
+
+  function renderHistoryList(searchQuery) {
+    const list = document.getElementById('ai-history-list');
+    if (!list) return;
+
+    // Get threads for current agent (a1 = logged-in agent)
+    let threads;
+    if (searchQuery && searchQuery.trim()) {
+      threads = searchAIThreads(searchQuery.trim(), 'a1');
+    } else {
+      threads = getAIThreadsByAgent('a1');
+    }
+
+    if (threads.length === 0) {
+      list.innerHTML = `
+        <div class="ai-history-empty">
+          <span class="ai-sparkle" style="width:32px;height:32px;opacity:0.3">${SPARKLE_SVG}</span>
+          <p style="color:var(--text-muted);font-size:13px;margin-top:12px">
+            ${searchQuery ? 'No matching conversations' : 'No AI conversations yet'}
+          </p>
+        </div>
+      `;
+      return;
+    }
+
+    // Group by date
+    const groups = groupThreadsByDate(threads);
+
+    let html = '';
+    groups.forEach(group => {
+      html += `<div class="ai-history-group-label">${group.label}</div>`;
+      group.threads.forEach(thread => {
+        const contextLabel = getContextLabel(thread);
+        const isActive = thread.id === currentThreadId;
+        const lastMsg = getAIThreadMessages(thread.id);
+        const preview = lastMsg.length > 0 ? lastMsg[lastMsg.length - 1].text : '';
+        const previewTrunc = preview.length > 80 ? preview.substring(0, 80) + '...' : preview;
+
+        html += `
+          <div class="ai-history-item ${isActive ? 'active' : ''} ${thread.starred ? 'starred' : ''}"
+               onclick="MaestroAI.switchToChat('${thread.id}')" data-thread-id="${thread.id}">
+            <div class="ai-history-item-top">
+              <button class="ai-history-star" onclick="event.stopPropagation(); MaestroAI.toggleStarInHistory('${thread.id}')" title="${thread.starred ? 'Unstar' : 'Star'}">
+                ${thread.starred ? STAR_FILLED_SVG : STAR_SVG}
+              </button>
+              <span class="ai-history-item-title">${thread.title || 'New conversation'}</span>
+              <span class="ai-history-item-time">${getRelativeTime(thread.updatedAt)}</span>
+            </div>
+            <div class="ai-history-item-meta">
+              <span class="ai-history-context-badge" data-type="${thread.contextType}">${contextLabel}</span>
+              ${thread.status === 'active' ? '<span class="ai-history-status-dot"></span>' : ''}
+            </div>
+            ${previewTrunc ? `<div class="ai-history-item-preview">${previewTrunc}</div>` : ''}
+          </div>
+        `;
+      });
+    });
+
+    list.innerHTML = html;
+  }
+
+  function groupThreadsByDate(threads) {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+    const weekAgo = new Date(today); weekAgo.setDate(today.getDate() - 7);
+
+    const groups = [
+      { label: 'Today', threads: [] },
+      { label: 'Yesterday', threads: [] },
+      { label: 'This Week', threads: [] },
+      { label: 'Earlier', threads: [] },
+    ];
+
+    // Starred first, then by date
+    const starred = threads.filter(t => t.starred);
+    const unstarred = threads.filter(t => !t.starred);
+
+    if (starred.length > 0) {
+      groups.unshift({ label: 'Starred', threads: starred });
+    }
+
+    unstarred.forEach(thread => {
+      const d = new Date(thread.updatedAt);
+      if (d >= today) groups.find(g => g.label === 'Today').threads.push(thread);
+      else if (d >= yesterday) groups.find(g => g.label === 'Yesterday').threads.push(thread);
+      else if (d >= weekAgo) groups.find(g => g.label === 'This Week').threads.push(thread);
+      else groups.find(g => g.label === 'Earlier').threads.push(thread);
+    });
+
+    // Remove empty groups
+    return groups.filter(g => g.threads.length > 0);
+  }
+
+  function toggleStarInHistory(threadId) {
+    starThread(threadId);
+    renderHistoryList(document.getElementById('ai-history-search')?.value);
+  }
+
   // Public API
   return {
     init,
@@ -1172,6 +1651,23 @@ const MaestroAI = (() => {
     getContext,
     getSuggestions,
     showAssignDropdown,
+    // Thread lifecycle
+    createNewThread,
+    resumeThread,
+    starThread,
+    archiveThread,
+    getContextLabel,
+    getRelativeTime,
+    renderThreadMessage,
+    updatePanelHeader,
+    getCurrentThreadId: () => currentThreadId,
+    getPanelMode: () => panelMode,
+    // History mode
+    switchToHistory,
+    switchToChat,
+    startNewChat,
+    renderHistoryList,
+    toggleStarInHistory,
   };
 })();
 

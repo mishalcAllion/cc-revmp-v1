@@ -279,6 +279,23 @@
         </div>
       </div>
 
+      <!-- AI History (collapsible) -->
+      <div class="border-b transition-theme" style="border-color:var(--border);">
+        <div class="flex items-center justify-between px-4 py-2.5 cursor-pointer" style="background:var(--bg-surface);" onclick="toggleContextSection('ai-history-panel')">
+          <span class="text-xs font-semibold uppercase tracking-wide flex items-center gap-1.5" style="color:var(--text-muted);">
+            <svg viewBox="0 0 24 24" width="10" height="10" fill="var(--gold)"><path d="M12 2L9.5 9.5 2 12l7.5 2.5L12 22l2.5-7.5L22 12l-7.5-2.5z"/></svg>
+            Maestro AI
+          </span>
+          <svg id="ai-history-panel-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-muted);transition:transform 0.2s;">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </div>
+        <div id="ai-history-panel-content" class="px-4 pb-3" style="display:none;">
+          <div id="inbox-ai-thread-list" class="space-y-0"></div>
+          <a id="inbox-ai-view-all" href="ai-history" class="text-xs mt-2 inline-block" style="color:var(--gold);">View all AI conversations</a>
+        </div>
+      </div>
+
       <!-- AI Assist -->
       <div class="p-4 mt-auto">
         <div class="ai-section-header" style="padding:0 0 6px 0;">
@@ -950,8 +967,44 @@
       renderMessages();
       renderComponentCards();
       updateContextPanel();
+      renderInboxAIThreads();
     }
 
+  }
+
+  function renderInboxAIThreads() {
+    const listEl = document.getElementById('inbox-ai-thread-list');
+    const viewAllEl = document.getElementById('inbox-ai-view-all');
+    if (!listEl) return;
+    const conv = CONVERSATIONS.find(c => c.id === currentConversationId);
+    if (!conv) return;
+
+    let threads = [];
+    if (conv.tripId && typeof getAIThreadsByTrip === 'function') threads = getAIThreadsByTrip(conv.tripId);
+    if (threads.length === 0 && typeof getAIThreadsByHousehold === 'function') threads = getAIThreadsByHousehold(conv.householdId);
+    threads = threads.slice(0, 3);
+
+    if (viewAllEl) {
+      viewAllEl.href = conv.tripId ? `ai-history?context=trip&id=${conv.tripId}` : `ai-history`;
+    }
+
+    if (threads.length === 0) {
+      listEl.innerHTML = `<div class="text-xs py-2" style="color:var(--text-muted);">No AI conversations for this context</div>`;
+      return;
+    }
+
+    listEl.innerHTML = threads.map(t => {
+      const ms = Date.now() - new Date(t.updatedAt);
+      const m = Math.floor(ms/60000), h = Math.floor(ms/3600000), d = Math.floor(ms/86400000);
+      const time = m < 1 ? 'now' : m < 60 ? m+'m' : h < 24 ? h+'h' : d+'d';
+      return `
+        <a href="ai-history?thread=${t.id}" style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--border);text-decoration:none;" class="hover:opacity-80 transition-opacity">
+          <svg viewBox="0 0 24 24" width="10" height="10" fill="var(--gold)" style="flex-shrink:0;"><path d="M12 2L9.5 9.5 2 12l7.5 2.5L12 22l2.5-7.5L22 12l-7.5-2.5z"/></svg>
+          <span style="font-size:12px;color:var(--text-primary);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.title || 'New conversation'}</span>
+          <span style="font-size:11px;color:var(--text-muted);flex-shrink:0;">${time}</span>
+        </a>
+      `;
+    }).join('');
   }
 </script>
 

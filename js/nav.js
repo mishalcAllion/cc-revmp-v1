@@ -13,6 +13,7 @@
     { id: 'trips',   label: 'Trips',     icon: 'map',      href: 'trip-pipeline.html' },
     { id: 'tasks',   label: 'Tasks',     icon: 'check-sq', href: 'tasks.html', badgeKey: 'myTasks' },
     { id: 'search',  label: 'Search',    icon: 'search',   href: '#search' },
+    { id: 'ai-history', label: 'Maestro AI', icon: 'sparkle', href: 'ai-history.html' },
     { id: 'alerts',  label: 'Alerts',    icon: 'bell',     href: 'alerts.html' },
     { id: 'settings',label: 'Settings',  icon: 'settings', href: 'settings.html' },
   ];
@@ -26,6 +27,7 @@
     search: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>',
     bell: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>',
     settings: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>',
+    sparkle: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3L13.5 8.5L19 10L13.5 11.5L12 17L10.5 11.5L5 10L10.5 8.5Z"/><path d="M19 3L19.75 5.25L22 6L19.75 6.75L19 9L18.25 6.75L16 6L18.25 5.25Z"/><path d="M5 17L5.75 19.25L8 20L5.75 20.75L5 23L4.25 20.75L2 20L4.25 19.25Z"/></svg>',
     collapse: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg>',
     expand: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/><path d="m14 9 3 3-3 3"/></svg>',
   };
@@ -76,7 +78,8 @@
           ${NAV_ITEMS.map(item => {
             const isActive = currentPage.includes(item.id) ||
               (item.id === 'inbox' && (currentPage.includes('inbox') || currentPage.includes('conversation'))) ||
-              (item.id === 'trips' && currentPage.includes('trip'));
+              (item.id === 'trips' && currentPage.includes('trip') && !currentPage.includes('ai-history')) ||
+              (item.id === 'ai-history' && currentPage.includes('ai-history'));
             const badge = item.badgeKey && badges[item.badgeKey] ? `<span class="nav-badge">${badges[item.badgeKey]}</span>` : '';
             return `
               <a href="${item.href}" class="nav-item ${isActive ? 'active' : ''}" data-nav="${item.id}">

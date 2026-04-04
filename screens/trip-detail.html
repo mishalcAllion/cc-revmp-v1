@@ -215,6 +215,22 @@
                 <div class="space-y-2" id="pref-snapshot"></div>
               </div>
 
+              <!-- AI Conversations -->
+              <div class="card p-4" id="trip-ai-threads-card">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center gap-1.5">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;color:var(--gold);">
+                      <svg viewBox="0 0 24 24" fill="currentColor" style="width:14px;height:14px;"><path d="M12 2L9.5 9.5 2 12l7.5 2.5L12 22l2.5-7.5L22 12l-7.5-2.5z"/></svg>
+                    </span>
+                    <div class="text-xs font-semibold uppercase tracking-wide" style="color:var(--text-muted);">AI Conversations</div>
+                  </div>
+                  <a id="trip-ai-view-all" href="#" class="text-xs" style="color:var(--gold);">View all</a>
+                </div>
+                <div id="trip-ai-threads-list">
+                  <div class="text-xs py-2" style="color:var(--text-muted);">No AI conversations for this trip yet</div>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
@@ -558,6 +574,7 @@
     renderOverviewTasks(tasks);
     renderPrefSnapshot();
     renderItinerary(allComponents);
+    renderTripAIThreads(tripId);
 
     // Components tab
     renderComponents(allComponents);
@@ -613,6 +630,42 @@
         </div>
       </div>
     `).join('');
+  }
+
+  function renderTripAIThreads(tripId) {
+    const listEl = document.getElementById('trip-ai-threads-list');
+    const viewAllEl = document.getElementById('trip-ai-view-all');
+    if (!listEl) return;
+    if (viewAllEl) viewAllEl.href = `ai-history?context=trip&id=${tripId}`;
+
+    const threads = typeof getAIThreadsByTrip === 'function' ? getAIThreadsByTrip(tripId).slice(0, 3) : [];
+    if (threads.length === 0) {
+      listEl.innerHTML = `<div class="text-xs py-2" style="color:var(--text-muted);">No AI conversations for this trip yet</div>`;
+      return;
+    }
+
+    const ctxColors = { trip: '#10b981', client: '#6366f1', conversation: '#3b82f6', global: 'var(--gold)' };
+    listEl.innerHTML = threads.map(t => {
+      const msgs = typeof getAIThreadMessages === 'function' ? getAIThreadMessages(t.id) : [];
+      const preview = msgs.length > 0 ? msgs[msgs.length - 1].text.substring(0, 60) + (msgs[msgs.length - 1].text.length > 60 ? '...' : '') : '';
+      const timeAgo = (() => {
+        const ms = Date.now() - new Date(t.updatedAt);
+        const m = Math.floor(ms / 60000), h = Math.floor(ms / 3600000), d = Math.floor(ms / 86400000);
+        if (m < 1) return 'just now'; if (m < 60) return m + 'm ago'; if (h < 24) return h + 'h ago'; if (d === 1) return 'Yesterday'; return d + 'd ago';
+      })();
+      return `
+        <a href="ai-history?thread=${t.id}" class="flex flex-col gap-0.5 py-2 border-b hover:opacity-80 transition-opacity" style="border-color:var(--border);text-decoration:none;">
+          <div class="flex items-center gap-1.5">
+            <span style="display:inline-flex;align-items:center;color:var(--gold);flex-shrink:0;">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L9.5 9.5 2 12l7.5 2.5L12 22l2.5-7.5L22 12l-7.5-2.5z"/></svg>
+            </span>
+            <span class="text-xs font-medium" style="color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;">${t.title || 'New conversation'}</span>
+            <span class="text-xs flex-shrink-0" style="color:var(--text-muted);">${timeAgo}</span>
+          </div>
+          ${preview ? `<div class="text-xs" style="color:var(--text-muted);padding-left:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${preview}</div>` : ''}
+        </a>
+      `;
+    }).join('');
   }
 
   function renderPrefSnapshot() {
