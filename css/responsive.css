@@ -190,24 +190,35 @@
   }
 
   /* --- Kanban vertical accordion --- */
+  .kanban-board-mobile {
+    min-width: unset !important;
+    width: 100% !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    overflow-x: hidden !important;
+    height: auto !important;
+  }
   .kanban-board-mobile .kanban-col {
     min-width: unset !important;
     max-width: unset !important;
     width: 100% !important;
-    flex-shrink: 1 !important;
+    flex-shrink: 0 !important;
+    height: auto !important;
   }
-  .kanban-board-mobile {
-    min-width: unset !important;
-    flex-direction: column !important;
-    gap: 8px !important;
-  }
+  /* Cards hidden by default, shown when column is expanded */
   .kanban-board-mobile .kanban-col .kanban-cards {
-    display: none;
+    display: none !important;
   }
   .kanban-board-mobile .kanban-col.expanded .kanban-cards {
-    display: flex;
+    display: flex !important;
     flex-direction: column;
     gap: 8px;
+    overflow-y: visible;
+    height: auto;
+  }
+  /* Card containers that were flex-1 on desktop should not stretch on mobile */
+  .kanban-board-mobile .kanban-col .kanban-cards.flex-1 {
+    flex: none !important;
   }
   .kanban-col-toggle {
     display: flex;

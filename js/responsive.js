@@ -20,6 +20,9 @@
     isOpen: false,
 
     init() {
+      // Skip on pages without a sidebar (e.g. index.html)
+      if (!document.getElementById('sidebar')) return;
+
       // Inject hamburger button
       this.hamburger = document.createElement('button');
       this.hamburger.className = 'mobile-hamburger';
@@ -270,9 +273,6 @@
     boards: [],
 
     init() {
-      this.boards = document.querySelectorAll('[id*="kanban"], .flex.gap-4.h-full, [style*="min-width:max-content"]');
-      if (this.boards.length === 0) return;
-
       mqMobile.addEventListener('change', (e) => {
         if (e.matches) this._activate();
         else this._deactivate();
@@ -284,30 +284,71 @@
     },
 
     _activate() {
+      // Re-scan every time to pick up dynamically rendered boards
+      this.boards = Array.from(document.querySelectorAll('[id*="kanban"], .flex.gap-4.h-full, [style*="min-width:max-content"]'));
+
       this.boards.forEach(board => {
         board.classList.add('kanban-board-mobile');
+
+        // Fix parent + grandparent overflow so the accordion can scroll vertically
+        [board.parentElement, board.parentElement && board.parentElement.parentElement].forEach(el => {
+          if (!el || el.dataset.kanbanFixed) return;
+          el.dataset.kanbanFixed = '1';
+          el.dataset.kanbanOrigOverflowY = el.style.overflowY || '';
+          el.dataset.kanbanOrigOverflowX = el.style.overflowX || '';
+          el.dataset.kanbanOrigHeight   = el.style.height || '';
+          el.style.overflowY = 'auto';
+          el.style.overflowX = 'hidden';
+          el.style.height    = 'auto';
+        });
+
         const cols = board.querySelectorAll('.kanban-col');
         cols.forEach((col, i) => {
-          // Add toggle header if not already present
-          if (!col.querySelector('.kanban-col-toggle')) {
-            const header = col.querySelector('.font-semibold, .text-xs.font-semibold, [class*="font-semibold"]');
-            if (header) {
-              const existingContent = header.parentElement;
-              const toggle = document.createElement('div');
-              toggle.className = 'kanban-col-toggle';
-              toggle.innerHTML = `
-                <span style="display:flex;align-items:center;gap:8px;">${existingContent ? existingContent.innerHTML : header.textContent}</span>
-                <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
-              `;
-              toggle.addEventListener('click', () => {
-                col.classList.toggle('expanded');
-              });
-              // Hide original header on mobile
-              if (existingContent) existingContent.style.display = 'none';
-              col.insertBefore(toggle, col.firstChild);
-            }
+          // Skip if already processed
+          if (col.querySelector('.kanban-col-toggle')) {
+            if (i === 0 && !col.classList.contains('expanded')) col.classList.add('expanded');
+            return;
           }
-          // Expand first column by default
+
+          const header = col.querySelector('.font-semibold, .text-xs.font-semibold, [class*="font-semibold"]');
+          if (!header) return;
+
+          // Walk up to find the direct child div of .kanban-col that contains the header
+          let headerContainer = header.parentElement;
+          while (headerContainer && headerContainer.parentElement !== col) {
+            headerContainer = headerContainer.parentElement;
+          }
+          if (!headerContainer) headerContainer = header.parentElement;
+
+          // Build the toggle
+          const toggle = document.createElement('div');
+          toggle.className = 'kanban-col-toggle';
+          toggle.innerHTML = `
+            <span style="display:flex;align-items:center;gap:8px;pointer-events:none;">${headerContainer.innerHTML}</span>
+            <svg class="chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="pointer-events:none;flex-shrink:0;"><path d="m6 9 6 6 6-6"/></svg>
+          `;
+          toggle.addEventListener('click', () => col.classList.toggle('expanded'));
+
+          // Hide original header
+          headerContainer.style.display = 'none';
+          col.insertBefore(toggle, col.firstChild);
+
+          // Wrap cards in a .kanban-cards container so the CSS can hide/show them
+          const cardChildren = Array.from(col.children).filter(c => c !== toggle && c !== headerContainer);
+
+          if (cardChildren.length === 1 && !cardChildren[0].classList.contains('kanban-card')) {
+            // Single container div (trip-pipeline pattern) — just tag it
+            cardChildren[0].classList.add('kanban-cards');
+            cardChildren[0]._kanbanCardsTagged = true;
+          } else if (cardChildren.length > 0) {
+            // Multiple direct card children (tasks board pattern) — wrap them
+            const wrapper = document.createElement('div');
+            wrapper.className = 'kanban-cards';
+            wrapper.dataset.kanbanWrapped = '1';
+            cardChildren.forEach(c => wrapper.appendChild(c));
+            col.appendChild(wrapper);
+          }
+
           if (i === 0) col.classList.add('expanded');
         });
       });
@@ -316,19 +357,44 @@
     _deactivate() {
       this.boards.forEach(board => {
         board.classList.remove('kanban-board-mobile');
+
+        // Restore ancestor overflow
+        [board.parentElement, board.parentElement && board.parentElement.parentElement].forEach(el => {
+          if (!el || !el.dataset.kanbanFixed) return;
+          el.style.overflowY = el.dataset.kanbanOrigOverflowY;
+          el.style.overflowX = el.dataset.kanbanOrigOverflowX;
+          el.style.height    = el.dataset.kanbanOrigHeight;
+          delete el.dataset.kanbanFixed;
+          delete el.dataset.kanbanOrigOverflowY;
+          delete el.dataset.kanbanOrigOverflowX;
+          delete el.dataset.kanbanOrigHeight;
+        });
+
         const cols = board.querySelectorAll('.kanban-col');
         cols.forEach(col => {
           col.classList.remove('expanded');
-          // Show original headers, remove toggle
           const toggle = col.querySelector('.kanban-col-toggle');
-          if (toggle) {
-            const originalHeader = col.querySelector('[style*="display: none"], [style*="display:none"]');
-            if (originalHeader) originalHeader.style.display = '';
-            toggle.remove();
+          if (!toggle) return;
+
+          // Restore original header
+          const hiddenHeader = col.querySelector('[style*="display: none"], [style*="display:none"]');
+          if (hiddenHeader) hiddenHeader.style.display = '';
+
+          // Unwrap wrapped cards (tasks pattern)
+          const wrapped = col.querySelector('[data-kanban-wrapped]');
+          if (wrapped) {
+            Array.from(wrapped.children).forEach(c => col.appendChild(c));
+            wrapped.remove();
           }
-          // Show cards
-          const cards = col.querySelector('.kanban-cards');
-          if (cards) cards.style.display = '';
+
+          // Remove tagged class from single container (trip-pipeline pattern)
+          const tagged = col.querySelector('.kanban-cards');
+          if (tagged && tagged._kanbanCardsTagged) {
+            tagged.classList.remove('kanban-cards');
+            delete tagged._kanbanCardsTagged;
+          }
+
+          toggle.remove();
         });
       });
     }
@@ -418,8 +484,8 @@
       InboxPanelManager.init();
     }
 
-    // Kanban boards
-    if (document.querySelector('.kanban-col')) {
+    // Kanban boards — also init on task/trip pages that render cols dynamically
+    if (document.querySelector('.kanban-col') || document.getElementById('kanban-board') || document.getElementById('task-container')) {
       MobileKanban.init();
     }
 
