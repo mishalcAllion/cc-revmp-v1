@@ -119,6 +119,26 @@ document.addEventListener('keydown', (e) => {
       closeModal(m.id);
     });
   }
+  // Arrow navigation within command palette
+  if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && document.getElementById('cmd-palette')?.classList.contains('open')) {
+    e.preventDefault();
+    const items = document.querySelectorAll('#cmd-palette .cmd-result-item, #cmd-palette .cmd-item');
+    if (!items.length) return;
+    let idx = Array.from(items).findIndex(el => el.classList.contains('highlighted'));
+    items.forEach(el => el.classList.remove('highlighted'));
+    if (e.key === 'ArrowDown') idx = (idx + 1) % items.length;
+    else idx = (idx - 1 + items.length) % items.length;
+    items[idx].classList.add('highlighted');
+    items[idx].scrollIntoView({ block: 'nearest' });
+  }
+  // Enter = navigate to highlighted result
+  if (e.key === 'Enter' && document.getElementById('cmd-palette')?.classList.contains('open')) {
+    const highlighted = document.querySelector('#cmd-palette .cmd-result-item.highlighted, #cmd-palette .cmd-item.highlighted');
+    if (highlighted && highlighted.href) {
+      e.preventDefault();
+      window.location.href = highlighted.href;
+    }
+  }
 });
 
 // ---- Init on DOM ready ----
@@ -655,28 +675,91 @@ function openPreferencesModal() {
 
 // ---- Render command palette HTML ----
 function renderCommandPalette() {
+  const recentClientsHtml = CLIENTS.slice(0, 4).map(c => `
+    <a href="client-detail.html?id=${c.id}" class="cmd-item" style="padding:8px 12px;border-radius:var(--radius);cursor:pointer;font-size:13px;display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text-primary);" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background='transparent'">
+      <span class="avatar avatar-sm" style="background:${c.avatarColor};color:#fff;">${c.initials}</span>
+      <span>${c.name}</span>
+    </a>
+  `).join('');
+
   return `
     <div id="cmd-backdrop" class="modal-backdrop" onclick="toggleCommandPalette()"></div>
     <div id="cmd-palette" class="cmd-palette">
-      <div style="padding:12px;border-bottom:1px solid var(--border);">
-        <input class="input" placeholder="Search clients, trips, tasks... (Cmd+K)" style="border:none;font-size:14px;padding:4px 0;" autofocus>
+      <div style="padding:10px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;color:var(--text-muted);"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        <input id="cmd-search-input" class="input" placeholder="Search clients, trips, tasks..." style="border:none;font-size:14px;padding:2px 0;background:transparent;" oninput="onCommandPaletteInput(this.value)">
       </div>
-      <div style="padding:8px;max-height:320px;overflow-y:auto;">
+      <div id="cmd-palette-body" style="padding:6px;max-height:360px;overflow-y:auto;">
         <div style="padding:4px 8px;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;">Quick Actions</div>
-        <div class="cmd-item" style="padding:8px 12px;border-radius:var(--radius);cursor:pointer;font-size:13px;display:flex;align-items:center;gap:10px;" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background='transparent'">
-          <span style="color:var(--text-muted);">+</span> <span>New Client</span> <span style="margin-left:auto;font-size:11px;color:var(--text-muted);">onboarding.html</span>
-        </div>
-        <div class="cmd-item" style="padding:8px 12px;border-radius:var(--radius);cursor:pointer;font-size:13px;display:flex;align-items:center;gap:10px;" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background='transparent'">
+        <a href="onboarding.html" class="cmd-item" style="padding:8px 12px;border-radius:var(--radius);cursor:pointer;font-size:13px;display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text-primary);" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background='transparent'">
+          <span style="color:var(--text-muted);">+</span> <span>New Client</span>
+        </a>
+        <div class="cmd-item" onclick="openTaskModal && openTaskModal()" style="padding:8px 12px;border-radius:var(--radius);cursor:pointer;font-size:13px;display:flex;align-items:center;gap:10px;" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background='transparent'">
           <span style="color:var(--text-muted);">+</span> <span>New Task</span>
         </div>
-        <div style="padding:4px 8px;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;margin-top:8px;">Recent Clients</div>
-        ${CLIENTS.slice(0, 4).map(c => `
-          <a href="client-detail?id=${c.id}" class="cmd-item" style="padding:8px 12px;border-radius:var(--radius);cursor:pointer;font-size:13px;display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text-primary);" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background='transparent'">
-            <span class="avatar avatar-sm" style="background:${c.avatarColor};color:#fff;">${c.initials}</span>
-            <span>${c.name}</span>
-          </a>
-        `).join('')}
+        <div style="padding:4px 8px;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;margin-top:6px;">Recent Clients</div>
+        ${recentClientsHtml}
       </div>
     </div>
   `;
+}
+
+// ---- Command palette live search ----
+let _cmdDebounce = null;
+function onCommandPaletteInput(query) {
+  clearTimeout(_cmdDebounce);
+  _cmdDebounce = setTimeout(() => _runCmdSearch(query), 130);
+}
+
+function _runCmdSearch(query) {
+  const body = document.getElementById('cmd-palette-body');
+  if (!body) return;
+
+  if (!query || !query.trim()) {
+    // Reset to default state
+    const recentClientsHtml = CLIENTS.slice(0, 4).map(c => `
+      <a href="client-detail.html?id=${c.id}" class="cmd-item" style="padding:8px 12px;border-radius:var(--radius);cursor:pointer;font-size:13px;display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text-primary);" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background='transparent'">
+        <span class="avatar avatar-sm" style="background:${c.avatarColor};color:#fff;">${c.initials}</span>
+        <span>${c.name}</span>
+      </a>
+    `).join('');
+    body.innerHTML = `
+      <div style="padding:4px 8px;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;">Quick Actions</div>
+      <a href="onboarding.html" class="cmd-item" style="padding:8px 12px;border-radius:var(--radius);cursor:pointer;font-size:13px;display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text-primary);" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background='transparent'">
+        <span style="color:var(--text-muted);">+</span> <span>New Client</span>
+      </a>
+      <div class="cmd-item" onclick="openTaskModal && openTaskModal()" style="padding:8px 12px;border-radius:var(--radius);cursor:pointer;font-size:13px;display:flex;align-items:center;gap:10px;" onmouseover="this.style.background='var(--bg-hover)'" onmouseout="this.style.background='transparent'">
+        <span style="color:var(--text-muted);">+</span> <span>New Task</span>
+      </div>
+      <div style="padding:4px 8px;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;margin-top:6px;">Recent Clients</div>
+      ${recentClientsHtml}
+    `;
+    return;
+  }
+
+  if (typeof MaestroSearch === 'undefined') return;
+
+  const results = MaestroSearch.search(query);
+  const top = results.slice(0, 6);
+
+  if (top.length === 0) {
+    body.innerHTML = `
+      <div style="padding:24px 12px;text-align:center;font-size:13px;color:var(--text-muted);">
+        No results for &ldquo;${MaestroSearch.escapeHtml(query)}&rdquo;
+      </div>
+      <a href="search.html?q=${encodeURIComponent(query)}" class="cmd-view-all">
+        Open full search &rarr;
+      </a>`;
+    return;
+  }
+
+  const itemsHtml = top.map(r => MaestroSearch.renderCompactResult(r, query)).join('');
+  const viewAllHref = `search.html?q=${encodeURIComponent(query)}`;
+
+  body.innerHTML = `
+    <div style="padding:4px 8px;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;">Results</div>
+    ${itemsHtml}
+    <a href="${viewAllHref}" class="cmd-view-all">
+      View all results for &ldquo;${MaestroSearch.escapeHtml(query)}&rdquo; &rarr;
+    </a>`;
 }

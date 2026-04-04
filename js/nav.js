@@ -12,7 +12,7 @@
     { id: 'clients', label: 'Clients',   icon: 'users',    href: 'clients.html' },
     { id: 'trips',   label: 'Trips',     icon: 'map',      href: 'trip-pipeline.html' },
     { id: 'tasks',   label: 'Tasks',     icon: 'check-sq', href: 'tasks.html', badgeKey: 'myTasks' },
-    { id: 'search',  label: 'Search',    icon: 'search',   href: '#search' },
+    { id: 'search',  label: 'Search',    icon: 'search',   href: 'search.html' },
     { id: 'ai-history', label: 'Maestro AI', icon: 'sparkle', href: 'ai-history.html' },
     { id: 'alerts',  label: 'Alerts',    icon: 'bell',     href: 'alerts.html' },
     { id: 'settings',label: 'Settings',  icon: 'settings', href: 'settings.html' },
@@ -114,15 +114,6 @@
     setTimeout(() => {
       const toggleBtn = document.getElementById('sidebar-toggle');
       if (toggleBtn) toggleBtn.addEventListener('click', toggleSidebar);
-
-      // Search opens command palette
-      const searchNav = document.querySelector('[data-nav="search"]');
-      if (searchNav) {
-        searchNav.addEventListener('click', (e) => {
-          e.preventDefault();
-          if (typeof toggleCommandPalette === 'function') toggleCommandPalette();
-        });
-      }
 
       // Re-bind theme toggle (rendered after DOMContentLoaded)
       const themeBtn = container.querySelector('.theme-toggle');

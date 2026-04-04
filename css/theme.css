@@ -532,3 +532,84 @@ body {
   white-space: nowrap;
   z-index: 99;
 }
+
+/* ---- Command palette — enhanced result items ---- */
+.cmd-result-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--text-primary);
+  font-size: 13px;
+  transition: background 0.1s;
+}
+.cmd-result-item:hover, .cmd-result-item.highlighted { background: var(--bg-hover); }
+.cmd-result-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.cmd-result-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+.cmd-result-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cmd-result-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cmd-view-all {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--gold);
+  cursor: pointer;
+  text-decoration: none;
+  border-top: 1px solid var(--border);
+  transition: background 0.1s;
+  font-weight: 500;
+}
+.cmd-view-all:hover { background: var(--bg-hover); }
+
+/* ---- Search highlight mark ---- */
+.search-highlight {
+  background: rgba(212,175,55,0.25);
+  color: inherit;
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+/* ---- Search type badge (shared between search page and cmd palette) ---- */
+.search-type-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 500;
+  background: var(--bg-app);
+  color: var(--text-muted);
+}
