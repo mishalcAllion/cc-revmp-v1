@@ -31,13 +31,15 @@
 
     <!-- Client header -->
     <div class="px-4 sm:px-6 py-3 sm:py-5 border-b transition-theme" style="background:var(--bg-surface);border-color:var(--border);">
-      <!-- Row 1: Back nav + quick actions on same line -->
+      <!-- Row 1: Breadcrumb + quick actions on same line -->
       <div class="flex items-center justify-between mb-2.5">
-        <a href="clients.html" class="flex items-center gap-1.5 text-sm font-medium hover:underline whitespace-nowrap" style="color:var(--text-muted);">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
-          <span class="sm:hidden">Clients</span>
-          <span class="hidden sm:inline">Back to Clients</span>
-        </a>
+        <nav class="flex items-center gap-1.5 text-xs" style="color:var(--text-muted);">
+          <a href="dashboard.html" class="hover:underline" style="color:var(--text-muted);">Dashboard</a>
+          <span>/</span>
+          <a href="clients.html" class="hover:underline" style="color:var(--text-muted);">Clients</a>
+          <span>/</span>
+          <span id="breadcrumb-client-name" class="font-medium" style="color:var(--text-primary);">Client</span>
+        </nav>
         <div class="flex gap-2">
           <button class="btn-ghost flex items-center gap-1.5 text-xs" id="client-message-btn" onclick="navigateToInbox()">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
@@ -440,6 +442,7 @@
     // Populate header
     document.getElementById('client-avatar').innerHTML = clientAvatarSVG();
     document.getElementById('client-name').textContent = currentClient.name;
+    document.getElementById('breadcrumb-client-name').textContent = currentClient.name;
     document.getElementById('client-phone').textContent = currentClient.phone;
     document.getElementById('client-email').textContent = currentClient.email;
 

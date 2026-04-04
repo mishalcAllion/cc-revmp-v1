@@ -233,17 +233,26 @@
     <div style="width:340px;min-width:340px;display:flex;flex-direction:column;border-right:1px solid var(--border);background:var(--bg-surface);overflow:hidden;">
 
       <!-- Header -->
-      <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;flex-shrink:0;">
-        <span class="ai-sparkle" style="width:18px;height:18px;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L9.5 9.5 2 12l7.5 2.5L12 22l2.5-7.5L22 12l-7.5-2.5z" fill="currentColor" stroke="none"/></svg>
-        </span>
-        <h1 style="font-size:15px;font-weight:600;color:var(--text-primary);">Maestro AI</h1>
-        <span id="thread-count" style="font-size:11px;color:var(--text-muted);padding:2px 6px;border-radius:9999px;background:var(--bg-hover);border:1px solid var(--border);">0</span>
-        <div style="margin-left:auto;">
-          <a href="inbox-compact.html" class="aih-new-chat-btn">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-            New Chat
-          </a>
+      <div style="padding:10px 16px;border-bottom:1px solid var(--border);flex-shrink:0;">
+        <!-- Breadcrumb -->
+        <div style="display:flex;align-items:center;gap:4px;font-size:11px;margin-bottom:6px;">
+          <a href="dashboard.html" style="color:var(--text-muted);text-decoration:none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">Dashboard</a>
+          <span style="color:var(--text-muted);">/</span>
+          <span style="color:var(--text-primary);font-weight:500;">Maestro AI</span>
+        </div>
+        <!-- Title row -->
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="ai-sparkle" style="width:18px;height:18px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L9.5 9.5 2 12l7.5 2.5L12 22l2.5-7.5L22 12l-7.5-2.5z" fill="currentColor" stroke="none"/></svg>
+          </span>
+          <h1 style="font-size:15px;font-weight:600;color:var(--text-primary);">Maestro AI</h1>
+          <span id="thread-count" style="font-size:11px;color:var(--text-muted);padding:2px 6px;border-radius:9999px;background:var(--bg-hover);border:1px solid var(--border);">0</span>
+          <div style="margin-left:auto;">
+            <a href="inbox-compact.html" class="aih-new-chat-btn">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+              New Chat
+            </a>
+          </div>
         </div>
       </div>
 

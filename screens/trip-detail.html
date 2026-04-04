@@ -30,12 +30,15 @@
     <!-- Trip header -->
     <div class="px-4 sm:px-6 py-3 sm:py-5 border-b transition-theme flex-shrink-0" style="background:var(--bg-surface);border-color:var(--border);">
 
-      <!-- Row 1: Back nav + actions on same line -->
+      <!-- Row 1: Breadcrumb + actions on same line -->
       <div class="flex items-center justify-between mb-2.5">
-        <a href="trip-pipeline.html" class="flex items-center gap-1.5 text-sm font-medium hover:underline" style="color:var(--text-muted);">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
-          Pipeline
-        </a>
+        <nav class="flex items-center gap-1.5 text-xs" style="color:var(--text-muted);">
+          <a href="dashboard.html" class="hover:underline" style="color:var(--text-muted);">Dashboard</a>
+          <span>/</span>
+          <a href="trip-pipeline.html" class="hover:underline" style="color:var(--text-muted);">Trips</a>
+          <span>/</span>
+          <span id="breadcrumb-trip-name" class="font-medium" style="color:var(--text-primary);">Trip</span>
+        </nav>
         <div class="flex gap-1.5">
           <button class="btn-ghost flex items-center gap-1 text-xs" id="trip-chat-btn" onclick="navigateToInbox()">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
@@ -525,6 +528,7 @@
 
     document.title = currentTrip.name + ' -- Maestro Command Centre';
     document.getElementById('trip-name').textContent = currentTrip.name;
+    document.getElementById('breadcrumb-trip-name').textContent = currentTrip.name;
     document.getElementById('trip-dates').textContent = currentTrip.dates;
     document.getElementById('trip-destinations').textContent = currentTrip.destinations;
     document.getElementById('trip-travelers').textContent = travelers.length + ' travelers';

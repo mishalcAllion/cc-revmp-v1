@@ -85,6 +85,7 @@
               <a href="${item.href}" class="nav-item ${isActive ? 'active' : ''}" data-nav="${item.id}">
                 <span class="nav-icon">${ICONS[item.icon]}</span>
                 <span class="nav-label">${item.label}</span>
+                ${item.id === 'search' ? '<span style="margin-left:auto;font-size:10px;opacity:0.45;font-family:monospace;letter-spacing:0.3px;flex-shrink:0;">⌘K</span>' : ''}
                 ${badge}
               </a>`;
           }).join('')}
