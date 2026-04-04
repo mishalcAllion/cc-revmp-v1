@@ -162,6 +162,30 @@ body {
   border-left-color: var(--warning) !important;
 }
 
+/* ---- SLA left-border stripe (compact inbox) ---- */
+.conv-sla-warning  { border-left: 3px solid var(--sla-warning)  !important; padding-left: 9px !important; }
+.conv-sla-critical { border-left: 4px solid var(--sla-critical) !important; padding-left: 8px !important; }
+.conv-sla-breached { border-left: 4px solid var(--sla-breached) !important; padding-left: 8px !important; }
+
+@keyframes sla-stripe-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.45; }
+}
+.conv-sla-breached {
+  animation: sla-stripe-pulse 1.5s ease-in-out infinite;
+}
+.conv-sla-breached:hover,
+.conv-sla-breached.conv-active {
+  animation: none;
+}
+/* Unassigned always wins the left border over SLA stripe */
+.conv-unassigned.conv-sla-warning,
+.conv-unassigned.conv-sla-critical,
+.conv-unassigned.conv-sla-breached {
+  border-left: 3px solid var(--warning) !important;
+  animation: unassigned-pulse 2s ease-in-out infinite;
+}
+
 /* ---- Card unassigned ---- */
 .card-unassigned {
   border: 1px dashed var(--warning) !important;
