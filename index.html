@@ -56,21 +56,39 @@
     </div>
   </div>
 
-  <!-- Overview Stats -->
-  <div class="flex flex-wrap items-center gap-x-6 gap-y-1 mb-6 text-xs" style="color:var(--text-muted);">
-    <span><strong style="color:var(--text-primary);">13</strong> screens</span>
-    <span style="color:var(--border);">|</span>
-    <span><strong style="color:var(--text-primary);">5</strong> workflows</span>
-    <span style="color:var(--border);">|</span>
-    <span>Vanilla HTML + Tailwind + JS</span>
+  <!-- Value Proposition -->
+  <p class="text-sm mb-4" style="color:var(--text-secondary);max-width:620px;">The ops platform redesigned for speed, context, and AI-native workflows.</p>
+  <div class="flex flex-wrap items-center gap-2 mb-4">
+    <span class="tag" style="background:rgba(212,175,55,0.12);color:var(--gold);">AI Assistant on every screen</span>
+    <span class="tag" style="background:rgba(212,175,55,0.12);color:var(--gold);">Real-time SLA triage</span>
+    <span class="tag" style="background:rgba(212,175,55,0.12);color:var(--gold);">3 inbox views for different workflows</span>
+  </div>
+  <div class="flex flex-wrap items-center gap-x-6 gap-y-1 mb-8 text-xs" style="color:var(--text-muted);">
+    <span>v1.0 -- Ready for review</span>
     <span style="color:var(--border);">|</span>
     <span>All data is mock/demo</span>
+  </div>
+
+  <!-- Quick Start by Role -->
+  <div class="grid grid-cols-3 gap-2 mb-10">
+    <a href="screens/dashboard.html" class="block rounded-lg p-3 text-center transition-all hover:shadow-sm" style="border:1px solid var(--border);background:var(--bg-surface);">
+      <div class="text-xs font-semibold mb-0.5" style="color:var(--text-primary);">Ops Agent?</div>
+      <div class="text-xs" style="color:var(--text-muted);">Dashboard or Inbox</div>
+    </a>
+    <a href="screens/dashboard.html" class="block rounded-lg p-3 text-center transition-all hover:shadow-sm" style="border:1px solid var(--border);background:var(--bg-surface);">
+      <div class="text-xs font-semibold mb-0.5" style="color:var(--text-primary);">Manager?</div>
+      <div class="text-xs" style="color:var(--text-muted);">Start at Dashboard</div>
+    </a>
+    <a href="screens/dashboard.html" class="block rounded-lg p-3 text-center transition-all hover:shadow-sm" style="border:1px solid var(--border);background:var(--bg-surface);">
+      <div class="text-xs font-semibold mb-0.5" style="color:var(--text-primary);">Executive?</div>
+      <div class="text-xs" style="color:var(--text-muted);">Dashboard + Pipeline</div>
+    </a>
   </div>
 
   <!-- Screens by Workflow -->
 
   <!-- Inbox & Triage -->
-  <div class="mb-6">
+  <div class="mb-8">
     <div class="flex items-center gap-2 mb-3">
       <div class="w-2 h-2 rounded-full" style="background:var(--gold);"></div>
       <h2 class="text-sm font-semibold uppercase tracking-wide" style="color:var(--gold);">Inbox & Triage</h2>
@@ -80,32 +98,38 @@
       <a href="screens/inbox-compact.html" class="card p-4 hover:shadow-md transition-shadow block group">
         <div class="text-sm font-semibold mb-1.5 group-hover:underline" style="color:var(--text-primary);">Compact List</div>
         <p class="text-xs mb-3" style="color:var(--text-muted);">44px rows with no message preview — <strong style="color:var(--text-primary);">maximum conversations visible at once</strong>. Designed for experienced agents who know their clients and need to triage a full queue fast.</p>
-        <div class="flex flex-wrap gap-1.5">
+        <div class="flex flex-wrap gap-1.5 mb-2">
           <span class="tag" style="background:rgba(212,175,55,0.12);color:var(--gold);">High Volume</span>
           <span class="tag" style="background:rgba(212,175,55,0.12);color:var(--gold);">Speed</span>
         </div>
+        <div class="text-xs" style="color:var(--text-muted);opacity:0.7;">Ops Agents</div>
       </a>
-      <a href="screens/inbox-cards.html" class="card p-4 hover:shadow-md transition-shadow block group">
-        <div class="text-sm font-semibold mb-1.5 group-hover:underline" style="color:var(--text-primary);">Card View</div>
+      <a href="screens/inbox-cards.html" class="card p-4 hover:shadow-md transition-shadow block group" style="border-left:3px solid var(--gold);">
+        <div class="flex items-center justify-between mb-1.5">
+          <div class="text-sm font-semibold group-hover:underline" style="color:var(--text-primary);">Card View</div>
+          <span class="text-xs font-medium px-1.5 py-0.5 rounded" style="background:rgba(212,175,55,0.15);color:var(--gold);font-size:9px;letter-spacing:0.3px;">START HERE</span>
+        </div>
         <p class="text-xs mb-3" style="color:var(--text-muted);">Expanded cards showing the last message, <strong style="color:var(--text-primary);">SLA progress bar</strong>, and inline quick actions. Helps agents understand context before responding — fewer but deeper conversations.</p>
-        <div class="flex flex-wrap gap-1.5">
+        <div class="flex flex-wrap gap-1.5 mb-2">
           <span class="tag" style="background:rgba(59,130,246,0.12);color:var(--info);">Context-Rich</span>
           <span class="tag" style="background:rgba(59,130,246,0.12);color:var(--info);">High-Touch</span>
         </div>
+        <div class="text-xs" style="color:var(--text-muted);opacity:0.7;">Ops Agents</div>
       </a>
       <a href="screens/inbox-queue.html" class="card p-4 hover:shadow-md transition-shadow block group">
         <div class="text-sm font-semibold mb-1.5 group-hover:underline" style="color:var(--text-primary);">Queue View</div>
         <p class="text-xs mb-3" style="color:var(--text-muted);">Swim lanes sorted by urgency: Unassigned → Breached → Warning → On Track. <strong style="color:var(--text-primary);">Most at-risk conversations always surface to the top</strong> — built for shift handoffs and SLA oversight.</p>
-        <div class="flex flex-wrap gap-1.5">
+        <div class="flex flex-wrap gap-1.5 mb-2">
           <span class="tag" style="background:rgba(245,158,11,0.12);color:var(--warning);">SLA Triage</span>
           <span class="tag" style="background:rgba(245,158,11,0.12);color:var(--warning);">Managers</span>
         </div>
+        <div class="text-xs" style="color:var(--text-muted);opacity:0.7;">Managers, Team Leads</div>
       </a>
     </div>
   </div>
 
   <!-- Client Management -->
-  <div class="mb-6">
+  <div class="mb-8">
     <div class="flex items-center gap-2 mb-3">
       <div class="w-2 h-2 rounded-full" style="background:var(--info);"></div>
       <h2 class="text-sm font-semibold uppercase tracking-wide" style="color:var(--info);">Client Management</h2>
@@ -115,32 +139,35 @@
       <a href="screens/clients.html" class="card p-4 hover:shadow-md transition-shadow block group">
         <div class="text-sm font-semibold mb-1.5 group-hover:underline" style="color:var(--text-primary);">Client List</div>
         <p class="text-xs mb-3" style="color:var(--text-muted);">Sortable CRM table with toggle between <strong style="color:var(--text-primary);">individual clients and household groupings</strong>. Filter by tier, status, and last contact. Click any row to open the 360 profile.</p>
-        <div class="flex flex-wrap gap-1.5">
+        <div class="flex flex-wrap gap-1.5 mb-2">
           <span class="tag" style="background:rgba(59,130,246,0.12);color:var(--info);">CRM Table</span>
           <span class="tag" style="background:rgba(59,130,246,0.12);color:var(--info);">Households</span>
         </div>
+        <div class="text-xs" style="color:var(--text-muted);opacity:0.7;">Ops Agents, Managers</div>
       </a>
       <a href="screens/client-detail?id=c1" class="card p-4 hover:shadow-md transition-shadow block group">
         <div class="text-sm font-semibold mb-1.5 group-hover:underline" style="color:var(--text-primary);">Client 360 Detail</div>
         <p class="text-xs mb-3" style="color:var(--text-muted);">Everything about a client in one place — active trips, open conversations, travel preferences, <strong style="color:var(--text-primary);">loyalty points, and full activity history</strong>. Household members shown in header.</p>
-        <div class="flex flex-wrap gap-1.5">
+        <div class="flex flex-wrap gap-1.5 mb-2">
           <span class="tag" style="background:rgba(59,130,246,0.12);color:var(--info);">360 Profile</span>
           <span class="tag" style="background:rgba(59,130,246,0.12);color:var(--info);">Activity Log</span>
         </div>
+        <div class="text-xs" style="color:var(--text-muted);opacity:0.7;">All Team</div>
       </a>
       <a href="screens/onboarding.html" class="card p-4 hover:shadow-md transition-shadow block group">
         <div class="text-sm font-semibold mb-1.5 group-hover:underline" style="color:var(--text-primary);">Client Onboarding</div>
         <p class="text-xs mb-3" style="color:var(--text-muted);">3-step wizard to create a new client account. Paste or upload a call transcript and <strong style="color:var(--text-primary);">AI automatically extracts preferences</strong>, loyalty programs, and upcoming trip details.</p>
-        <div class="flex flex-wrap gap-1.5">
+        <div class="flex flex-wrap gap-1.5 mb-2">
           <span class="tag" style="background:rgba(212,175,55,0.12);color:var(--gold);">AI Extraction</span>
           <span class="tag" style="background:rgba(59,130,246,0.12);color:var(--info);">3-Step Wizard</span>
         </div>
+        <div class="text-xs" style="color:var(--text-muted);opacity:0.7;">Ops Agents</div>
       </a>
     </div>
   </div>
 
   <!-- Trip Management -->
-  <div class="mb-6">
+  <div class="mb-8">
     <div class="flex items-center gap-2 mb-3">
       <div class="w-2 h-2 rounded-full" style="background:var(--success);"></div>
       <h2 class="text-sm font-semibold uppercase tracking-wide" style="color:var(--success);">Trip Management</h2>
@@ -150,77 +177,88 @@
       <a href="screens/trip-pipeline.html" class="card p-4 hover:shadow-md transition-shadow block group">
         <div class="text-sm font-semibold mb-1.5 group-hover:underline" style="color:var(--text-primary);">Trip Pipeline</div>
         <p class="text-xs mb-3" style="color:var(--text-muted);">Visual kanban board across <strong style="color:var(--text-primary);">7 stages (Lead → Archived)</strong> with budget, bookings count, and attention flags on each card. Switch to table view for a sortable list. Filter by agent or date.</p>
-        <div class="flex flex-wrap gap-1.5">
+        <div class="flex flex-wrap gap-1.5 mb-2">
           <span class="tag" style="background:rgba(34,197,94,0.12);color:var(--success);">Kanban</span>
           <span class="tag" style="background:rgba(34,197,94,0.12);color:var(--success);">Table View</span>
         </div>
+        <div class="text-xs" style="color:var(--text-muted);opacity:0.7;">Managers, Ops Agents</div>
       </a>
       <a href="screens/trip-detail?id=tr1" class="card p-4 hover:shadow-md transition-shadow block group">
         <div class="text-sm font-semibold mb-1.5 group-hover:underline" style="color:var(--text-primary);">Trip Detail</div>
         <p class="text-xs mb-3" style="color:var(--text-muted);">Full trip workspace — <strong style="color:var(--text-primary);">AI-generated summary</strong>, booking itinerary, traveler profiles, open tasks, and activity log. Internal notes kept separate from client-visible content.</p>
-        <div class="flex flex-wrap gap-1.5">
+        <div class="flex flex-wrap gap-1.5 mb-2">
           <span class="tag" style="background:rgba(212,175,55,0.12);color:var(--gold);">AI Summary</span>
           <span class="tag" style="background:rgba(34,197,94,0.12);color:var(--success);">Full Workspace</span>
         </div>
+        <div class="text-xs" style="color:var(--text-muted);opacity:0.7;">All Team</div>
       </a>
     </div>
   </div>
 
   <!-- Operations -->
-  <div class="mb-6">
+  <div class="mb-8">
     <div class="flex items-center gap-2 mb-3">
       <div class="w-2 h-2 rounded-full" style="background:var(--warning);"></div>
       <h2 class="text-sm font-semibold uppercase tracking-wide" style="color:var(--warning);">Operations</h2>
       <span class="text-xs" style="color:var(--text-muted);">— Manager overview, tasks, alerts, config</span>
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-      <a href="screens/dashboard.html" class="card p-4 hover:shadow-md transition-shadow block group">
-        <div class="text-sm font-semibold mb-1.5 group-hover:underline" style="color:var(--text-primary);">Dashboard</div>
+      <a href="screens/dashboard.html" class="card p-4 hover:shadow-md transition-shadow block group" style="border-left:3px solid var(--gold);">
+        <div class="flex items-center justify-between mb-1.5">
+          <div class="text-sm font-semibold group-hover:underline" style="color:var(--text-primary);">Dashboard</div>
+          <span class="text-xs font-medium px-1.5 py-0.5 rounded" style="background:rgba(212,175,55,0.15);color:var(--gold);font-size:9px;letter-spacing:0.3px;">START HERE</span>
+        </div>
         <p class="text-xs mb-3" style="color:var(--text-muted);">Manager home screen — KPI cards, <strong style="color:var(--text-primary);">SLA health bar</strong>, pipeline summary, team workload, and recent activity feed. Switch between Manager and Member perspectives.</p>
-        <div class="flex flex-wrap gap-1.5">
+        <div class="flex flex-wrap gap-1.5 mb-2">
           <span class="tag" style="background:rgba(245,158,11,0.12);color:var(--warning);">Manager View</span>
           <span class="tag" style="background:rgba(245,158,11,0.12);color:var(--warning);">KPIs</span>
         </div>
+        <div class="text-xs" style="color:var(--text-muted);opacity:0.7;">All Team</div>
       </a>
       <a href="screens/tasks.html" class="card p-4 hover:shadow-md transition-shadow block group">
         <div class="text-sm font-semibold mb-1.5 group-hover:underline" style="color:var(--text-primary);">Tasks</div>
         <p class="text-xs mb-3" style="color:var(--text-muted);"><strong style="color:var(--text-primary);">Board and table views</strong> for all ops tasks — filter by My Tasks, Urgent, status, or priority. Click any card to open a detail panel with status controls and activity log.</p>
-        <div class="flex flex-wrap gap-1.5">
+        <div class="flex flex-wrap gap-1.5 mb-2">
           <span class="tag" style="background:rgba(245,158,11,0.12);color:var(--warning);">Board View</span>
           <span class="tag" style="background:rgba(245,158,11,0.12);color:var(--warning);">Table View</span>
         </div>
+        <div class="text-xs" style="color:var(--text-muted);opacity:0.7;">Ops Agents, Managers</div>
       </a>
       <a href="screens/ai-history.html" class="card p-4 hover:shadow-md transition-shadow block group">
         <div class="text-sm font-semibold mb-1.5 group-hover:underline" style="color:var(--text-primary);">Maestro AI</div>
         <p class="text-xs mb-3" style="color:var(--text-muted);">Browse and search all AI conversation threads by context — trips, clients, or global. Threads are <strong style="color:var(--text-primary);">persistent, starred, and linked</strong> directly from trip detail, client detail, and inbox panels.</p>
-        <div class="flex flex-wrap gap-1.5">
+        <div class="flex flex-wrap gap-1.5 mb-2">
           <span class="tag" style="background:rgba(212,175,55,0.12);color:var(--gold);">AI History</span>
           <span class="tag" style="background:rgba(212,175,55,0.12);color:var(--gold);">Context-Aware</span>
         </div>
+        <div class="text-xs" style="color:var(--text-muted);opacity:0.7;">All Team</div>
       </a>
       <a href="screens/alerts.html" class="card p-4 hover:shadow-md transition-shadow block group">
         <div class="text-sm font-semibold mb-1.5 group-hover:underline" style="color:var(--text-primary);">Flight Alerts</div>
         <p class="text-xs mb-3" style="color:var(--text-muted);">Set up <strong style="color:var(--text-primary);">award seat monitors</strong> for specific routes, cabin classes, and points budgets. AI highlights the best available options when availability is found.</p>
-        <div class="flex flex-wrap gap-1.5">
+        <div class="flex flex-wrap gap-1.5 mb-2">
           <span class="tag" style="background:rgba(212,175,55,0.12);color:var(--gold);">AI-Powered</span>
           <span class="tag" style="background:rgba(245,158,11,0.12);color:var(--warning);">Award Seats</span>
         </div>
+        <div class="text-xs" style="color:var(--text-muted);opacity:0.7;">Ops Agents</div>
       </a>
       <a href="screens/settings.html" class="card p-4 hover:shadow-md transition-shadow block group">
         <div class="text-sm font-semibold mb-1.5 group-hover:underline" style="color:var(--text-primary);">Settings</div>
         <p class="text-xs mb-3" style="color:var(--text-muted);">Configure <strong style="color:var(--text-primary);">SLA response targets</strong>, manage team members, connect messaging channels, and customise appearance and AI behaviour. Keyboard shortcut reference included.</p>
-        <div class="flex flex-wrap gap-1.5">
+        <div class="flex flex-wrap gap-1.5 mb-2">
           <span class="tag" style="background:rgba(245,158,11,0.12);color:var(--warning);">SLA Config</span>
           <span class="tag" style="background:rgba(245,158,11,0.12);color:var(--warning);">Team & Channels</span>
         </div>
+        <div class="text-xs" style="color:var(--text-muted);opacity:0.7;">Admins</div>
       </a>
     </div>
   </div>
 
   <!-- Footer -->
-  <div class="text-center text-xs" style="color:var(--text-muted);">
-    Maestro Command Centre Revamp -- Spec-driven prototype by Mishal Chowdhury (BA/Scrum Master)
-    <br>Built April 2026. All data is mock/demo -- powered by a single shared data store (js/data.js).
+  <div class="text-center text-xs pt-4" style="color:var(--text-muted);border-top:1px solid var(--border);">
+    <p class="mb-1">Use the sidebar inside any screen to navigate between pages.</p>
+    <p class="mb-1">All data is mock/demo -- click freely, nothing affects real clients.</p>
+    <p style="opacity:0.7;">Designed and built by Mishal Chowdhury -- BA/Scrum Master, Allion Technologies -- April 2026</p>
   </div>
 
 </div>
